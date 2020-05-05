@@ -201,7 +201,46 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         def _lookupRepository(self,repositoryName):
                 return self.session.get_repo(repositoryName.getCanonicalName())
                 
+
+class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
+        """
+        Contact the GitHub API, and get the account information of everyone who has ever contributed to the repository.
+        """
+
+        def __init__(self,credentials,repositoryName,outputDirectory):
+                super().__init__(repositoryName=repositoryName,credentials=credentials,outputDirectory=outputDirectory)
                 
+        def execute(self):
+                contributors = [contributor for contributor in self.repository.get_contributors()]
+                return contributors
+                
+        def render(self,data):
+                pass
+        def export(self,data):
+                contributors = data
+                today = datetime.datetime.now()
+                
+                with open('{outputDirectory}/{repoName}_contributorAccounts.csv'.format(
+                        outputDirectory=self.outputDirectory,repoName=self.repositoryName.getRepositoryName()),'w', newline='\n') as contributorAccountsFile:
+                        
+                        contributionWriter = csv.writer(contributorAccountsFile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                        contributionWriter.writerow(["Date/Time of Analysis", "{dateOfAnalysis}".format(dateOfAnalysis=str(today))])
+                        contributionWriter.writerow(["Repository", "{canonicalName}".format(canonicalName=self.repositoryName.getCanonicalName())])
+                        
+                        
+                        contributionWriter.writerow([
+                                "Login Name",
+                                "Actual Name",
+                                "Email",
+                                "URL",
+                        ])
+                        
+                        for contributor in contributors:
+                                contributionWriter.writerow([contributor.login,contributor.name,contributor.email,contributor.url])                       
+                        
+                        
+                        
+
 class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
         """
         Calculates the number of mount of contri contribution periods of different contributors 
@@ -212,7 +251,7 @@ class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
         def execute(self):
                 contributors = []
                 numberOfCommitsByContributor = {}
-                timestampsByContributor = {}          
+                timestampsByContributor = {}        
                 
                 for commit in self.repository.walk(self.repository.head.target, pygit2.GIT_SORT_TOPOLOGICAL):
                         if commit.author.name not in contributors:
@@ -294,6 +333,9 @@ def scannerMain(args):
         
         contributionPeriodRoutine = ContributionPeriodRoutine(repositoryName=repositoryName,localRepoDirectory=args.localRepoDirectory,outputDirectory=args.outputDirectory)
         contributionPeriodRoutine.run()
+        
+        accountListRoutine = ContributorAccountListRoutine(repositoryName=repositoryName,credentials=credentials,outputDirectory=args.outputDirectory)
+        accountListRoutine.run()
 
 if __name__ == "__main__":
         parser = argparse.ArgumentParser(description='The IDEAS-ECP PSIP Team Repository Scanner. Note: To use this tool for online PyGitHub-based analyses, you must supply either a username and password or an access token to communicate with the GitHub API.')
