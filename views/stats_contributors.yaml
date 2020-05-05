@@ -1,0 +1,13 @@
+{# contrib = repo.get_stats_contributors() #}
+    contributors: {% for c in contrib %}
+        {{ c.author.login }}:
+          {%- if c.author.email != None %}
+            id: {{ c.author.name }} <{{ c.author.email }}>
+          {%- else %}
+            id: {{ c.author.name }}
+          {%- endif %}
+            total:     {{ c.total }}
+            commits:   {{ c.weeks | sum(attribute='c') }}
+            additions: {{ c.weeks | sum(attribute='a') }}
+            deletions: {{ c.weeks | sum(attribute='d') }}
+{%- endfor %}

@@ -1,0 +1,15 @@
+{{ r.name }}:
+    forks: {{ r.forks_count }}
+  {#- not so useful
+   # # issues, pages, wiki, projects
+   # has: {{ [r.has_issues, r.has_pages, r.has_wiki, r.has_projects] }} #}
+    open_issues: {{ r.open_issues_count }}
+  {%- if r.organization != None %}
+    organization: {{ r.organization.login }}
+  {%- endif %}
+    owner: {{ r.owner.login }}
+  {%- if r.parent != None %}
+    parent: {{ r.parent }}
+  {%- endif %}
+    size: {{ r.size }}
+    {% include 'stats_contributors.yaml' %}

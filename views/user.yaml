@@ -1,0 +1,5 @@
+# github.Github.User
+{{ u.login }}: # frobnitzem
+    name: {{ u.name }} # 'David M. Rogers'
+    blog: {{ u.blog }} # 'https://predictivestatmech.org'
+
