@@ -1,6 +1,6 @@
 from git import GitHubCredentials, RepositoryName, pygitAvailable, pygithubAvailable
 import argparse, os
-from contrib import ContributionPeriodRoutine, ContributorListRoutine
+from contrib import ContributionPeriodRoutine, ContributorAccountListRoutine
 from growth import GrowthRoutine
 
 def scannerMain(args):
@@ -21,11 +21,14 @@ def scannerMain(args):
         
         args = dict(repositoryName=repositoryName,
                     localRepoDirectory=args.localRepoDirectory,
+                    credentials=credentials,
                     outputDirectory=args.outputDirectory)
         contributionPeriodRoutine = ContributionPeriodRoutine(**args)
         contributionPeriodRoutine.run()
         #growthRoutine = GrowthRoutine(**args)
         #growthRoutine.run()
+        accountListRoutine = ContributorAccountListRoutine(**args)
+        accountListRoutine.run()
 
 if __name__ == "__main__":
         parser = argparse.ArgumentParser(description='The IDEAS-ECP PSIP Team Repository Scanner. Note: To use this tool for online PyGitHub-based analyses, you must supply either a username and password or an access token to communicate with the GitHub API.')
