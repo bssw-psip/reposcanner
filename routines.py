@@ -49,7 +49,7 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         """
         Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
         """
-        def __init__(self,repositoryName,localRepoDirectory,outputDirectory):
+        def __init__(self,repositoryName,localRepoDirectory,outputDirectory,**kws):
                 if not isinstance(localRepoDirectory, str):
                         raise TypeError("OfflineRepositoryAnalysisRoutine expects <localRepoDirectory> to be a string.")
                 if not isinstance(repositoryName, RepositoryName):
@@ -71,7 +71,7 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         """
         Class that encapsulates the stages of an PyGitHub-based analysis procedure operating on the GitHub API.
         """
-        def __init__(self,credentials,repositoryName,outputDirectory):
+        def __init__(self,credentials,repositoryName,outputDirectory,**kws):
                 
                 if not isinstance(credentials, GitHubCredentials):
                         raise TypeError("OnlineRepositoryAnalysisRoutine expects <credentials> to be provided as a GitHubCredentials object.")
