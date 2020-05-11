@@ -10,9 +10,6 @@ class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
         """
         Calculates the extents of code contribution periods of each contributor.
         """
-        def __init__(self,repositoryName,localRepoDirectory,outputDirectory):
-                super().__init__(repositoryName=repositoryName,localRepoDirectory=localRepoDirectory,outputDirectory=outputDirectory)
-        
         def execute(self):
                 contributors = []
                 numberOfCommitsByContributor = {}
@@ -80,9 +77,6 @@ class ContributorListRoutine(OfflineRepositoryAnalysisRoutine):
         """
         Calculates the list of contributors and the number of lines contributed.
         """
-        #def __init__(self,repositoryName,localRepoDirectory,outputDirectory):
-        #        super().__init__(repositoryName=repositoryName,localRepoDirectory=localRepoDirectory,outputDirectory=outputDirectory)
-        
         def execute(self):
                 numberOfCommitsByContributor = {}
                 
@@ -128,14 +122,38 @@ class ContributorListRoutine(OfflineRepositoryAnalysisRoutine):
                                 activeInPastYear = ((today.timestamp() - lastCommitTimestamp) / 60 / 60 / 24) <= 365
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
-                                
-                                
-class ContributorList(OnlineRepositoryAnalysisRoutine):
-    def execute(self):
-        pass
-    def render(self, data):
-        pass
-    def export(self, data):
-        pass
+ 
 
+class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
+        """
+        Contact the GitHub API, and get the account information of everyone who has ever contributed to the repository.
+        """
+        def execute(self):
+                contributors = [contributor for contributor in self.repository.get_contributors()]
+                return contributors
+                
+        def render(self,data):
+                pass
+        def export(self,data):
+                contributors = data
+                today = datetime.datetime.now()
+                
+                with open('{outputDirectory}/{repoName}_contributorAccounts.csv'.format(
+                        outputDirectory=self.outputDirectory,repoName=self.repositoryName.getRepositoryName()),'w', newline='\n') as contributorAccountsFile:
+                        
+                        contributionWriter = csv.writer(contributorAccountsFile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                        contributionWriter.writerow(["Date/Time of Analysis", "{dateOfAnalysis}".format(dateOfAnalysis=str(today))])
+                        contributionWriter.writerow(["Repository", "{canonicalName}".format(canonicalName=self.repositoryName.getCanonicalName())])
+                        
+                        
+                        contributionWriter.writerow([
+                                "Login Name",
+                                "Actual Name",
+                                "Email",
+                                "URL",
+                        ])
+                        
+                        for contributor in contributors:
+                                contributionWriter.writerow([contributor.login,contributor.name,contributor.email,contributor.url])                       
+                        
 
