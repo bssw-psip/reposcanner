@@ -116,7 +116,7 @@ ADSE10:
   - https://github.com/ECP-copa/ExaMPM
   - https://github.com/chrisknewman/tusas
   - https://github.com/ORNL-CEES/thermochimica
-  - https://github.com/AMReX-Codes/amrex
+#  - https://github.com/AMReX-Codes/amrex # duplicate from AMReX-Codes
   - https://github.com/ORNL-CEES/DataTransferKit
 ADSE11:
   name: NWChemEx
@@ -166,10 +166,9 @@ ADSE17:
 ADSE18: # FIXME - continue from here later...
   name: ExaStar
   urls:
-  - Github
   - http://flash.uchicago.edu/site/flashcode/coderequest/
   - https://github.com/BoxLib-Codes/BoxLib
-  - https://github.com/AMReX-Codes/amrex
+#  - https://github.com/AMReX-Codes/amrex # duplicate
 ADSE19:
   name: EQSIM
   urls:
