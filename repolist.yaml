@@ -1,3 +1,29 @@
+ADTRO2:
+  name: IDEAS Productivity
+  urls: 
+  # all urls below found on github #
+  - https://github.com/bssw-psip/
+  - https://github.com/bssw-psip/ptc-catalog
+  - https://github.com/bssw-psip/practice-guides
+  - https://github.com/bssw-psip/bssw-psip.github.io
+  - https://github.com/bssw-psip/example-ptc-projects
+  - https://github.com/bssw-psip/example-ptc-issues
+  - https://github.com/bssw-psip/example-ptc-milestones
+  - https://github.com/betterscientificsoftware/
+  - https://github.com/betterscientificsoftware/betterscientificsoftware.github.io 
+  - https://github.com/betterscientificsoftware/bssw-tutorial
+  - https://github.com/betterscientificsoftware/Trust-Tools
+  - https://github.com/betterscientificsoftware/bssw-blog-planning #private#
+  - https://github.com/betterscientificsoftware/python-for-hpc
+  - https://github.com/betterscientificsoftware/swe-cse-bof
+  - https://github.com/betterscientificsoftware/SDK-Tools
+  - https://github.com/betterscientificsoftware/hello-heat-equation
+  - https://github.com/betterscientificsoftware/Webinar-Process
+  - https://github.com/betterscientificsoftware/PSIP-Tools
+  - https://github.com/betterscientificsoftware/Scripts
+  - https://github.com/betterscientificsoftware/A-Team-Tools
+  - https://github.com/betterscientificsoftware/badges
+  - https://github.com/betterscientificsoftware/images #normally I would omit but would reposcanner#
 ADCD01:
   name: CODAR
   urls:
