@@ -70,7 +70,7 @@ ADSE03:
   - https://github.com/usqcd-software/qdpxx
   - https://github.com/usqcd-software/filedb
   - https://github.com/usqcd-software/qdp
-  - https://github.com/usqcd-software/qopqdp 
+  - https://github.com/usqcd-software/qopqdp
   - https://github.com/usqcd-software/usqcd-software.github.io
 ADSE04:
   name: EXAALT
@@ -210,6 +210,15 @@ STDM14:
   name: VeloC & SZ
   urls:
   - https://github.com/ECP-VeloC/VELOC
+  - https://github.com/ECP-VeloC/axl
+  - https://github.com/ECP-VeloC/er
+  - https://github.com/ECP-VeloC/filo
+  - https://github.com/ECP-VeloC/kvtree
+  - https://github.com/ECP-VeloC/rankstr
+  - https://github.com/ECP-VeloC/redset
+  - https://github.com/ECP-VeloC/shuffile
+  - https://github.com/ECP-VeloC/spath
+  - https://github.com/disheng222/SZ
 STDM15:
   name: ExaIO
   urls:
