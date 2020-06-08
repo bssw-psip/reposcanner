@@ -24,7 +24,11 @@ class GitEntityFactory:
                         expectedPlatform=expectedPlatform,
                         expectedHostType=expectedHostType,
                         expectedOwner=expectedOwner,
-                        expectedRepositoryName=expectedRepositoryName) 
+                        expectedRepositoryName=expectedRepositoryName)
+                        
+        def createVersionControlPlatformCredentials(self,username=None,password=None,token=None):
+                return VersionControlPlatformCredentials(username=username,password=password,token=token)
+
 
 class RepositoryLocation:
         """
@@ -121,10 +125,6 @@ class RepositoryLocation:
                                 self._repositoryName = match.group(2)
                         else:
                                 self._repositoryName = None
-                                
-                
-                        
-                        
                 
         
         
@@ -187,24 +187,8 @@ class RepositoryLocation:
         def getRepositoryName(self):
                 return self._repositoryName  
                 
-        
-        
-        #def __init__(self,combinedString):
-        #        """
-        #        Parameters:
-        #                combinedString: A string of the form '<owner>/<repo>'.
-        #        """
-        #        if not isinstance(combinedString, str):
-        #                raise TypeError("RepositoryAnalysisRoutine expects <combinedString> to be a string.")
-        #        elements = combinedString.split('/')
-        #        if len(elements) != 2:
-        #                raise ValueError("RepositoryName constructor failed to parse <combinedString>, expected '<owner>/<repo>' format.")
-        #        else:
-        #                self._owner = elements[0]   
-        #                self._repositoryName = elements[1]
-                
 
-class GitHubCredentials:
+class VersionControlPlatformCredentials:
         """
         Holds credentials for logging in to GitHub, which can be done either by supplying a token
         or a username and password. If the client supplies a username and password, we will use those.
@@ -214,9 +198,9 @@ class GitHubCredentials:
         def __init__(self,username=None,password=None,token=None):
                 """
                 Parameters:
-                        username (@input): A string containing the client's GitHub handle.
-                        password (@input): A string containing the client's GitHub password.
-                        token (@input): A string containing a token associated with the user's GitHub account.
+                        username (@input): A string containing the client's handle.
+                        password (@input): A string containing the client's password.
+                        token (@input): A string containing a token associated with the user's account.
                 """
                 self._username = username
                 self._password = password

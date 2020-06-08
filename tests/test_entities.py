@@ -128,6 +128,40 @@ def test_RepositoryLocation_AllOrNothingForPartialMatchesOnOwnerAndRepo():
         assert(repositoryLocationE.getOwner() == None)
         assert(repositoryLocationE.getRepositoryName() == None)
         
+def test_VersionControlPlatformCredentials_isConstructibleByFactory():
+        factory = gitEntities.GitEntityFactory()
+        credentials = factory.createVersionControlPlatformCredentials(username="name",password="password",token="token")
+
+def test_VersionControlPlatformCredentials_isDirectlyConstructible():
+        credentials = gitEntities.VersionControlPlatformCredentials(username="name",password="password",token="token")
+        
+def test_VersionControlPlatformCredentials_canStoreCredentialValues():
+        credentials = gitEntities.VersionControlPlatformCredentials(username="name",password="password",token="token")
+        assert(credentials.getUsername() == "name")
+        assert(credentials.getPassword() == "password")
+        assert(credentials.getToken() == "token")
+        
+def test_VersionControlPlatformCredentials_allowsUsernameAndPasswordComboInConstructor():
+        credentials = gitEntities.VersionControlPlatformCredentials(username="name",password="password")
+        assert(credentials.hasUsernameAndPasswordAvailable())
+        assert(not credentials.hasTokenAvailable())
+        
+def test_VersionControlPlatformCredentials_allowsJustTokenInConstructor():
+        credentials = gitEntities.VersionControlPlatformCredentials(token="token")
+        assert(not credentials.hasUsernameAndPasswordAvailable())
+        assert(credentials.hasTokenAvailable())
+        
+def test_VersionControlPlatformCredentials_allDefaultParametersInConstructorIsError():
+        with pytest.raises(ValueError):
+                credentials = gitEntities.VersionControlPlatformCredentials()
+                
+def test_VersionControlPlatformCredentials_providingOnlyUsernameWithoutPasswordOrViceVersaIsError():
+        with pytest.raises(ValueError):
+                credentials = gitEntities.VersionControlPlatformCredentials(username="name")
+        with pytest.raises(ValueError):
+                credentials = gitEntities.VersionControlPlatformCredentials(password="password")
+        
+        
         
         
         
