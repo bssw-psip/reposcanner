@@ -1,5 +1,6 @@
 from enum import Enum,auto
 import re
+from abc import ABC, abstractmethod
 
 try:
         import github as pygithub #For working with the GitHub API.
@@ -28,11 +29,102 @@ class GitEntityFactory:
                         
         def createVersionControlPlatformCredentials(self,username=None,password=None,token=None):
                 return VersionControlPlatformCredentials(username=username,password=password,token=token)
+                
+        def createVCSAPISessionCompositeCreator(self):
+                return VCSAPISessionCompositeCreator()
+                
+        def createGitHubAPISessionCreator(self):
+                return GitHubAPISessionCreator()
+
+class VCSAPISessionCreator(ABC):
+        """
+        Abstract base class for a family of classes that talk 
+        to version control system API libraries to establish
+        sessions with those services.
+        """
+        @abstractmethod
+        def canHandleRepository(self,repositoryLocation):
+                """
+                Returns True if the creator knows how to connect to a given repository,
+                and False otherwise.
+                
+                repositoryLocation: A RepositoryLocation object.
+                """
+                pass
+        
+        @abstractmethod      
+        def connect(self,repositoryLocation,credentials):
+                """
+                Attempts to establish a connection to a given repository using
+                the credentials provided.
+                
+                repositoryLocation: A RepositoryLocation object.
+                credentials: A VersionControlPlatformCredentials object.
+                """
+                pass
+        
+        
+class VCSAPISessionCompositeCreator(VCSAPISessionCreator):
+        """
+        A Composite pattern class for VCSAPISessionCreators.
+        """
+        def __init__(self):
+                self._children = []
+                
+        def addChild(self,child):
+                self._children.append(child)
+        
+        def hasChild(self, child):
+                return child in self._children
+
+        def getNumberOfChildren(self):
+                return len(self._children)
+
+        def removeChild(self, child):
+                self._children.remove(child)
+        
+        def canHandleRepository(self,repositoryLocation):
+                for child in self._children:
+                        if child.canHandleRepository(repositoryLocation):
+                                return True
+                return False
+
+        def connect(self,repositoryLocation,credentials):
+                for child in self._children:
+                        if child.canHandleRepository(repositoryLocation):
+                                return child.connect(repositoryLocation,credentials)
+                        
+
+class GitHubAPISessionCreator(VCSAPISessionCreator):
+        
+        def canHandleRepository(self,repositoryLocation):
+                return repositoryLocation.getVersionControlPlatform() == RepositoryLocation.VersionControlPlatform.GITHUB
+        
+        def connect(repositoryLocation,credentials):
+                status_forcelist = (500, 502, 504) #These status codes are caused by random GitHub errors which should trigger a retry.
+                totalAllowedRetries = 3
+                allowedReadErrorRetries = 3
+                allowedConnectionErrorRetries = 3
+                retryHandler = urllib3.Retry(total=totalAllowedRetries, 
+                        read=allowedReadErrorRetries, 
+                        connect=allowedConnectionErrorRetries, 
+                        status_forcelist=status_forcelist)
+
+                if credentials.hasUsernameAndPasswordAvailable():
+                        session = pygithub.Github(credentials.getUsername(),credentials.getPassword(),retry=retryHandler) 
+                elif credentials.hasTokenAvailable():
+                        session = pygithub.Github(credentials.getToken(),retry=retryHandler)
+                else:
+                        raise RuntimeError("GitHubAPISessionCreator received a VersionControlPlatformCredentials object \
+                                with no username/password or token in it.")
+                        
+                repository = self.session.get_repo(repositoryName.getCanonicalName())
+                return repository
 
 
 class RepositoryLocation:
         """
-        A convenience value-object that holds information about a repository
+        A convenience object that holds information about a repository
         on which we want to perform our analyses.
         """
         

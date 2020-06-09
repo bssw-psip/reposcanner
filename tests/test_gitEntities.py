@@ -160,7 +160,72 @@ def test_VersionControlPlatformCredentials_providingOnlyUsernameWithoutPasswordO
                 credentials = gitEntities.VersionControlPlatformCredentials(username="name")
         with pytest.raises(ValueError):
                 credentials = gitEntities.VersionControlPlatformCredentials(password="password")
+                
+
+def test_GitHubAPISessionCreator_isConstructibleByFactory():
+        factory = gitEntities.GitEntityFactory() 
+        githubCreator = factory.createGitHubAPISessionCreator()
+
+def test_GitHubAPISessionCreator_isDirectlyConstructible():
+        githubCreator = gitEntities.GitHubAPISessionCreator()
         
+def test_GitHubAPISessionCreator_canHandleAppropriateRepository():
+        githubCreator = gitEntities.GitHubAPISessionCreator()
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://github.com/Parallel-NetCDF/PnetCDF")
+        assert(githubCreator.canHandleRepository(repositoryLocation))
+        
+def test_GitHubAPISessionCreator_rejectsInappropriateRepositories():
+        githubCreator = gitEntities.GitHubAPISessionCreator()
+        repositoryLocationGitlab = gitEntities.RepositoryLocation(url="https://gitlab.com/exaalt/parsplice")
+        repositoryLocationBitbucket = gitEntities.RepositoryLocation(url="https://bitbucket.org/berkeleylab/picsar")
+        repositoryLocationGarbage = gitEntities.RepositoryLocation(url="garbage")
+        assert(not githubCreator.canHandleRepository(repositoryLocationGitlab))
+        assert(not githubCreator.canHandleRepository(repositoryLocationBitbucket))
+        assert(not githubCreator.canHandleRepository(repositoryLocationGarbage))
+        
+def test_VCSAPISessionCompositeCreator_isConstructibleByFactory():
+        factory = gitEntities.GitEntityFactory() 
+        githubCreator = factory.createVCSAPISessionCompositeCreator()
+                
+def test_VCSAPISessionCompositeCreator_isDirectlyConstructible():
+        compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
+                
+def test_VCSAPISessionCompositeCreator_InitiallyHasNoChildren():
+        compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
+        assert (compositeCreator.getNumberOfChildren() == 0)
+
+def test_VCSAPISessionCompositeCreator_CantFulfillRequestsWithoutChildren():
+        compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://github.com/Parallel-NetCDF/PnetCDF")
+        assert (compositeCreator.canHandleRepository(repositoryLocation) == False)
+
+def test_VCSAPISessionCompositeCreator_CanStoreChildren():
+        compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
+        githubCreator = gitEntities.GitHubAPISessionCreator()
+        compositeCreator.addChild(githubCreator)
+        assert(compositeCreator.hasChild(githubCreator))
+        assert(compositeCreator.getNumberOfChildren() == 1)
+        
+def test_VCSAPISessionCompositeCreator_CanRemoveChildren():
+        compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
+        githubCreator = gitEntities.GitHubAPISessionCreator()
+        compositeCreator.addChild(githubCreator)
+        compositeCreator.removeChild(githubCreator)
+        assert(not compositeCreator.hasChild(githubCreator))
+        
+def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCan():
+        compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
+        githubCreator = gitEntities.GitHubAPISessionCreator()
+        compositeCreator.addChild(githubCreator)
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://github.com/Parallel-NetCDF/PnetCDF")
+        assert(compositeCreator.canHandleRepository(repositoryLocation))
+        
+def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCant():
+        compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
+        githubCreator = gitEntities.GitHubAPISessionCreator()
+        compositeCreator.addChild(githubCreator)
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://gitlab.com/exaalt/parsplice")
+        assert(not compositeCreator.canHandleRepository(repositoryLocation))    
         
         
         
