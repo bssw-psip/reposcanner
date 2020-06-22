@@ -8,6 +8,7 @@ A compact repository data mining toolkit
  - Python version >= 3.5
  - Pygit2 (for offline, clone-based analysis; tested with version 1.2.0)
  - Pygithub (for online, GitHub-based analysis; tested with version 1.47)
+ - PyYAML (for handling input files; tested with version 3.13)
  
 Install via pip:
 
