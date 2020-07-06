@@ -113,8 +113,7 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 elif not self._sessionCreator.canHandleRepository(request.getRepositoryLocation()):
                         return responseFactory.createFailureResponse(
                         message="The routine's VCS API session creator is not able \
-                        to handle {platform} repositories at this time.".format(
-                        platform=request.getRepositoryLocation().getVersionControlPlatform()))
+                        to handle the platform of the repository.")
                 else:
                         platform = request.getRepositoryLocation().getVersionControlPlatform()
                         repositoryLocation = request.getRepositoryLocation()
