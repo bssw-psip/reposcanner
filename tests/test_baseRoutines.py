@@ -51,6 +51,35 @@ def test_OnlineRepositoryAnalysisRoutine_inabilityOfSessionCreatorToHandleReposi
         assert(response.hasMessage())
         assert(response.getMessage() =="The routine's VCS API session creator is not able \
                         to handle the platform of the repository.")
+                        
+def test_OnlineRepositoryAnalysisRoutine_defaultGitHubImplementationReturnsFailedResponse(mocker):
+        mocker.patch.multiple(routines.OnlineRepositoryAnalysisRoutine,__abstractmethods__=set())
+        genericRoutine = routines.OnlineRepositoryAnalysisRoutine()
+        response = genericRoutine.githubImplementation(request=None,session=None)
+        assert(not response.wasSuccessful())
+        assert(response.hasMessage())
+        assert(response.getMessage() == "This routine has no implementation available \
+                        to handle a GitHub repository.")
+                        
+def test_OnlineRepositoryAnalysisRoutine_defaultGitlabImplementationReturnsFailedResponse(mocker):
+        mocker.patch.multiple(routines.OnlineRepositoryAnalysisRoutine,__abstractmethods__=set())
+        genericRoutine = routines.OnlineRepositoryAnalysisRoutine()
+        response = genericRoutine.gitlabImplementation(request=None,session=None)
+        assert(not response.wasSuccessful())
+        assert(response.hasMessage())
+        assert(response.getMessage() == "This routine has no implementation available \
+                        to handle a Gitlab repository.")
+                        
+def test_OnlineRepositoryAnalysisRoutine_defaultBitbucketImplementationReturnsFailedResponse(mocker):
+        mocker.patch.multiple(routines.OnlineRepositoryAnalysisRoutine,__abstractmethods__=set())
+        genericRoutine = routines.OnlineRepositoryAnalysisRoutine()
+        response = genericRoutine.bitbucketImplementation(request=None,session=None)
+        assert(not response.wasSuccessful())
+        assert(response.hasMessage())
+        assert(response.getMessage() == "This routine has no implementation available \
+                        to handle a Bitbucket repository.")
+        
+                        
 
 
         
