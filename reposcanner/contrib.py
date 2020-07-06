@@ -1,4 +1,4 @@
-from routines import *
+from reposcanner.routines import *
 
 #import matplotlib.pyplot as plt
 #import seaborn as sns

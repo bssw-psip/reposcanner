@@ -1,7 +1,7 @@
-from git import GitHubCredentials, RepositoryName, pygitAvailable, pygithubAvailable
+from reposcanner.git import GitHubCredentials, RepositoryName, pygitAvailable, pygithubAvailable
 import argparse, os
-from contrib import ContributionPeriodRoutine, ContributorAccountListRoutine
-from growth import GrowthRoutine
+from reposcanner.contrib import ContributionPeriodRoutine, ContributorAccountListRoutine
+from reposcanner.growth import GrowthRoutine
 
 def scannerMain(args):
         """
@@ -19,16 +19,16 @@ def scannerMain(args):
                 raise OSError("Reposcanner couldn't find the specified output directory. Shutting down as a precaution.")
         
         
-        args = dict(repositoryName=repositoryName,
-                    localRepoDirectory=args.localRepoDirectory,
-                    credentials=credentials,
-                    outputDirectory=args.outputDirectory)
-        contributionPeriodRoutine = ContributionPeriodRoutine(**args)
-        contributionPeriodRoutine.run()
+        #args = dict(repositoryName=repositoryName,
+        #            localRepoDirectory=args.localRepoDirectory,
+        #            credentials=credentials,
+        #            outputDirectory=args.outputDirectory)
+        #contributionPeriodRoutine = ContributionPeriodRoutine(**args)
+        #contributionPeriodRoutine.run()
         #growthRoutine = GrowthRoutine(**args)
         #growthRoutine.run()
-        accountListRoutine = ContributorAccountListRoutine(**args)
-        accountListRoutine.run()
+        #accountListRoutine = ContributorAccountListRoutine(**args)
+        #accountListRoutine.run()
 
 if __name__ == "__main__":
         parser = argparse.ArgumentParser(description='The IDEAS-ECP PSIP Team Repository Scanner. Note: To use this tool for online PyGitHub-based analyses, you must supply either a username and password or an access token to communicate with the GitHub API.')

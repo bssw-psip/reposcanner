@@ -277,7 +277,13 @@ class RepositoryLocation:
                 return self._owner
                 
         def getRepositoryName(self):
-                return self._repositoryName  
+                return self._repositoryName
+                
+        def isRecognizable(self):
+                return (self._platform != RepositoryLocation.VersionControlPlatform.UNKNOWN and
+                        self._hostType != RepositoryLocation.HostType.UNKNOWN and
+                        self._owner != None and
+                        self._repositoryName != None)
                 
 
 class VersionControlPlatformCredentials:

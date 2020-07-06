@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 import urllib3
 import os
 from reposcanner.git import GitEntityFactory
+from reposcanner.git import RepositoryLocation.VersionControlPlatform as VersionControlPlatform
+from reposcanner.response import ResponseFactory
 
 class RepositoryAnalysisRoutine(ABC):
         """The abstract base class for all repository analysis routines. Methods cover
@@ -69,14 +71,14 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
         """
         def __init__(self):
-                if not isinstance(localRepoDirectory, str):
-                        raise TypeError("OfflineRepositoryAnalysisRoutine expects <localRepoDirectory> to be a string.")
-                if not isinstance(repositoryName, RepositoryName):
-                        raise TypeError("OfflineRepositoryAnalysisRoutine expects <repositoryName> to be a RepositoryName object.")
+                #if not isinstance(localRepoDirectory, str):
+                #        raise TypeError("OfflineRepositoryAnalysisRoutine expects <localRepoDirectory> to be a string.")
+                #if not isinstance(repositoryName, RepositoryName):
+                #        raise TypeError("OfflineRepositoryAnalysisRoutine expects <repositoryName> to be a RepositoryName object.")
                 
-                self.repository = self._cloneRepositoryIfMissing(repositoryName,localRepoDirectory)
-                self.repositoryName = repositoryName
-                self.outputDirectory = outputDirectory
+                #self.repository = self._cloneRepositoryIfMissing(repositoryName,localRepoDirectory)
+                #self.repositoryName = repositoryName
+                #self.outputDirectory = outputDirectory
                 
         def _cloneRepositoryIfMissing(self,repositoryName,localRepoDirectory):
                 if not os.path.exists(localRepoDirectory):
@@ -84,7 +86,7 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                         return clone
                 else:
                         clone = pygit2.Repository(localRepoDirectory)
-                        return clone      
+                        return clone
                       
 class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         """
@@ -96,8 +98,88 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 compositeCreator = factory.createVCSAPISessionCompositeCreator()
                 githubCreator = factory.createVCSAPISessionCompositeCreator()
                 compositeCreator.addChild(githubCreator)
-                self._sessionCreator = compositeCreator()
-                pass    
+                self._sessionCreator = compositeCreator
+                pass
+                
+        def execute(self,request):
+                responseFactory = ResponseFactory()
+                if not self.canHandleRequest(request):
+                        return responseFactory.createFailureResponse(
+                        message="The routine was passed a request of the wrong type.")
+                elif request.hasErrors():
+                        return responseFactory.createFailureResponse(
+                        message="The request had errors in it and cannot be processed.",
+                        attachments=request.getErrors())
+                elif not self._sessionCreator.canHandleRepository(request.getRepositoryLocation()):
+                        return responseFactory.createFailureResponse(
+                        message="The routine's VCS API session creator is not able \
+                        to handle {platform} repositories at this time.".format(
+                        platform=request.getRepositoryLocation().getVersionControlPlatform()))
+                else:
+                        platform = request.getRepositoryLocation().getVersionControlPlatform()
+                        repositoryLocation = request.getRepositoryLocation()
+                        credentials = request.getCredentials()
+                        if platform == VersionControlPlatform.GITHUB:
+                                self.githubImplementation(request=request,
+                                        session=self._sessionCreator.connect(repositoryLocation,credentials))
+                        elif platform == VersionControlPlatform.GITLAB:
+                                self.gitlabImplementation(request=request,
+                                        session=session=self._sessionCreator.connect(repositoryLocation,credentials))
+                        elif platform == VersionControlPlatform.BITBUCKET:
+                                self.bitbucketImplementation(request=request,
+                                        session=self._sessionCreator.connect(repositoryLocation,credentials))
+                        else:
+                                return responseFactory.createFailureResponse(
+                                        message="The platform of the repository is \
+                                        not supported by this routine ({platform}).".format(
+                                        platform=platform))
+                        
+        
+        def githubImplementation(self,request,session):
+                """
+                This method should contain the GitHub API implementation of the routine.
+                By default, it'll return a failure response. Subclasses are responsible for
+                overriding this method.
+                
+                request: An OnlineRoutineRequest object.
+                session: An API session provided by a VCSAPISessionCompositeCreator.
+                """
+                responseFactory = ResponseFactory()
+                return responseFactory.createFailureResponse(
+                        message="This routine has no implementation available \
+                        to handle a GitHub repository.")
+                        
+        def gitlabImplementation(self,request,session):
+                """
+                This method should contain the GitHub API implementation of the routine.
+                By default, it'll return a failure response. Subclasses are responsible for
+                overriding this method.
+                
+                request: An OnlineRoutineRequest object.
+                session: An API session provided by a VCSAPISessionCompositeCreator.
+                """
+                responseFactory = ResponseFactory()
+                return responseFactory.createFailureResponse(
+                        message="This routine has no implementation available \
+                        to handle a GitLab repository.")
+                        
+                        
+        def bitbucketImplementation(self,request,session):
+                """
+                This method should contain the GitHub API implementation of the routine.
+                By default, it'll return a failure response. Subclasses are responsible for
+                overriding this method.
+                
+                request: An OnlineRoutineRequest object.
+                session: An API session provided by a VCSAPISessionCompositeCreator.
+                """
+                responseFactory = ResponseFactory()
+                return responseFactory.createFailureResponse(
+                        message="This routine has no implementation available \
+                        to handle a Bitbucket repository.")
+
+                        
+                        
                         
                         
         #def _lookupRepository(self,repositoryName):
