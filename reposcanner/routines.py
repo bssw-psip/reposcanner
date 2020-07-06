@@ -71,6 +71,7 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
         """
         def __init__(self):
+                pass
                 #if not isinstance(localRepoDirectory, str):
                 #        raise TypeError("OfflineRepositoryAnalysisRoutine expects <localRepoDirectory> to be a string.")
                 #if not isinstance(repositoryName, RepositoryName):
@@ -182,10 +183,3 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 return responseFactory.createFailureResponse(
                         message="This routine has no implementation available \
                         to handle a Bitbucket repository.")
-
-                        
-                        
-                        
-                        
-        #def _lookupRepository(self,repositoryName):
-        #        return self.session.get_repo(repositoryName.getCanonicalName())
