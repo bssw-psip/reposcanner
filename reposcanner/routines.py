@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 import urllib3
 import os
-from reposcanner.git import GitEntityFactory
-from reposcanner.git import RepositoryLocation.VersionControlPlatform as VersionControlPlatform
+from reposcanner.git import GitEntityFactory,RepositoryLocation
 from reposcanner.response import ResponseFactory
 
 class RepositoryAnalysisRoutine(ABC):
@@ -121,13 +120,13 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                         repositoryLocation = request.getRepositoryLocation()
                         credentials = request.getCredentials()
                         try:
-                                if platform == VersionControlPlatform.GITHUB:
+                                if platform == RepositoryLocation.VersionControlPlatform.GITHUB:
                                         self.githubImplementation(request=request,
                                                 session=self._sessionCreator.connect(repositoryLocation,credentials))
-                                elif platform == VersionControlPlatform.GITLAB:
+                                elif platform == RepositoryLocation.VersionControlPlatform.GITLAB:
                                         self.gitlabImplementation(request=request,
-                                                session=session=self._sessionCreator.connect(repositoryLocation,credentials))
-                                elif platform == VersionControlPlatform.BITBUCKET:
+                                                session=self._sessionCreator.connect(repositoryLocation,credentials))
+                                elif platform == RepositoryLocation.VersionControlPlatform.BITBUCKET:
                                         self.bitbucketImplementation(request=request,
                                                 session=self._sessionCreator.connect(repositoryLocation,credentials))
                                 else:
