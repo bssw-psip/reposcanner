@@ -119,20 +119,25 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                         platform = request.getRepositoryLocation().getVersionControlPlatform()
                         repositoryLocation = request.getRepositoryLocation()
                         credentials = request.getCredentials()
-                        if platform == VersionControlPlatform.GITHUB:
-                                self.githubImplementation(request=request,
-                                        session=self._sessionCreator.connect(repositoryLocation,credentials))
-                        elif platform == VersionControlPlatform.GITLAB:
-                                self.gitlabImplementation(request=request,
-                                        session=session=self._sessionCreator.connect(repositoryLocation,credentials))
-                        elif platform == VersionControlPlatform.BITBUCKET:
-                                self.bitbucketImplementation(request=request,
-                                        session=self._sessionCreator.connect(repositoryLocation,credentials))
-                        else:
+                        try:
+                                if platform == VersionControlPlatform.GITHUB:
+                                        self.githubImplementation(request=request,
+                                                session=self._sessionCreator.connect(repositoryLocation,credentials))
+                                elif platform == VersionControlPlatform.GITLAB:
+                                        self.gitlabImplementation(request=request,
+                                                session=session=self._sessionCreator.connect(repositoryLocation,credentials))
+                                elif platform == VersionControlPlatform.BITBUCKET:
+                                        self.bitbucketImplementation(request=request,
+                                                session=self._sessionCreator.connect(repositoryLocation,credentials))
+                                else:
+                                        return responseFactory.createFailureResponse(
+                                                message="The platform of the repository is \
+                                                not supported by this routine ({platform}).".format(
+                                                platform=platform))
+                        except Exception as e:
                                 return responseFactory.createFailureResponse(
-                                        message="The platform of the repository is \
-                                        not supported by this routine ({platform}).".format(
-                                        platform=platform))
+                                    message="OnlineRepositoryAnalysisRoutine Encountered an unexpected exception.",
+                                    attachments=[exception])
                         
         
         def githubImplementation(self,request,session):
