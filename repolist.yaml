@@ -1,15 +1,13 @@
+# NOTES: not including anything saying "forked from ..." unless it's clear the fork was a permanent fork
 ADTRO2:
   name: IDEAS Productivity
   urls: 
-  # all urls below found on github #
-  - https://github.com/bssw-psip/
   - https://github.com/bssw-psip/ptc-catalog
   - https://github.com/bssw-psip/practice-guides
   - https://github.com/bssw-psip/bssw-psip.github.io
   - https://github.com/bssw-psip/example-ptc-projects
   - https://github.com/bssw-psip/example-ptc-issues
   - https://github.com/bssw-psip/example-ptc-milestones
-  - https://github.com/betterscientificsoftware/
   - https://github.com/betterscientificsoftware/betterscientificsoftware.github.io 
   - https://github.com/betterscientificsoftware/bssw-tutorial
   - https://github.com/betterscientificsoftware/Trust-Tools
@@ -71,12 +69,10 @@ ADNN01:
 ADNN02:
   name: ASC ATDM LLNL Application
   urls:
-  - ''
   - https://github.com/LLNL/axom
 ADNN03:
   name: ASC ATDM SNL Application
-  urls:
-  - ''
+  urls: []
 ADOA01:
   name: CANDLE
   urls:
@@ -107,15 +103,17 @@ ADSE04:
   - https://gitlab.com/exaalt/parsplice
 ADSE05:
   name: Subsurface
-  urls: []
-  #- http://anag-repo.lbl.gov/
-  #- https://bitbucket.org/%7Bef688610-c594-424b-ae8e-983f91c63747%7D/
+  urls:
+  - https://crd.lbl.gov/departments/computational-science/ANAG/research/ecp-subsurface/
+  - http://anag-repo.lbl.gov/
+  - https://anag-repo.lbl.gov/svn/Chombo
 ADSE06:
   name: WarpX
   urls:
   - https://github.com/ECP-WarpX/WarpX
   - https://github.com/ECP-WarpX/ecp-warpx.github.io
   - https://bitbucket.org/berkeleylab/picsar
+  - https://github.com/ECP-WarpX/picsar
 ADSE07:
   name: EXAWIND
   urls:
@@ -135,31 +133,58 @@ ADSE09:
   - https://github.com/QMCPACK/qmcpack
 ADSE10:
   name: ExaAM
+  uncertain: True
+  notes: |
+   From their presentation slides, ExaAM codes include
+     Diablo (LLNL)
+     possibly LiDO, PLATO, ExaPF, ExaCA, ExaConstit, LIGGHTS, MEUMAPPS-SL, TruchasPBF, ExaMPM, ALE3D, OpenFoam
+   Truchas development is largely sponsored by the Advanced Simulation and Computing Program (ASC) at LANL through its Telluride project to provide a tool for simulating manufacturing processes in support of the Stockpile Stewardship Program (SSP).
   urls:
-  - https://gitlab.com/truchas
-  - https://github.com/LLNL/AMPE
+  - https://gitlab.com/truchas/pcsri2018/truchas-kernels-tpl
+  - https://gitlab.com/truchas/pcsri2018/truchas-kernels
+  - https://gitlab.com/truchas/cmb-target-problems
+  - https://gitlab.com/truchas/truchas-tpl
+  - https://gitlab.com/truchas/pececillo
+  - https://gitlab.com/truchas/pececillo-tpl
+  - https://gitlab.com/truchas/scorpio
+  - https://gitlab.com/truchas/truchas-release
+  - https://github.com/LLNL/AMPE # tags: hypre, sundials, amr
   - https://github.com/LLNL/ExaConstit
-  - https://github.com/ECP-copa/ExaMPM
+# - https://github.com/ECP-copa/ExaMPM # Copa project (has copa authors)
   - https://github.com/chrisknewman/tusas
-  - https://github.com/ORNL-CEES/thermochimica
+  - https://github.com/ORNL-CEES/thermochimica # ORNL CEES group (center of ExaAM devel. work)
 #  - https://github.com/AMReX-Codes/amrex # duplicate from AMReX-Codes
   - https://github.com/ORNL-CEES/DataTransferKit
 ADSE11:
   name: NWChemEx
-  urls: []
+  urls:
+  - https://github.com/NWChemEx-Project/DeveloperTools
+  - https://github.com/NWChemEx-Project/NWX_TA
+  - https://github.com/NWChemEx-Project/tiledarray
+  - https://github.com/NWChemEx-Project/PWDFT
 ADSE12:
   name: WDMApp
-  urls:
-  - https://gitlab.mpcdf.mpg.de
-  - https://github.com/princetonuniversity/xgc-user or maybe https://bitbucket.org/madams/epsi
+  uncertain: True
+  urls: []
+      #  - https://gitlab.mpcdf.mpg.de
+      #  - https://github.com/princetonuniversity/xgc-user or maybe https://bitbucket.org/madams/epsi
 ADSE13:
   name: ExaFEL
   urls:
+  - https://github.com/ExaFEL/exafel_project
+  - https://github.com/ExaFEL/minifel
+  - https://github.com/ExaFEL/installation
+  - https://github.com/ExaFEL/gui_demo
+  - https://github.com/ExaFEL/adse13_161
+  - https://github.com/ExaFEL/phaseret
+  - https://github.com/ExaFEL/docs
+  - https://github.com/ExaFEL/Regtests
+  - https://github.com/ExaFEL/ExaFEL.github.io
   #- https://github.com/lcls-psana
-  - https://github.com/cctbx/cctbx_project
-  - https://github.com/cctbx/cctbx.github.io
-  - https://github.com/cctbx/cctbx-playground
-  - https://github.com/mewall/lunus
+  #  - https://github.com/cctbx/cctbx_project # computational crystallography toolbox
+  #  - https://github.com/cctbx/cctbx.github.io
+  #  - https://github.com/cctbx/cctbx-playground
+  #  - https://github.com/mewall/lunus # protein crystal x-ray scattering
 ADSE14:
   name: Combustion-Pele
   urls:
@@ -179,7 +204,9 @@ ADSE15:
 ADSE16:
   name: GAMESS
   urls:
-  - https://github.com/gms-bbg
+  - https://github.com/gms-bbg/gamess-issues
+  - https://github.com/gms-bbg/libxc-tests
+  - https://github.com/gms-bbg/faq
 ADSE17:
   name: Urban
   urls:
@@ -189,41 +216,45 @@ ADSE17:
   - https://github.com/Nek5000/nekRS
   - https://github.com/Nek5000/nekBench
   - https://github.com/NCAR/WRFV3
-ADSE18: # FIXME - continue from here later...
+ADSE18:
   name: ExaStar
   urls:
   - http://flash.uchicago.edu/site/flashcode/coderequest/
-  - https://github.com/BoxLib-Codes/BoxLib
-#  - https://github.com/AMReX-Codes/amrex # duplicate
 ADSE19:
   name: EQSIM
   urls:
-  - Github
+  - https://eesa.lbl.gov/profiles/david-mccallen
 ADSE20:
   name: ExaBiome
   urls:
   - https://bitbucket.org/berkeleylab/hipmeraculous
-  - https://bitbucket.org/azadcse/hipmcl/
-  - https://github.com/LANL-Bioinformatics/GOTTCHA
+  - https://bitbucket.org/azadcse/hipmcl # A High-Performance Parallel Algorithm for Large-Scale Network Clustering
+  - https://github.com/lanl-Bioinformatics/GOTTCHA # LANL bioinformatics
 ADSE21:
   name: MFIX-Exa
   urls:
-  - 'https://mfix.netl.doe.gov/mfix/download-mfix '
+  - https://mfix.netl.doe.gov/mfix/download-mfix
+  - https://mfix.netl.doe.gov/mfix/mfix-documentation
 ADSE22:
   name: ExaSGD
   urls:
   - https://github.com/GridOPTICS/GOSS
   - https://github.com/GridOPTICS/GridPACK
   - https://github.com/Argonne-National-Laboratory/PIPS
-  - https://github.com/StructJuMP
+  - https://github.com/StructJuMP/StructJuMP.jl
+  - https://github.com/StructJuMP/StructJuMPSolverInterface.jl
 STDA05:
   name: VTK-m
   urls:
-  - https://gitlab.kitware.com/vtk/vtk-m/
+  - https://gitlab.kitware.com/vtk/vtk-m
 STDM11:
   name: ADIOS
   urls:
   - https://github.com/ornladios/ADIOS2
+  - https://github.com/ornladios/ADIOS2-Testing
+  - https://github.com/ornladios/ADIOS2-Examples
+  - https://github.com/ornladios/ADIOS2-Jupyter
+  - https://github.com/ornladios/ADIOS2-LFS
 STDM12:
   name: Data Lib
   urls:
@@ -247,12 +278,15 @@ STDM14:
 STDM15:
   name: ExaIO
   urls:
-  - https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git
+  - https://bitbucket.hdfgroup.org/scm/hdffv/hdf5
   - https://github.com/LLNL/UnifyFS
 STDM16:
   name: Alpine & ZFP
   urls:
   - https://github.com/Alpine-DAV/ascent
+  - https://github.com/Alpine-DAV/algorithms
+  - https://github.com/Alpine-DAV/WarpXTestSimulation
+  - https://github.com/Alpine-DAV/alpine-dav.github.io
   - https://github.com/Kitware/ParaView
   - https://github.com/visit-dav/visit
   - https://github.com/LLNL/zfp
@@ -278,10 +312,14 @@ STML12:
   - https://github.com/hypre-space/hypre
 STML13:
   name: CLOVER
+  uncertain: True
   urls:
   - https://github.com/kokkos/kokkos-kernels
   - https://bitbucket.org/icl/slate
-  - https://bitbucket.org/icl/heffte/src/master/
+  - https://bitbucket.org/icl/lapackpp
+  - https://bitbucket.org/icl/blaspp
+  - https://bitbucket.org/icl/testsweeper
+  - https://bitbucket.org/icl/heffte
 STML14:
   name: ALEXa & ForTrilinos
   urls:
@@ -302,8 +340,41 @@ STMS08:
 STNS01:
   name: LANL ATDM
   urls:
-  - https://github.com/lanl/BEE
-  - https://cinemascience.github.io/
+  - https://github.com/lanl/BEE # containerize build and execute environment
+  - https://github.com/cinemascience/cinema_testing
+  - https://github.com/cinemascience/cinema_jnc
+  - https://github.com/cinemascience/cinemac
+  - https://github.com/cinemascience/cinemagic
+  - https://github.com/cinemascience/cinema_projectmanagement
+  - https://github.com/cinemascience/cinema_workflows
+  - https://github.com/cinemascience/cinema_install
+  - https://github.com/cinemascience/cinema_bandit
+  - https://github.com/cinemascience/cinema_scratch
+  - https://github.com/cinemascience/cinemascience.github.io
+  - https://github.com/cinemascience/cinema_explorer
+  - https://github.com/cinemascience/cinema_view
+  - https://github.com/cinemascience/cinema_examples
+  - https://github.com/cinemascience/cinema_compare
+  - https://github.com/cinemascience/website
+  - https://github.com/cinemascience/cinema_movie
+  - https://github.com/cinemascience/cinema_scope
+  - https://github.com/cinemascience/cinema_lib
+  - https://github.com/cinemascience/cinema
+  - https://github.com/cinemascience/cinema_tutorial_slides
+  - https://github.com/cinemascience/cinema_tutorial_2019-11_SC
+  - https://github.com/cinemascience/cinema_tutorial_2019-01_ECP
+  - https://github.com/cinemascience/cinema_parallel
+  - https://github.com/cinemascience/cinema_emui
+  - https://github.com/cinemascience/cinema_components
+  - https://github.com/cinemascience/cvlibd
+  - https://github.com/cinemascience/cvlib
+  - https://github.com/cinemascience/cinema_unityviewer
+  - https://github.com/cinemascience/cinema_quest
+  - https://github.com/cinemascience/cinema_newsfeed
+  - https://github.com/cinemascience/cinema_dora
+  - https://github.com/cinemascience/cinema_debye_scherrer
+  - https://github.com/cinemascience/cinema_change_detection
+  - https://github.com/cinemascience/cinema_asqlpy
 STNS02:
   name: LLNL ATDM
   urls:
@@ -326,10 +397,15 @@ STPM10:
   name: Legion
   urls:
   - https://github.com/StanfordLegion/legion
+  - https://github.com/StanfordLegion/StanfordLegion.github.io
+  - https://github.com/StanfordLegion/task-bench
+  - https://github.com/StanfordLegion/legion.stanford.edu
 STPM11:
   name: PaRSEC
   urls:
-  - http://bitbucket.org/bosilca/dague.public
+# - http://bitbucket.org/bosilca/dague.public
+  - https://bitbucket.org/icldistcomp/parsec
+  - https://bitbucket.org/icldistcomp/dplasma
 STPM15:
   name: SOLLVE
   urls:
@@ -337,15 +413,17 @@ STPM15:
 STPM17:
   name: UPC++ & GASNet
   urls:
-  - https://bitbucket.org/berkeleylab/upcxx/src/master/
+  - https://bitbucket.org/berkeleylab/upcxx
   - https://bitbucket.org/berkeleylab/gasnet
 STPR01:
   name: PMR SDK
   urls: []
 STPR17:
   name: OMPI-X
+  uncertain: True
   urls:
   - https://github.com/hpc/ompi
+  - https://github.com/open-mpi/ompi
 STPR18:
   name: RAJA & Kokkos
   urls:
@@ -354,15 +432,17 @@ STPR18:
 STPR19:
   name: Argo & Powersteering
   urls:
+  - https://xgitlab.cels.anl.gov/argo/website
+  - https://xgitlab.cels.anl.gov/argo/argonix
   - https://xgitlab.cels.anl.gov/argo/aml
 STSS07:
   name: SICM
   urls:
-  - https://github.com/lanl/SICM
+  - https://github.com/lanl/SICM # simplified interface to complex memory
 STTO09:
   name: PAPI
   urls:
-  - https://bitbucket.org/icl/papi/src/master
+  - https://bitbucket.org/icl/papi
 STTO11:
   name: HPC Toolkit
   urls:
@@ -370,4 +450,6 @@ STTO11:
 STTO13:
   name: Flang
   urls:
+  - https://github.com/flang-compiler/flang
+  - https://github.com/flang-compiler/flang-compiler.github.io
   - https://github.com/flang-compiler/f18
