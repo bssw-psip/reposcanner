@@ -126,7 +126,9 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 factory = GitEntityFactory()
                 compositeCreator = factory.createVCSAPISessionCompositeCreator()
                 githubCreator = factory.createVCSAPISessionCompositeCreator()
+                gitlabCreator = factory.createGitlabAPISessionCreator()
                 compositeCreator.addChild(githubCreator)
+                compositeCreator.addChild(gitlabCreator)
                 self._sessionCreator = compositeCreator
                 pass
                 
