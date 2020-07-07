@@ -75,6 +75,11 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 pass
                 
         def execute(self,request):
+                """
+                The Offline routine execute() method delegates responsibility for performing the routine to
+                the offlineImplementation() method. Subclasses of this class are responsible for
+                overriding that methods.
+                """
                 responseFactory = ResponseFactory()
                 if not self.canHandleRequest(request):
                         return responseFactory.createFailureResponse(
@@ -126,6 +131,11 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 pass
                 
         def execute(self,request):
+                """
+                The Online routine execute() method delegates responsibility for performing the routine to
+                platform-API-specific methods. Subclasses of this class are responsible for
+                overriding those methods.
+                """
                 responseFactory = ResponseFactory()
                 if not self.canHandleRequest(request):
                         return responseFactory.createFailureResponse(

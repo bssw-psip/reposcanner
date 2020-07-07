@@ -1,4 +1,6 @@
-from reposcanner.routines import *
+from reposcanner.routines import OfflineRepositoryAnalysisRoutine,OnlineRepositoryAnalysisRoutine
+from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest
+import pygit2
 
 #import matplotlib.pyplot as plt
 #import seaborn as sns
@@ -6,16 +8,30 @@ import time, datetime
 #import statistics
 import csv
 
+
+
+class ContributionPeriodRoutineRequest(OfflineRoutineRequest):
+        def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
+                super().__init__(repositoryURL,outputDirectory,workspaceDirectory)
+
+#TODO: Convert to new routine model.
 class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
         """
         Calculates the extents of code contribution periods of each contributor.
         """
-        def execute(self):
+        
+        def canHandleRequest(self,request):
+                if isinstance(request, ContributionPeriodRoutineRequest):
+                        return True
+                else:
+                        return False
+        
+        def offlineImplementation(self,request,session):
                 contributors = []
                 numberOfCommitsByContributor = {}
-                timestampsByContributor = {}          
+                timestampsByContributor = {}      
                 
-                for commit in self.repository.walk(self.repository.head.target, pygit2.GIT_SORT_TOPOLOGICAL):
+                for commit in session.walk(session.head.target, pygit2.GIT_SORT_TOPOLOGICAL):
                         if commit.author.name not in contributors:
                                 contributors.append(commit.author.name)
                         
@@ -37,10 +53,10 @@ class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
                         
                 return contributors,numberOfCommitsByContributor,timestampsByContributor
                 
-        def render(self,data):
+        def render(self,request,response):
                 pass
 
-        def export(self,data):
+        def export(self,request,response):
                 contributors,numberOfCommitsByContributor,timestampsByContributor = data
                 
                 today = datetime.datetime.now()
@@ -72,7 +88,7 @@ class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
                                 
-                                
+#TODO: Convert to new routine model.                                
 class ContributorListRoutine(OfflineRepositoryAnalysisRoutine):
         """
         Calculates the list of contributors and the number of lines contributed.
@@ -124,17 +140,37 @@ class ContributorListRoutine(OfflineRepositoryAnalysisRoutine):
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
  
 
+
+
+class ContributorAccountListRoutineRequest(OnlineRoutineRequest):
+        def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None):
+                super().__init__(repositoryURL,outputDirectory,username,password,token)
+
 class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
         """
-        Contact the GitHub API, and get the account information of everyone who has ever contributed to the repository.
+        Contact the version control platform API, and get the account information of everyone who has ever contributed to the repository.
         """
-        def execute(self):
-                contributors = [contributor for contributor in self.repository.get_contributors()]
+        
+        def canHandleRequest(self,request):
+                if isinstance(request, ContributorAccountListRoutineRequest):
+                        return True
+                else:
+                        return False
+        
+        def githubImplementation(self,request,session):
+                contributors = [contributor for contributor in session.get_contributors()]
                 return contributors
                 
-        def render(self,data):
+        def gitlabImplementation(self,request,session):
                 pass
-        def export(self,data):
+                
+        def bitbucketImplementation(self,request,session):
+                pass
+                
+        def render(self,request,response):
+                pass
+        
+        def export(self,request,response):
                 contributors = data
                 today = datetime.datetime.now()
                 

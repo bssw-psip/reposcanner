@@ -6,6 +6,7 @@ import time, datetime
 #import statistics
 import csv
 
+#TODO: Convert to new routine model.
 class GrowthRoutine(OfflineRepositoryAnalysisRoutine):
         """
         Calculates the number of lines of code over time.

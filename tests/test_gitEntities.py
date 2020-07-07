@@ -225,8 +225,39 @@ def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCant():
         githubCreator = gitEntities.GitHubAPISessionCreator()
         compositeCreator.addChild(githubCreator)
         repositoryLocation = gitEntities.RepositoryLocation(url="https://gitlab.com/exaalt/parsplice")
-        assert(not compositeCreator.canHandleRepository(repositoryLocation))    
+        assert(not compositeCreator.canHandleRepository(repositoryLocation))
         
+        
+def test_GitlabAPISessionCreator_isConstructibleByFactory():
+        factory = gitEntities.GitEntityFactory() 
+        githubCreator = factory.createGitlabAPISessionCreator()
+
+def test_GitlabAPISessionCreator_isDirectlyConstructible():
+        gitlabCreator = gitEntities.GitlabAPISessionCreator()
+        
+def test_GitlabAPISessionCreator_canHandleAppropriateRepository():
+        gitlabCreator = gitEntities.GitlabAPISessionCreator()
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://gitlab.com/exaalt/parsplice")
+        assert(gitlabCreator.canHandleRepository(repositoryLocation))
+        
+def test_GitlabAPISessionCreator_rejectsInappropriateRepositories():
+        gitlabCreator = gitEntities.GitlabAPISessionCreator()
+        repositoryLocationGitlab = gitEntities.RepositoryLocation(url="https://github.com/Parallel-NetCDF/PnetCDF")
+        repositoryLocationBitbucket = gitEntities.RepositoryLocation(url="https://bitbucket.org/berkeleylab/picsar")
+        repositoryLocationGarbage = gitEntities.RepositoryLocation(url="garbage")
+        assert(not gitlabCreator.canHandleRepository(repositoryLocationGitlab))
+        assert(not gitlabCreator.canHandleRepository(repositoryLocationBitbucket))
+        assert(not gitlabCreator.canHandleRepository(repositoryLocationGarbage))
+        
+        
+def test_GitlabAPISessionCreator_usernameAndPasswordComboWillTriggerRuntimeError():
+        gitlabCreator = gitEntities.GitlabAPISessionCreator()
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://gitlab.com/repo/owner")
+        credentials = gitEntities.VersionControlPlatformCredentials(username="name",password="password",token=None)
+        with pytest.raises(RuntimeError):
+                gitlabCreator.connect(repositoryLocation,credentials)
+
+
         
         
         

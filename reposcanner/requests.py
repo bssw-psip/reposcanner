@@ -116,6 +116,9 @@ class OfflineRoutineRequest(BaseRequestModel):
                         while parsing workspace directory \
                         {workspaceDirectory}: {exception}".format(workspaceDirectory=self._workspaceDirectory,
                         exception=exception))
+                        
+        def getCloneDirectory(self):
+                return "{workspace}/{repoName}".format(workspace=self._workspaceDirectory,repoName=self.getRepositoryLocation().getRepositoryName())
                 
         def getWorkspaceDirectory(self):
                 return self._workspaceDirectory

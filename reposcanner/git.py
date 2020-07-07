@@ -2,6 +2,8 @@ from enum import Enum,auto
 import re
 from abc import ABC, abstractmethod
 
+
+#TODO: This availability check will be removed. We should expect all dependencies to be installed before we can run Reposcanner.
 try:
         import github as pygithub #For working with the GitHub API.
         pygithubAvailable = True
@@ -15,6 +17,10 @@ try:
 except ImportError as error:
         print("\n***********\nREPOSCANNER WARNING: Failed to import pygit2 (see message below). Clone-based analyses are disabled.\n{message}\n***********\n".format(message=str(error)))
         pygitAvailable = False
+        
+import github as pygithub
+import gitlab as pygitlab
+import pygit2
         
         
 #TODO: APISessionFactory, APISession, etc. to decouple routines from connecting to version control platforms.
@@ -35,6 +41,9 @@ class GitEntityFactory:
                 
         def createGitHubAPISessionCreator(self):
                 return GitHubAPISessionCreator()
+                
+        def createGitlabAPISessionCreator(self):
+                return GitlabAPISessionCreator()
 
 class VCSAPISessionCreator(ABC):
         """
@@ -118,8 +127,27 @@ class GitHubAPISessionCreator(VCSAPISessionCreator):
                         raise RuntimeError("GitHubAPISessionCreator received a VersionControlPlatformCredentials object \
                                 with no username/password or token in it.")
                         
-                repository = self.session.get_repo(repositoryName.getCanonicalName())
+                repository = self.session.get_repo(repositoryLocation.getCanonicalName())
                 return repository
+                
+class GitlabAPISessionCreator(VCSAPISessionCreator):
+        
+        def canHandleRepository(self,repositoryLocation):
+                return repositoryLocation.getVersionControlPlatform() == RepositoryLocation.VersionControlPlatform.GITLAB
+                
+        def connect(self,repositoryLocation,credentials):
+                if credentials.hasTokenAvailable():
+                        session = gitlab.Gitlab(repositoryLocation.getRepositoryURL(), private_token=credentials.getToken())
+                elif credentials.hasUsernameAndPasswordAvailable():
+                        raise RuntimeError("The /session API endpoint used for username/password authentication \
+                        has been removed from GitLab. Personal token authentication is the preferred authentication \
+                        method.")
+                else:
+                        raise RuntimeError("GitlabAPISessionCreator received a VersionControlPlatformCredentials object \
+                               with no username/password or token in it.")
+                
+                repository = session.projects.get(repositoryLocation.getCanonicalName())
+                return repository 
 
 
 class RepositoryLocation:
@@ -278,6 +306,9 @@ class RepositoryLocation:
                 
         def getRepositoryName(self):
                 return self._repositoryName
+                
+        def getCanonicalName(self):
+                return "{owner}/{repo}".format(owner=self._owner,repo=self._repositoryName)
                 
         def isRecognizable(self):
                 return (self._platform != RepositoryLocation.VersionControlPlatform.UNKNOWN and
