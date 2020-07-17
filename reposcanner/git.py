@@ -2,28 +2,10 @@ from enum import Enum,auto
 import re
 from abc import ABC, abstractmethod
 
-
-#TODO: This availability check will be removed. We should expect all dependencies to be installed before we can run Reposcanner.
-try:
-        import github as pygithub #For working with the GitHub API.
-        pygithubAvailable = True
-except ImportError as error:
-        print("\n***********\nREPOSCANNER WARNING: Failed to import pygithub (see message below). GitHub-based analyses are disabled.\n{message}\n***********\n".format(message=str(error)))
-        pygithubAvailable = False
-
-try:
-        import pygit2 #For working with local clones of repositories.
-        pygitAvailable = True
-except ImportError as error:
-        print("\n***********\nREPOSCANNER WARNING: Failed to import pygit2 (see message below). Clone-based analyses are disabled.\n{message}\n***********\n".format(message=str(error)))
-        pygitAvailable = False
-        
 import github as pygithub
 import gitlab as pygitlab
+import bitbucket as pybitbucket
 import pygit2
-        
-        
-#TODO: APISessionFactory, APISession, etc. to decouple routines from connecting to version control platforms.
         
 class GitEntityFactory:
         def createRepositoryLocation(self,url,expectedPlatform=None,expectedHostType=None,expectedOwner=None,expectedRepositoryName=None):
@@ -147,8 +129,17 @@ class GitlabAPISessionCreator(VCSAPISessionCreator):
                                with no username/password or token in it.")
                 
                 repository = session.projects.get(repositoryLocation.getCanonicalName())
-                return repository 
-
+                return repository
+                
+                
+class BitbucketAPISessionCreator(VCSAPISessionCreator):
+        
+        def canHandleRepository(self,repositoryLocation):
+                return repositoryLocation.getVersionControlPlatform() == RepositoryLocation.VersionControlPlatform.BITBUCKET
+                
+        def connect(self,repositoryLocation,credentials):
+                #TODO: Need to figure out how to connect to the Bitbucket API.
+                pass
 
 class RepositoryLocation:
         """
