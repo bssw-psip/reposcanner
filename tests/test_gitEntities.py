@@ -161,6 +161,73 @@ def test_VersionControlPlatformCredentials_providingOnlyUsernameWithoutPasswordO
         with pytest.raises(ValueError):
                 credentials = gitEntities.VersionControlPlatformCredentials(password="password")
                 
+                
+def test_CredentialKeychain_canConstructEmptyKeychain():
+        keychain = gitEntities.CredentialKeychain(credentialsDictionary={})
+        
+def test_CredentialKeychain_anEmptyKeychainHasLengthOfZero():
+        keychain = gitEntities.CredentialKeychain(credentialsDictionary={})
+        assert(len(keychain) == 0)
+        
+def test_CredentialKeychain_canStoreValidCredentials():
+        credentialsDictionary = {}
+        entry = {"url" : "https://github.com/", "token": "ab341m32"}
+        credentialsDictionary["githubplatform"] = entry
+        keychain = gitEntities.CredentialKeychain(credentialsDictionary=credentialsDictionary)
+        assert(len(keychain) == 1)
+        
+def test_CredentialKeychain_thereCanOnlyBeOneCredentialObjectForEachUniqueURL():
+        credentialsDictionary = {}
+        entryA = {"url" : "https://github.com/", "token": "ab341m32"}
+        entryB = {"url" : "https://github.com/", "token": "cak13113"}
+        credentialsDictionary["githubplatform"] = entryA
+        credentialsDictionary["alternative"] = entryB
+        keychain = gitEntities.CredentialKeychain(credentialsDictionary=credentialsDictionary)
+        assert(len(keychain) == 1)
+        
+def test_CredentialKeychain_canMatchRepositoryLocationWithCredentials():
+        credentialsDictionary = {}
+        entry = {"url" : "https://github.com/", "token": "ab341m32"}
+        credentialsDictionary["githubplatform"] = entry
+        keychain = gitEntities.CredentialKeychain(credentialsDictionary=credentialsDictionary)
+        
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://github.com/Parallel-NetCDF/PnetCDF")
+        
+        lookupResult = keychain.lookup(repositoryLocation)
+        assert(lookupResult is not None)
+        assert(type(lookupResult) == gitEntities.VersionControlPlatformCredentials)
+        assert(lookupResult.hasTokenAvailable())
+        assert(lookupResult.getToken() == "ab341m32")
+        
+def test_CredentialKeychain_canFailToFindCredentials():
+        credentialsDictionary = {}
+        entry = {"url" : "https://github.com/", "token": "ab341m32"}
+        credentialsDictionary["githubplatform"] = entry
+        keychain = gitEntities.CredentialKeychain(credentialsDictionary=credentialsDictionary)
+        
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://xgitlab.cels.anl.gov/darshan/darshancode")
+        
+        lookupResult = keychain.lookup(repositoryLocation)
+        assert(lookupResult is None)
+        
+def test_CredentialKeychain_ifMultipleEntriesMatchLongestIsChosen():
+        credentialsDictionary = {}
+        entryA = {"url" : "https://github.com/", "token": "ab341m32"}
+        entryB = {"url" : "https://github.com/Parallel-NetCDF", "token": "q198krq13"}
+        entryC = {"url" : "https://github.com/Parallel-NetCDF/PnetCDF", "token" : "14l1mn8a"}
+        entryD = {"url" : "https://bitbucket.hdfgroup.org/scm/hdffv/hdf5", "token" : "iual1334"}
+        credentialsDictionary["platform"] = entryA
+        credentialsDictionary["project"] = entryB
+        credentialsDictionary["repository"] = entryC
+        credentialsDictionary["unrelated"] = entryD
+        keychain = gitEntities.CredentialKeychain(credentialsDictionary=credentialsDictionary)
+        
+        repositoryLocation = gitEntities.RepositoryLocation(url="https://github.com/Parallel-NetCDF/PnetCDF")
+        
+        lookupResult = keychain.lookup(repositoryLocation)
+        assert(lookupResult is not None)
+        assert(lookupResult.getToken() == "14l1mn8a")
+                
 
 def test_GitHubAPISessionCreator_isConstructibleByFactory():
         factory = gitEntities.GitEntityFactory() 

@@ -310,10 +310,11 @@ class RepositoryLocation:
 
 class VersionControlPlatformCredentials:
         """
-        Holds credentials for logging in to GitHub, which can be done either by supplying a token
-        or a username and password. If the client supplies a username and password, we will use those.
-        Alternatively, if the client supplies a token, then we will use that instead. If all of the above,
-        then the username and password should take precedence.
+        Holds credentials for logging in to a version control platform, 
+        which can be done either by supplying a token or a username and password. 
+        If the client supplies a username and password, we will use those.
+        Alternatively, if the client supplies a token, then we will use that instead. 
+        If all of the above, then the username and password should take precedence.
         """
         def __init__(self,username=None,password=None,token=None):
                 """
@@ -344,5 +345,76 @@ class VersionControlPlatformCredentials:
                 
         def getToken(self):
                 return self._token
+                
+class CredentialKeychain:
+        """
+        A keychain holds a collection of credentials 
+        and can provide credentials on demand.
+        Request objects look up the credentials 
+        they need from a keychain during construction.
+        """
+        
+        def __init__(self,credentialsDictionary):
+                """
+                credentialsDictionary: A dictionary containing credentials information.
+                """
+                self._credentials = {}
+                
+                def safeAccess(dictionary,key):
+                        """A convenience function for error-free access to a dictionary"""
+                        if key in dictionary:
+                                return dictionary[key]
+                        else:
+                                return None
+                
+                for entryName in credentialsDictionary:
+                        entry = credentialsDictionary[entryName]
+                        url = safeAccess(entry,"url")
+                        username = safeAccess(entry,"username")
+                        password = safeAccess(entry,"password")
+                        token = safeAccess(entry,"token")
+                        if url is None:
+                                print("Reposcanner: Warning, the entry {entryName} in \
+                                the credentials file is missing a URL. Skipping.".format(
+                                entryName=entryName))
+                                continue
+                        try:
+                               credentialsObject = VersionControlPlatformCredentials(username,password,token)
+                        except ValueError as error:
+                                print("Reposcanner: Warning, the entry {entryName} in \
+                                the credentials file is missing a username\password \
+                                combo, a token, or both. Skipping.".format(
+                                entryName=entryName))
+                                continue
+                        self._credentials[url] = credentialsObject
+                        
+        def __len__(self):
+                return len(self._credentials)
+                
+        
+        def lookup(self,repositoryLocation):
+                """
+                Fetches a key from a keychain based on a RepositoryLocation's URL.
+                If the URL matches more than one entry (e.g. a platform-wide entry
+                vs. a repository-specific entry), the keychain returns the credentials
+                for the longest, closest match. 
+                
+                repositoryLocation: A RepositoryLocation instance.
+                """
+                repositoryURL = repositoryLocation.getURL()
+                matches = []
+                for url in self._credentials:
+                        #Substring match
+                        if url in repositoryURL:
+                                matches.append(url)
+                if len(matches) == 0:
+                        return None
+                else:
+                        longestMatch = max(matches)
+                        return self._credentials[longestMatch]
+                        
+                        
+
+
   
   
