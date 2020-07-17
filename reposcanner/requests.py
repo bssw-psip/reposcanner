@@ -67,7 +67,8 @@ class OnlineRoutineRequest(BaseRequestModel):
         The base class for requests to routines that use an online API to compute results. 
         Request classes for OnlineRepositoryAnalysisRoutine should inherit from this class.
         """
-        def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None):
+        
+        def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
                 """
                 Additional Parameters:
                 
@@ -76,19 +77,29 @@ class OnlineRoutineRequest(BaseRequestModel):
                 password (@input): A string containing the client's password.
                 
                 token (@input): A string containing a token associated with the user's account.
+                
+                keychain (@input): A CredentialKeychain object. The caller can pass a keychain as an
+                        alternative to passing the username/password/token directly. If a keychain is
+                        passed to the constructor, any other credential inputs are ignored.
                 """
                 super().__init__(repositoryURL,outputDirectory)
                 
                 self._credentials = None
                 factory = gitEntities.GitEntityFactory()
-                try:
-                        self._credentials = factory.createVersionControlPlatformCredentials(
-                                username=username,
-                                password=password,
-                                token=token)
-                except Exception as exception:
-                        self.addError("Encountered an unexpected exception \
-                        while constructing credentials object: {exception}".format(exception=exception))
+                if keychain is None:
+                        try:
+                                self._credentials = factory.createVersionControlPlatformCredentials(
+                                        username=username,
+                                        password=password,
+                                        token=token)
+                        except Exception as exception:
+                                self.addError("Encountered an unexpected exception \
+                                while constructing credentials object: {exception}".format(exception=exception))
+                else:
+                        self._credentials = keychain.lookup(self.getRepositoryLocation())
+                        if self._credentials is None:
+                                 self.addError("Failed to find a matching set of credentials \
+                                 on the keychain corresponding to the URL of the repository.")
                         
         def getCredentials(self):
                 return self._credentials
