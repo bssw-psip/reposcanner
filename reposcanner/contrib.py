@@ -25,6 +25,9 @@ class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
                         return True
                 else:
                         return False
+                        
+        def getRequestType(self):
+                return ContributionPeriodRoutineRequest
         
         def offlineImplementation(self,request,session):
                 contributors = []
@@ -143,8 +146,8 @@ class ContributorListRoutine(OfflineRepositoryAnalysisRoutine):
 
 
 class ContributorAccountListRoutineRequest(OnlineRoutineRequest):
-        def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None):
-                super().__init__(repositoryURL,outputDirectory,username,password,token)
+        def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
+                super().__init__(repositoryURL,outputDirectory,username=username,password=password,token=token,keychain=keychain)
 
 class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
         """
@@ -157,39 +160,59 @@ class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
                 else:
                         return False
         
+        def getRequestType(self):
+                return ContributorAccountListRoutineRequest
+        
         def githubImplementation(self,request,session):
                 contributors = [contributor for contributor in session.get_contributors()]
-                return contributors
+                output = []
+                for contributor in contributors:
+                        entry = {}
+                        entry["username"] = contributor.login
+                        entry["name"] = contributor.name
+                        entry["emails"] = [contributor.email]
+                        output.append(entry)
+                return output
                 
         def gitlabImplementation(self,request,session):
-                pass
+                contributors = [contributor for contributor in session.users.list()]
+                output = []
+                for contributor in contributors:
+                        entry = {}
+                        entry["username"] = contributor.username
+                        entry["name"] = contributor.name
+                        entry["emails"] = [user.emails.list()]
+                        output.append(entry)
+                return output
                 
-        def bitbucketImplementation(self,request,session):
-                pass
+        #def bitbucketImplementation(self,request,session):
+        #        pass
                 
         def render(self,request,response):
-                pass
+                if not response.wasSuccessful():
+                        return None
         
         def export(self,request,response):
-                contributors = data
+                if not response.wasSuccessful():
+                        return None
+                contributors = response.getAttachments()
                 today = datetime.datetime.now()
                 
                 with open('{outputDirectory}/{repoName}_contributorAccounts.csv'.format(
-                        outputDirectory=self.outputDirectory,repoName=self.repositoryName.getRepositoryName()),'w', newline='\n') as contributorAccountsFile:
+                        outputDirectory=request.getOutputDirectory(),repoName=request.getRepositoryLocation().getRepositoryName()),'w', newline='\n') as contributorAccountsFile:
                         
                         contributionWriter = csv.writer(contributorAccountsFile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
                         contributionWriter.writerow(["Date/Time of Analysis", "{dateOfAnalysis}".format(dateOfAnalysis=str(today))])
-                        contributionWriter.writerow(["Repository", "{canonicalName}".format(canonicalName=self.repositoryName.getCanonicalName())])
+                        contributionWriter.writerow(["Repository", "{canonicalName}".format(canonicalName=request.getRepositoryLocation.getCanonicalName())])
                         
                         
                         contributionWriter.writerow([
                                 "Login Name",
                                 "Actual Name",
-                                "Email",
-                                "URL",
+                                "Email(s)"
                         ])
                         
                         for contributor in contributors:
-                                contributionWriter.writerow([contributor.login,contributor.name,contributor.email,contributor.url])                       
+                                contributionWriter.writerow([contributor["username"],contributor["name"],contributor["emails"].join(';')])                       
                         
 

@@ -16,6 +16,13 @@ class RepositoryAnalysisRoutine(ABC):
                 """
                 pass
         
+        @abstractmethod      
+        def getRequestType(self):
+                """
+                Returns the class object for the routine's companion request type.
+                """
+                pass
+        
         @abstractmethod
         def execute(self,request):
                 """
