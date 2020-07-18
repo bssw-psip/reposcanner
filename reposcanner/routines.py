@@ -81,6 +81,7 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         def __init__(self):
                 pass
                 
+                
         def execute(self,request):
                 """
                 The Offline routine execute() method delegates responsibility for performing the routine to
@@ -137,7 +138,6 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 compositeCreator.addChild(githubCreator)
                 compositeCreator.addChild(gitlabCreator)
                 self._sessionCreator = compositeCreator
-                pass
                 
         def execute(self,request):
                 """

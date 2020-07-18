@@ -68,6 +68,14 @@ class OnlineRoutineRequest(BaseRequestModel):
         Request classes for OnlineRepositoryAnalysisRoutine should inherit from this class.
         """
         
+        @classmethod      
+        def requiresOnlineAPIAccess(cls):
+                """
+                Tells the caller whether this request requires access to an online
+                version control API.
+                """
+                return True
+        
         def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
                 """
                 Additional Parameters:
@@ -109,6 +117,15 @@ class OfflineRoutineRequest(BaseRequestModel):
         The base class for requests to routines that operate on an offline clone to compute results. 
         Request classes for OfflineRepositoryAnalysisRoutine should inherit from this class.
         """
+        
+        @classmethod      
+        def requiresOnlineAPIAccess(cls):
+                """
+                Tells the caller whether this request requires access to an online
+                version control API.
+                """
+                return False
+        
         def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
                 """
                 Additional Parameters:
