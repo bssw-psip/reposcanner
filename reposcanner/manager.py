@@ -1,7 +1,8 @@
-from reposcanner.contrib import ContributionPeriodRoutine
+from reposcanner.contrib import ContributorAccountListRoutine
 from reposcanner.git import CredentialKeychain
 from reposcanner.response import ResponseFactory
-import datetime, curses #TODO: I think I'll use curses for rendering to the console.
+import datetime, logging, curses #TODO: I think I'll use curses for rendering to the console.
+from tqdm import tqdm #For progress checking in non-GUI mode.
 
 
 class ManagerTask:
@@ -9,7 +10,7 @@ class ManagerTask:
         This is a simple wrapper around requests and responses that makes it
         easier for the frontend to display execution progress.
         """
-        def __init__(projectID,projectName,url,request):
+        def __init__(self,projectID,projectName,url,request):
                 self._projectID = projectID
                 self._projectName = projectName
                 self._url = url
@@ -30,13 +31,16 @@ class ManagerTask:
                                 selectedRoutine = routine
                                 break
                 if selectedRoutine is not None:      
-                        self._response = selectedRoutine.run(request)
+                        self._response = selectedRoutine.run(self._request)
                 else:
                         responseFactory = ResponseFactory()
                         self._response = responseFactory.createFailureResponse(
                                 message= "No routine was found that could \
                                 execute the request ({requestType}).".format(
                                 requestType=type(request)))
+                                
+        def getResponse(self):
+                return self._response
                         
         def hasReceivedResponse(self):
                 return self._response is not None
@@ -47,7 +51,7 @@ class ReposcannerRoutineManager:
         of RepositoryAnalysisRoutines. The frontend creates an instance of this manager and
         passes the necessary repository and credential data to it.
         """
-        def __init__(self,outputDirectory="./",workspaceDirectory="./"):
+        def __init__(self,outputDirectory="./",workspaceDirectory="./",gui=False):
                 self._routines = []
                 self._initializeRoutines()
                 self._startTime = None
@@ -55,11 +59,12 @@ class ReposcannerRoutineManager:
                 self._keychain = None
                 self._outputDirectory = outputDirectory
                 self._workspaceDirectory = workspaceDirectory
+                self._guiModeEnabled = gui
                 
         def _initializeRoutines(self):
                 """Constructs RepositoryAnalysisRoutine objects that belong to the manager."""
-                contributionPeriodRoutine = ContributionPeriodRoutine()
-                self._routines.append(contributionPeriodRoutine)
+                contributorAccountListRoutine = ContributorAccountListRoutine()
+                self._routines.append(contributorAccountListRoutine)
                 
         def _buildTask(self,projectID,projectName,url,routine):
                 """Constructs a task to hold a request/response pair."""
@@ -88,7 +93,7 @@ class ReposcannerRoutineManager:
                                    projectName = ""
                            
                            for url in projectEntry["urls"]:
-                                   for routine in routines:
+                                   for routine in self._routines:
                                            task = self._buildTask(projectID,projectName,url,routine)
                                            self._tasks.append(task)
                                            
@@ -100,6 +105,17 @@ class ReposcannerRoutineManager:
                 #TODO
                 #for task in tasks: task.process(self._routines)
                 #refresh console with updates on progress.
+                #TMP TMP TMP
+                for task in tqdm(self._tasks):
+                        task.process(self._routines)
+                        response = task.getResponse()
+                        if response.wasSuccessful():
+                                print("Response: Success")
+                        else:
+                                print("Response: Failure")
+                        print("Message: {message}".format(message=response.getMessage()))
+                        if response.hasAttachments():
+                                print(response.getAttachments())
                 
                 
         

@@ -1,5 +1,5 @@
 from enum import Enum,auto
-import re
+import re, urllib3
 from abc import ABC, abstractmethod
 
 import github as pygithub
@@ -91,7 +91,7 @@ class GitHubAPISessionCreator(VCSAPISessionCreator):
         def canHandleRepository(self,repositoryLocation):
                 return repositoryLocation.getVersionControlPlatform() == RepositoryLocation.VersionControlPlatform.GITHUB
         
-        def connect(repositoryLocation,credentials):
+        def connect(self,repositoryLocation,credentials):
                 status_forcelist = (500, 502, 504) #These status codes are caused by random GitHub errors which should trigger a retry.
                 totalAllowedRetries = 3
                 allowedReadErrorRetries = 3
@@ -106,10 +106,10 @@ class GitHubAPISessionCreator(VCSAPISessionCreator):
                 elif credentials.hasTokenAvailable():
                         session = pygithub.Github(credentials.getToken(),retry=retryHandler)
                 else:
-                        raise RuntimeError("GitHubAPISessionCreator received a VersionControlPlatformCredentials object \
-                                with no username/password or token in it.")
+                        raise RuntimeError("GitHubAPISessionCreator received a VersionControlPlatformCredentials object"
+                                "with no username/password or token in it.")
                         
-                repository = self.session.get_repo(repositoryLocation.getCanonicalName())
+                repository = session.get_repo(repositoryLocation.getCanonicalName())
                 return repository
                 
 class GitlabAPISessionCreator(VCSAPISessionCreator):
@@ -121,12 +121,12 @@ class GitlabAPISessionCreator(VCSAPISessionCreator):
                 if credentials.hasTokenAvailable():
                         session = gitlab.Gitlab(repositoryLocation.getRepositoryURL(), private_token=credentials.getToken())
                 elif credentials.hasUsernameAndPasswordAvailable():
-                        raise RuntimeError("The /session API endpoint used for username/password authentication \
-                        has been removed from GitLab. Personal token authentication is the preferred authentication \
-                        method.")
+                        raise RuntimeError("The /session API endpoint used for username/password authentication"
+                        "has been removed from GitLab. Personal token authentication is the preferred authentication "
+                        "method.")
                 else:
-                        raise RuntimeError("GitlabAPISessionCreator received a VersionControlPlatformCredentials object \
-                               with no username/password or token in it.")
+                        raise RuntimeError("GitlabAPISessionCreator received a VersionControlPlatformCredentials object"
+                               "with no username/password or token in it.")
                 
                 repository = session.projects.get(repositoryLocation.getCanonicalName())
                 return repository
@@ -359,6 +359,12 @@ class CredentialKeychain:
                 credentialsDictionary: A dictionary containing credentials information.
                 """
                 self._credentials = {}
+                
+                if type(credentialsDictionary) != dict:
+                        raise TypeError("CredentialKeychain constructor expected to receive \
+                        a dictionary object, but got a {wrongType} instead!".format(
+                        wrongType=type(credentialsDictionary)))
+                        
                 
                 def safeAccess(dictionary,key):
                         """A convenience function for error-free access to a dictionary"""

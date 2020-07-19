@@ -2,6 +2,7 @@ import pytest
 from reposcanner.git import GitEntityFactory
 import reposcanner.routines as routines
 import reposcanner.requests as requests
+import reposcanner.response as response
 
 def test_OnlineRepositoryAnalysisRoutine_isConstructibleWithMockImplementation(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryAnalysisRoutine,__abstractmethods__=set())
@@ -77,14 +78,30 @@ def test_OnlineRepositoryAnalysisRoutine_inabilityOfSessionCreatorToHandleReposi
         
         gitEntityFactory = GitEntityFactory()
         emptyAPICreator = gitEntityFactory.createVCSAPISessionCompositeCreator()
-        routines.OnlineRepositoryAnalysisRoutine.__compositeCreator = emptyAPICreator
+        genericRoutine.sessionCreator = emptyAPICreator
         
         genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         response = genericRoutine.run(genericRequest)
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
-        assert(response.getMessage() =="The routine's VCS API session creator is not able \
-                        to handle the platform of the repository.")
+        assert("to handle the platform of the repository" in response.getMessage())
+        
+        
+def test_OnlineRepositoryAnalysisRoutine_sessionCreatorSupportsGitHub(mocker):
+        mocker.patch.multiple(routines.OnlineRepositoryAnalysisRoutine,__abstractmethods__=set())
+        genericRoutine = routines.OnlineRepositoryAnalysisRoutine()
+        sessionCreator = genericRoutine.sessionCreator
+        genericGitHubRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        assert(sessionCreator.canHandleRepository(genericGitHubRequest.getRepositoryLocation()))
+        
+def test_OnlineRepositoryAnalysisRoutine_sessionCreatorSupportsGitlab(mocker):
+        mocker.patch.multiple(routines.OnlineRepositoryAnalysisRoutine,__abstractmethods__=set())
+        genericRoutine = routines.OnlineRepositoryAnalysisRoutine()
+        sessionCreator = genericRoutine.sessionCreator
+        genericGitlabRequest = requests.BaseRequestModel(repositoryURL="https://gitlab.com/owner/repo",outputDirectory="./")
+        assert(sessionCreator.canHandleRepository(genericGitlabRequest.getRepositoryLocation()))
+
+
                         
 def test_OnlineRepositoryAnalysisRoutine_defaultGitHubImplementationReturnsFailedResponse(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryAnalysisRoutine,__abstractmethods__=set())

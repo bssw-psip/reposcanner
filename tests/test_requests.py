@@ -112,8 +112,6 @@ def test_OnlineRoutineRequest_doesNotSwitchToOtherCredentialsIfKeychainLacksThem
                 token = "qq4132c",
                 keychain = keychain)
         assert(request.hasErrors())
-                       
-        
         
 def test_OnlineRoutineRequest_badCredentialsMeansError():
         requestA = requests.OnlineRoutineRequest(repositoryURL="https://github.com/owner/repo",

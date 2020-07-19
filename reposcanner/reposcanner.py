@@ -1,7 +1,8 @@
-import argparse, os
 from reposcanner.manager import ReposcannerRoutineManager
+import argparse, os, logging
 import yaml
 
+logging.basicConfig(filename='reposcanner.log',level=logging.DEBUG)
 
 def loadYAMLFile(filePath):
         """
@@ -14,7 +15,7 @@ def loadYAMLFile(filePath):
                 Shutting down as a precaution.".format(path=filePath))
         with open(filePath) as f:
                 try:
-                        contents = yaml.safe_load(filePath)
+                        contents = yaml.safe_load(f)
                 except yaml.YAMLError as exception:
                         print("While loading a YAML file ({path}), Reposcanner encountered \
                         an exception via PyYAML.".format(path=filePath))
@@ -48,6 +49,8 @@ if __name__ == "__main__":
                 By default this is done in the directory from which this script is run.')
         parser.add_argument('--workspaceDirectory',action='store',type=str,default='./',help='The path where Reposcanner should make clones of repositories. \
                 By default this is done in the directory from which this script is run.')
+        parser.add_argument('--gui',action='store_true',help="Enables GUI mode, which provides a dynamically refreshed console view of \
+        Reposcanner's progress.")
         args = parser.parse_args()
         scannerMain(args)
         

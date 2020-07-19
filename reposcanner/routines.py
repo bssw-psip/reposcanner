@@ -108,7 +108,7 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                         except Exception as e:
                                 return responseFactory.createFailureResponse(
                                     message="OfflineRepositoryAnalysisRoutine Encountered an unexpected exception.",
-                                    attachments=[exception])
+                                    attachments=[e])
                 
         def offlineImplementation(self,request,session):
                 """
@@ -121,8 +121,8 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 """
                 responseFactory = ResponseFactory()
                 return responseFactory.createFailureResponse(
-                        message="This routine has no implementation available \
-                        to handle an offline clone of a repository.") 
+                        message="This routine has no implementation available"
+                        "to handle an offline clone of a repository.") 
         
                       
 class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
@@ -133,7 +133,7 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
         def __init__(self):
                 factory = GitEntityFactory()
                 compositeCreator = factory.createVCSAPISessionCompositeCreator()
-                githubCreator = factory.createVCSAPISessionCompositeCreator()
+                githubCreator = factory.createGitHubAPISessionCreator()
                 gitlabCreator = factory.createGitlabAPISessionCreator()
                 compositeCreator.addChild(githubCreator)
                 compositeCreator.addChild(gitlabCreator)
@@ -155,8 +155,9 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                         attachments=request.getErrors())
                 elif not self._sessionCreator.canHandleRepository(request.getRepositoryLocation()):
                         return responseFactory.createFailureResponse(
-                        message="The routine's VCS API session creator is not able \
-                        to handle the platform of the repository.")
+                        message="The routine's VCS API session creator is not able "
+                        "to handle the platform of the repository ({platform}).".format(
+                                platform=request.getRepositoryLocation().getVersionControlPlatform()))
                 else:
                         platform = request.getRepositoryLocation().getVersionControlPlatform()
                         repositoryLocation = request.getRepositoryLocation()
@@ -179,7 +180,19 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                         except Exception as e:
                                 return responseFactory.createFailureResponse(
                                     message="OnlineRepositoryAnalysisRoutine Encountered an unexpected exception.",
-                                    attachments=[exception])
+                                    attachments=[e])
+                                    
+        @property
+        def sessionCreator(self):
+                """We expose this attribute for testing/validation purposes. Normally
+                the session creator isn't touched after construction."""
+                return self._sessionCreator
+                
+        @sessionCreator.setter
+        def sessionCreator(self, sessionCreator):
+                """We expose this attribute for testing/validation purposes. Normally
+                the session creator isn't touched after construction."""
+                self._sessionCreator = sessionCreator
                         
         
         def githubImplementation(self,request,session):

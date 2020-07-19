@@ -176,6 +176,11 @@ def test_CredentialKeychain_canStoreValidCredentials():
         keychain = gitEntities.CredentialKeychain(credentialsDictionary=credentialsDictionary)
         assert(len(keychain) == 1)
         
+def test_CredentialKeychain_credentialsMustBeInDictionary():
+        credentialsDictionary = []
+        with pytest.raises(TypeError):
+                keychain = gitEntities.CredentialKeychain(credentialsDictionary=credentialsDictionary)
+        
 def test_CredentialKeychain_thereCanOnlyBeOneCredentialObjectForEachUniqueURL():
         credentialsDictionary = {}
         entryA = {"url" : "https://github.com/", "token": "ab341m32"}
