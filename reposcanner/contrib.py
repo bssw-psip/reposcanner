@@ -1,5 +1,6 @@
 from reposcanner.routines import OfflineRepositoryAnalysisRoutine,OnlineRepositoryAnalysisRoutine
 from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest
+from reposcanner.response import ResponseFactory
 import pygit2
 
 #import matplotlib.pyplot as plt
@@ -162,17 +163,26 @@ class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
         
         def getRequestType(self):
                 return ContributorAccountListRoutineRequest
+                
+        def _replaceNoneWithEmptyString(self,value):
+                if value is None:
+                        return ""
+                else:
+                        return value
         
         def githubImplementation(self,request,session):
                 contributors = [contributor for contributor in session.get_contributors()]
                 output = []
                 for contributor in contributors:
                         entry = {}
-                        entry["username"] = contributor.login
-                        entry["name"] = contributor.name
-                        entry["emails"] = [contributor.email]
+                        entry["username"] = self._replaceNoneWithEmptyString(contributor.login)
+                        entry["name"] = self._replaceNoneWithEmptyString(contributor.name)
+                        entry["emails"] = [self._replaceNoneWithEmptyString(contributor.email)]
                         output.append(entry)
-                return output
+                
+                responseFactory = ResponseFactory()
+                return responseFactory.createSuccessResponse(
+                        message="Completed!",attachments=output)
                 
         def gitlabImplementation(self,request,session):
                 contributors = [contributor for contributor in session.users.list()]
@@ -183,7 +193,9 @@ class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
                         entry["name"] = contributor.name
                         entry["emails"] = [user.emails.list()]
                         output.append(entry)
-                return output
+                responseFactory = ResponseFactory()
+                return responseFactory.createSuccessResponse(
+                        message="Completed!",attachments=output)
                 
         #def bitbucketImplementation(self,request,session):
         #        pass
@@ -203,7 +215,7 @@ class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
                         
                         contributionWriter = csv.writer(contributorAccountsFile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
                         contributionWriter.writerow(["Date/Time of Analysis", "{dateOfAnalysis}".format(dateOfAnalysis=str(today))])
-                        contributionWriter.writerow(["Repository", "{canonicalName}".format(canonicalName=request.getRepositoryLocation.getCanonicalName())])
+                        contributionWriter.writerow(["Repository", "{canonicalName}".format(canonicalName=request.getRepositoryLocation().getCanonicalName())])
                         
                         
                         contributionWriter.writerow([
@@ -213,6 +225,6 @@ class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
                         ])
                         
                         for contributor in contributors:
-                                contributionWriter.writerow([contributor["username"],contributor["name"],contributor["emails"].join(';')])                       
+                                contributionWriter.writerow([contributor["username"],contributor["name"], ';'.join(contributor["emails"])])                       
                         
 

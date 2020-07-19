@@ -35,7 +35,7 @@ def scannerMain(args):
         repositoryDictionary = loadYAMLFile(args.repositories)
         credentialsDictionary = loadYAMLFile(args.credentials)
         
-        manager = ReposcannerRoutineManager(outputDirectory=args.outputDirectory,workspaceDirectory=args.workspaceDirectory)
+        manager = ReposcannerRoutineManager(outputDirectory=args.outputDirectory,workspaceDirectory=args.workspaceDirectory,gui=args.gui)
         manager.run(repositoryDictionary=repositoryDictionary,credentialsDictionary=credentialsDictionary)
         
         

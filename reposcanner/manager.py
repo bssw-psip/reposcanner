@@ -1,7 +1,7 @@
 from reposcanner.contrib import ContributorAccountListRoutine
 from reposcanner.git import CredentialKeychain
 from reposcanner.response import ResponseFactory
-import datetime, logging, curses #TODO: I think I'll use curses for rendering to the console.
+import datetime, logging, curses
 from tqdm import tqdm #For progress checking in non-GUI mode.
 
 
@@ -102,20 +102,50 @@ class ReposcannerRoutineManager:
                 self._startTime = datetime.datetime.today()
                 self._prepareTasks(repositoryDictionary,credentialsDictionary)
                 
-                #TODO
-                #for task in tasks: task.process(self._routines)
-                #refresh console with updates on progress.
-                #TMP TMP TMP
+                if not self._guiModeEnabled:
+                        self.executeWithNoGUI()
+                else:
+                        self.executeWithGUI()
+                        
+        def executeWithNoGUI(self):
                 for task in tqdm(self._tasks):
                         task.process(self._routines)
                         response = task.getResponse()
                         if response.wasSuccessful():
                                 print("Response: Success")
+                                print("Message: {message}".format(message=response.getMessage()))
                         else:
                                 print("Response: Failure")
-                        print("Message: {message}".format(message=response.getMessage()))
-                        if response.hasAttachments():
-                                print(response.getAttachments())
+                                print("Message: {message}".format(message=response.getMessage()))
+                                
+        def executeWithGUI(self):
+                
+                def centerTextPosition(text,windowWidth):
+                        half_length_of_text = int(len(text) / 2)
+                        middle_column = int(windowWidth / 2)
+                        x_position = middle_column - half_length_of_text
+                        return x_position
+                
+                screen = curses.initscr()
+                screenHeight,screenWidth = screen.getmaxyx()
+                
+                header = curses.newwin(3, screenWidth, 0, 0)
+                title = "🔎 Reposcanner: The IDEAS-ECP PSIP Team Repository Scanner 🔎"
+                header.border(2)
+                header.addstr(1,centerTextPosition(title,screenWidth),title,curses.A_BOLD)
+                header.refresh()
+                
+                #for currentTask in self._tasks:
+                #        break
+                #        currentTask.process(self._routines)
+                #        screen.refresh()
+                
+                curses.napms(5000)
+                #screen.clear()
+                curses.endwin()
+                
+                        
+                        
                 
                 
         
