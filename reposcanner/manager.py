@@ -39,11 +39,46 @@ class ManagerTask:
                                 execute the request ({requestType}).".format(
                                 requestType=type(request)))
                                 
-        def getResponse(self):
-                return self._response
+        def getDescription(self):
+                """
+                Generates a string that describes the task.
+                """
+                if self._projectName is not None and len(self._projectName) > 0:
+                        nameOrID = self._projectName
+                else:
+                        nameOrID = self._projectID
                         
-        def hasReceivedResponse(self):
-                return self._response is not None
+                repositoryLocation = self._request.getRepositoryLocation()
+                if repositoryLocation.isRecognizable():
+                        canonicalRepoNameOrUrl = repositoryLocation.getCanonicalName()
+                else:
+                        canonicalRepoNameOrUrl = self._url
+                
+                return "{nameOrID} : {repoNameOrURL} --> {requestType}".format(
+                        nameOrID = nameOrID,
+                        repoNameOrURL = canonicalRepoNameOrUrl,
+                        requestType = self._request.__class__.__name__
+                )
+                                
+        def getResponseDescription(self):
+                repositoryLocation = self._request.getRepositoryLocation()
+                if repositoryLocation.isRecognizable():
+                        canonicalRepoNameOrUrl = repositoryLocation.getCanonicalName()
+                else:
+                        canonicalRepoNameOrUrl = self._url
+                
+                if self._response.wasSuccessful():
+                        return "✅ ({repoNameOrURL} --> {requestType}) was successful!".format(
+                                repoNameOrURL = canonicalRepoNameOrUrl,
+                                requestType = self._request.__class__.__name__
+                        )
+                else:
+                        return "❌ ({repoNameOrURL} --> {requestType}) failed. Reason: {reason}".format(
+                                repoNameOrURL = canonicalRepoNameOrUrl,
+                                requestType = self._request.__class__.__name__,
+                                reason=self._response.getMessage()
+                        )
+                        
 
 class ReposcannerRoutineManager:
         """
@@ -107,6 +142,7 @@ class ReposcannerRoutineManager:
                 else:
                         self.executeWithGUI()
                         
+                        
         def executeWithNoGUI(self):
                 for task in tqdm(self._tasks):
                         task.process(self._routines)
@@ -119,30 +155,97 @@ class ReposcannerRoutineManager:
                                 print("Message: {message}".format(message=response.getMessage()))
                                 
         def executeWithGUI(self):
-                
                 def centerTextPosition(text,windowWidth):
                         half_length_of_text = int(len(text) / 2)
                         middle_column = int(windowWidth / 2)
                         x_position = middle_column - half_length_of_text
                         return x_position
+                        
+                try:
+                        screen = curses.initscr()
+                        screenHeight,screenWidth = screen.getmaxyx()
                 
-                screen = curses.initscr()
-                screenHeight,screenWidth = screen.getmaxyx()
+                        header = curses.newwin(3, screenWidth, 0, 0)
+                        title = "🔎 Reposcanner: The IDEAS-ECP PSIP Team Repository Scanner 🔎"
+                        header.border(2)
+                        header.addstr(1,centerTextPosition(title,screenWidth),title,curses.A_BOLD)
+                        header.refresh()
                 
-                header = curses.newwin(3, screenWidth, 0, 0)
-                title = "🔎 Reposcanner: The IDEAS-ECP PSIP Team Repository Scanner 🔎"
-                header.border(2)
-                header.addstr(1,centerTextPosition(title,screenWidth),title,curses.A_BOLD)
-                header.refresh()
+                        footer = curses.newwin(3, screenWidth, screenHeight-3, 0)
+                        footer.border(2)
+                        footer.refresh()
                 
-                #for currentTask in self._tasks:
-                #        break
-                #        currentTask.process(self._routines)
-                #        screen.refresh()
+                        upcomingRequestsWindowHeight = screenHeight//4
+                        upcomingRequestsWindowWidth = int(screenWidth * 0.8)
+                        upcomingRequestsWindow = curses.newwin(upcomingRequestsWindowHeight, upcomingRequestsWindowWidth, 5, int(screenWidth*0.1))
+                        upcomingRequestsWindow.border(2)
+                        upcomingRequestsWindow.refresh()
+                        
+                        messageWindowHeight = screenHeight//4
+                        messageWindowWidth = int(screenWidth * 0.8)
+                        messageWindow = curses.newwin(upcomingRequestsWindowHeight, upcomingRequestsWindowWidth, 5+4+upcomingRequestsWindowHeight, int(screenWidth*0.1))
+                        messageWindow.border(2)
+                        messageWindow.refresh()
+                        messages = []
+                        messageLimit = messageWindowHeight-4
+                        messages.insert(0,"Reposcanner Initalized")
                 
-                curses.napms(5000)
-                #screen.clear()
-                curses.endwin()
+                
+                        header = curses.newwin(3, screenWidth, 0, 0)
+                
+                        for i in range(len(self._tasks)):
+                                currentTask = self._tasks[i]
+                                
+                                
+                                #Keep header visible
+                                header.border(2)
+                                header.addstr(1,centerTextPosition(title,screenWidth),title,curses.A_BOLD)
+                                header.refresh()
+                                
+                                #Show upcoming requests
+                                upcomingTasks = self._tasks[i:min(i+upcomingRequestsWindowHeight-4,len(self._tasks)-1)]
+                                upcomingRequestsTitle = "Upcoming Requests"
+                                upcomingRequestsWindow.addstr(1,centerTextPosition(upcomingRequestsTitle,upcomingRequestsWindowWidth),upcomingRequestsTitle,curses.A_BOLD)
+                                for j in range(len(upcomingTasks)):
+                                        description = upcomingTasks[j].getDescription()
+                                        description = (description[:upcomingRequestsWindowWidth-3] + '..') if len(description) > upcomingRequestsWindowWidth-3 else description
+                                        upcomingRequestsWindow.addstr(j+2,1,upcomingTasks[j].getDescription())
+                                upcomingRequestsWindow.border(2)
+                                upcomingRequestsWindow.refresh()
+                                
+                                #Show response messages
+                                messageWindow.refresh()
+                                messageWindow.clear()
+                                messageWindowTitle = "Messages"
+                                messageWindow.addstr(1,centerTextPosition(messageWindowTitle,messageWindowWidth),messageWindowTitle,curses.A_BOLD)
+                                messages = messages[0:min(messageLimit,len(messages))]
+                                for j in range(len(messages)):
+                                        message = messages[j]
+                                        message = (message[0:messageWindowWidth-3] + '..') if len(message) > messageWindowWidth-3 else message
+                                        messageWindow.addstr(j+2,2,message)
+                                messageWindow.border(2)
+                                messageWindow.refresh()
+                                
+                                total = len(self._tasks)
+                                description=currentTask.getDescription()
+                                taskDescription = "(⏳ {i}/{total}) Processing: {description}".format(i=i+1,
+                                total=total,
+                                description=description)
+                        
+                                footer.addstr(1,4,taskDescription,curses.A_BOLD)
+                                footer.border(2)
+                                footer.refresh()
+                                currentTask.process(self._routines)
+                                messages.insert(0,currentTask.getResponseDescription())
+                                screen.refresh()
+                                
+                        curses.napms(5000)
+                except Exception as exception:
+                        raise exception
+                finally:
+                        screen.clear()
+                        curses.endwin()
+                        
                 
                         
                         

@@ -189,8 +189,8 @@ class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
                 output = []
                 for contributor in contributors:
                         entry = {}
-                        entry["username"] = contributor.username
-                        entry["name"] = contributor.name
+                        entry["username"] = self._replaceNoneWithEmptyString(contributor.username)
+                        entry["name"] = self._replaceNoneWithEmptyString(contributor.name)
                         entry["emails"] = [user.emails.list()]
                         output.append(entry)
                 responseFactory = ResponseFactory()
