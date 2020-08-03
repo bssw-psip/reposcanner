@@ -1,4 +1,6 @@
 # NOTES: not including anything saying "forked from ..." unless it's clear the fork was a permanent fork
+# Where does https://github.com/ginkgo-project fit?
+# or https://github.com/LLNL/conduit
 ADTRO2:
   name: IDEAS Productivity
   urls: 
@@ -403,7 +405,7 @@ STPM10:
 STPM11:
   name: PaRSEC
   urls:
-# - http://bitbucket.org/bosilca/dague.public
+# - http://bitbucket.org/bosilca/dague.public # merged with parsec
   - https://bitbucket.org/icldistcomp/parsec
   - https://bitbucket.org/icldistcomp/dplasma
 STPM15:

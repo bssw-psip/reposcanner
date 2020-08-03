@@ -1,0 +1,1238 @@
+STPR01-Programming Models and Runtimes Software Development Kit:
+  code: 2.3.1.01
+  members:
+  - name: Sameer Shende
+    affiliation: University of Oregon
+  - name: Kevin Huck
+    affiliation: University of Oregon
+  - name: Wyatt Spear
+    affiliation: University of Oregon
+  - name: Luke Peyralans
+    affiliation: University of Oregon
+  - name: Camille Coti
+    affiliation: University of Oregon
+  - name: Robert Yelle
+    affiliation: University of Oregon
+
+STPM09-Exascale MPI:
+  code: 2.3.1.07
+  members:
+  - name: Pavan Balaji
+    affiliation: Argonne National Laboratory
+  - name: Yanfei Guo
+    affiliation: Argonne National Laboratory
+  - name: Rob Latham
+    affiliation: Argonne National Laboratory
+  - name: Kenneth Raffenetti
+    affiliation: Argonne National Laboratory
+  - name: Unknown
+    affiliation: Argonne National Laboratory
+    email: snir@illinois.edu
+  - name: Min Si
+    affiliation: Argonne National Laboratory
+  - name: Giuseppe Congiu
+    affiliation: Argonne National Laboratory
+  - name: Hui Zhou
+    affiliation: Argonne National Laboratory
+  - name: Rohit Zambre
+    affiliation: Argonne National Laboratory
+  - name: Kaiming Ouyang
+    affiliation: Argonne National Laboratory
+  - name: Abdelhalim Amer
+    affiliation: Argonne National Laboratory
+  - name: Neelima Bayyapu
+    affiliation: Argonne National Laboratory
+  - name: Kavitha Madhu
+    affiliation: Argonne National Laboratory
+  - name: Lena Oden
+    affiliation: Argonne National Laboratory
+
+STPM10-Legion: Enhancing and Hardening the Legion Programming System:
+  code: 2.3.1.08
+  members:
+  - name: Pat McCormick
+    affiliation: Los Alamos National Laboratory
+  - name: Alex Aiken
+    affiliation: Stanford University
+  - name: Pavan Balaji
+    affiliation: Argonne National Laboratory
+  - name: Sangmin Seo
+    affiliation: Argonne National Laboratory
+  - name: Wei Wu
+    affiliation: Los Alamos National Laboratory
+  - name: Nirmal Prajapati
+    affiliation: Los Alamos National Laboratory
+  - name: Zhihao Jia
+    affiliation: Stanford University
+  - name: Amalee Wilson
+    affiliation: Stanford University
+  - name: Karthik Murthy
+    affiliation: Stanford University
+
+STPM11-ParSEC: Distributed Tasking for Exascale:
+  code: 2.3.1.09
+  members:
+  - name: Jack Dongarra
+    affiliation: University of Tennessee, Knoxville
+  - name: Earl Carr
+    affiliation: University of Tennessee, Knoxville
+  - name: George Bosilca
+    affiliation: University of Tennessee, Knoxville
+  - name: Aurélien Bouteiller
+    affiliation: University of Tennessee, Knoxville
+  - name: Thomas Herault
+    affiliation: University of Tennessee, Knoxville
+  - name: Nuria Losada
+    affiliation: University of Tennessee, Knoxville
+
+Pagoda: UPC++/GASNet for Lightweight Communication and Global Address Space Support:
+  code: 2.3.1.14
+  members:
+  - name: Paul Hargrove
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Dan Bonachea
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Daniel Waters
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Amir Kamil
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Jonathan "Max" Grossman
+    affiliation: (contractor)
+
+STSS07-SICM: Simplified Interface to Complex Memory:
+  code: 2.3.1.16
+  members:
+  - name: Michael Lang
+    affiliation: Los Alamos National Laboratory
+  - name: Brittney Vigil
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: lionkov@lanl.gov
+  - name: Jason Lee
+    affiliation: Los Alamos National Laboratory
+  - name: Maya Gokhale
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Keita Iwabuchi
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Roger Pearce
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Ursula Henderson
+    affiliation: Oak Ridge National Laboratory
+  - name: Donna Isham
+    affiliation: Oak Ridge National Laboratory
+  - name: Terry Jones
+    affiliation: Oak Ridge National Laboratory
+  - name: Ben Olson
+    affiliation: Oak Ridge National Laboratory/ UTK
+  - name: Simon Hammond
+    affiliation: Sandia National Laboratories
+  - name: Gwen Voskuilen
+    affiliation: Sandia National Laboratories
+
+OMPI-X: Open MPI for Exascale:
+  code: 2.3.1.17
+  members:
+  - name: David Bernholdt
+    affiliation: Oak Ridge National Laboratory
+  - name: Alicia Grundhoffer
+    affiliation: Oak Ridge National Laboratory
+  - name: Charles Shereda
+    affiliation: Los Alamos National Laboratory
+  - name: Howard Pritchard
+    affiliation: Los Alamos National Laboratory
+  - name: Samuel K. Gutiérrez
+    affiliation: Los Alamos National Laboratory
+  - name: Chris Chambreau
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Giorgis Georgakoudis
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Ignacio Laguna
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Swen Boehm
+    affiliation: Oak Ridge National Laboratory
+  - name: Terry Jones
+    affiliation: Oak Ridge National Laboratory
+  - name: Thomas Naughton
+    affiliation: Oak Ridge National Laboratory
+  - name: Christian Engelmann
+    affiliation: Oak Ridge National Laboratory
+  - name: Ron Brightwell
+    affiliation: Sandia National Laboratories
+  - name: Ryan Grant
+    affiliation: Sandia National Laboratories
+  - name: Stephen L Olivier
+    affiliation: Sandia National Laboratories
+  - name: Aurélien Bouteiller
+    affiliation: University of Tennessee, Knoxville
+  - name: George Bosilca
+    affiliation: University of Tennessee, Knoxville
+  - name: Jack Dongarra
+    affiliation: University of Tennessee, Knoxville
+
+RAJA/Kokkos:
+  code: 2.3.1.18
+  members:
+  - name: Christian Trott
+    affiliation: Sandia National Laboratory
+  - name: Gabrielle Trujillo
+    affiliation: Sandia National Laboratory
+  - name: David Hollman
+    affiliation: Sandia National Laboratory
+  - name: Jeff Miles
+    affiliation: Sandia National Laboratory
+  - name: Nathan Ellingwood
+    affiliation: Sandia National Laboratory
+  - name: Daniel Sunland
+    affiliation: Sandia National Laboratory
+  - name: Jan Ciesko
+    affiliation: Sandia National Laboratory
+  - name: Jeremiah Wilke
+    affiliation: Sandia National Laboratory
+  - name: Graham Lopez
+    affiliation: Oakridge National Laboratory
+  - name: Damien Lebrun-Grandie
+    affiliation: Oakridge National Laboratory
+  - name: Bruno Turcksin
+    affiliation: Oakridge National Laboratory
+  - name: Daniel Arndt
+    affiliation: Oakridge National Laboratory
+  - name: Hal Finkel
+    affiliation: Argonne National Laboratory
+  - name: Nevin Liber
+    affiliation: Argonne National Laboratory
+  - name: Rahul Gayatri
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Jonathan Madsen
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Galen Shipman
+    affiliation: Los Alamos National Laboratory
+  - name: Geoff Womeldorff
+    affiliation: Los Alamos National Laboratory
+  - name: Richard Hornung
+    affiliation: Lawrence Livermore National Laboratory
+  - name: David Beckingsale
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Tom Scogland
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Arturo Vergas
+    affiliation: Lawrence Livermore National Laboratory
+
+Argo: Low-level resource management for the OS and runtime:
+  code: 2.3.1.19
+  members:
+  - name: Pete Beckman
+    affiliation: Argonne National Laboratory
+  - name: Rinku Gupta
+    affiliation: Argonne National Laboratory
+  - name: Maya Gokhale
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Kamil Iskra
+    affiliation: Argonne National Laboratory
+  - name: Swann Perarnau
+    affiliation: Argonne National Laboratory
+  - name: Kazutomo Yoshii
+    affiliation: Argonne National Laboratory
+  - name: Marty McFadden
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Tapasya Patki
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Roger Pearce
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Valentin Reis
+    affiliation: Argonne National Laboratory
+  - name: Florence Monna
+    affiliation: Argonne National Laboratory
+  - name: Brice Videau
+    affiliation: Argonne National Laboratory
+  - name: Stephanie Brink
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Nicolas Denoyelle
+    affiliation: Argonne National Laboratory
+  - name: Eric Green
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Aniruddha Prakash Marathe
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Barry Rountree
+    affiliation: Lawrence Livermore National Laboratory
+  - name: John Tramm
+    affiliation: Argonne National Laboratory
+
+STDT01-Development Tools Software Development Kit:
+  code: 2.3.2.01
+  members:
+  - name: Barton Miller
+    affiliation: University of Wisconsin, Madison
+  - name: Tim Haines
+    affiliation: University of Wisconsin-Madison
+
+STTO09-EXA-PAPI: The Exascale Performance Application Programming Interface:
+  code: 2.3.2.06
+  members:
+  - name: Jack Dongarra
+    affiliation: University of Tennessee Knoxville
+    email: dongarra@icl.utk.edu
+  - name: Heike Jagode
+    affiliation: University of Tennessee Knoxville
+    email: jagode@icl.utk.edu
+  - name: Anthony Danalis
+    affiliation: University of Tennessee Knoxville
+    email: adanalis@icl.utk.edu
+  - name: Damien Genet
+    affiliation: University of Tennessee Knoxville
+    email: dgenet@icl.utk.edu
+  - name: Tony Castaldo
+    affiliation: University of Tennessee Knoxville
+    email: TonyCastaldo@icl.utk.edu
+  - name: Frank Winkler
+    affiliation: University of Tennessee Knoxville
+    email: frank.winkler@icl.utk.edu
+  - name: Gerald Ragghianti
+    affiliation: University of Tennessee Knoxville
+    email: ragghianti@icl.utk.edu
+
+STTO11-Extending HPCToolkit to Measure and Analyze Code Performance on Exascale Platforms:
+  code: 2.3.2.08
+  members:
+  - name: John Mellor-Crummey
+    affiliation: Rice University
+  - name: Xiaozhu Meng
+    affiliation: Rice University
+  - name: Mark Krentel
+    affiliation: Rice University
+  - name: Scott Warren
+    affiliation: Rice University
+  - name: Laksono Adhianto
+    affiliation: Rice University
+  - name: Barton Miller
+    affiliation: University of Wisconsin-Madison
+  - name: Keren Zhou
+    affiliation: Rice University
+
+PROTEAS-TUNE:
+  code: 2.3.2.10
+  members:
+  - name: Jeffrey S Vetter
+    affiliation: Oak Ridge National Laboratory
+  - name: Dick Glassbrook
+    affiliation: Oak Ridge National Laboratory
+  - name: Mary Hall
+    affiliation: University of Utah
+  - name: Hal Finkel
+    affiliation: Argonne National Laboratory
+  - name: Kei Davis
+    affiliation: Los Alamos National Laboratory
+  - name: George Stelle
+    affiliation: Los Alamos National Laboratory
+  - name: Allen D. Malony
+    affiliation: University of Oregon
+  - name: Joel Denny
+    affiliation: Oak Ridge National Laboratory
+  - name: Jungwon Kim
+    affiliation: Oak Ridge National Laboratory
+  - name: Seyong Lee
+    affiliation: Oak Ridge National Laboratory
+  - name: Valentin Clement
+    affiliation: Oak Ridge National Laboratory
+  - name: Sameer Shende
+    affiliation: University of Oregon
+  - name: Kevin Huck
+    affiliation: University of Oregon
+  - name: Camille Coti
+    affiliation: University of Oregon
+  - name: Johannes Doerfert
+    affiliation: Argonne National Laboratory
+  - name: Prasanna Balaprakash
+    affiliation: Argonne National Laboratory
+  - name: Michael Kruse
+    affiliation: Argonne National Laboratory
+  - name: Vinu Sreenivasan
+    affiliation: University of Utah
+  - name: Tuowen Zhao
+    affiliation: University of Utah
+  - name: Hans Johansen
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Samuel Williams
+    affiliation: Lawrence Berkeley National Laboratory
+
+SOLLVE: Scaling OpenMP with LLVm for Exascale:
+  code: 2.3.2.11
+  members:
+  - name: Barbara Chapman
+    affiliation: Brookhaven National Laboratory
+  - name: Pavan Balaji
+    affiliation: Argonne National Laboratory
+  - name: Giuseppe Congiu
+    affiliation: Argonne National Laboratory
+  - name: Johannes Doerfert
+    affiliation: Argonne National Laboratory
+  - name: Hal Finkel
+    affiliation: Argonne National Laboratory
+  - name: Shintaro Iwasaki
+    affiliation: Argonne National Laboratory
+  - name: Michael Kruse
+    affiliation: Argonne National Laboratory
+  - name: Vivek Kale
+    affiliation: Brookhaven National Laboratory
+  - name: Lingda Li
+    affiliation: Brookhaven National Laboratory
+  - name: Abid Malik
+    affiliation: Brookhaven National Laboratory
+  - name: Shilei
+    affiliation: Stony Brook University
+    email: Tianshilei.tian@stonybrook.edu
+  - name: Bronis R. de Supinski
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Chris Earl
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Tom Scogland
+    affiliation: Lawrence Livermore National Laboratory
+  - name: David Bernholdt
+    affiliation: Oak Ridge National Laboratory
+  - name: Oscar Hernandez
+    affiliation: Oak Ridge National Laboratory
+  - name: Swaroop Pophale
+    affiliation: Oak Ridge National Laboratory
+
+Flang:
+  code: 2.3.2.12
+  members:
+  - name: Pat McCormick
+    affiliation: Los Alamos National Laboratory
+  - name: Alexis Perry-Holby
+    affiliation: Los Alamos National Laboratory
+  - name: Brian Friesen (LBNL)
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Brandon Cook
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Hal Finkel
+    affiliation: Argonne National Laboratory
+  - name: Michael Kruse
+    affiliation: Argonne National Laboratory
+  - name: Johannes Doerfert
+    affiliation: Argonne National Laboratory
+  - name: Nichols A. Romero
+    affiliation: Argonne National Laboratory
+  - name: David Bernholdt
+    affiliation: Oak Ridge National Laboratory
+  - name: Fady Ghanim
+    affiliation: Oak Ridge National Laboratory
+  - name: Wael Elwasif
+    affiliation: Oak Ridge National Laboratory
+  - name: Douglas Miles
+    affiliation: NVIDIA
+  - name: Stephen Scalpone
+    affiliation: NVIDIA
+  - name: Brian Yang
+    affiliation: NVIDIA
+  - name: Peter Klausler
+    affiliation: NVIDIA
+
+Mathematical Libraries:
+  code: 2.3.3
+  members:
+  - name: Ulrike Meier Yang (PI)
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Lois Curfman McInnes
+    affiliation: Argonne National Laboratory
+  - name: Jim Demmel
+    affiliation: UC Berkeley
+  - name: Jack Dongarra (Co-PI)
+    affiliation: University of Tennessee, Knoxville
+  - name: Xiaoye Sherry Li (Co-PI)
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Keita Teranishi (Co-PI)
+    affiliation: Sandia National Laboratories
+  - name: Damien Lebrun-Grandie (Co-PI)
+    affiliation: Oak Ridge National Laboratory
+  - name: Carol Woodward (Co-PI)
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Boyana Norris (Co-PI)
+    affiliation: University of Oregon
+  - name: Hartwig Anzt (Co-PI)
+    affiliation: Karlsruhe Institute of Technology
+  - name: Nick Higham  (Co-PI)
+    affiliation: University of Manchester
+  - name: Erin Carson
+    affiliation: Charles University at Prague
+  - name: Satish Balay
+    affiliation: Argonne National Laboratory
+  - name: Stephen Hudson
+    affiliation: Argonne National Laboratory
+  - name: Barry Smith
+    affiliation: Argonne National Laboratory
+  - name: Osni Marques
+    affiliation: UC Berkeley/ Lawrence Berkeley National Laboratory
+  - name: Yang Liu
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Tzanio Kolev
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Mark C. Miller
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Cody Balos
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Veselin Dobrev
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Robert Falgout
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Aaron Fisher
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Sarah Osborn
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Daniel Osei-Kuffuor
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Stuart Slattery
+    affiliation: Oak Ridge National Laboratory
+  - name: Daniel Arndt
+    affiliation: Oak Ridge National Laboratory
+  - name: Wenjun Ge
+    affiliation: Oak Ridge National Laboratory
+  - name: Miroslav K. Stoyanov
+    affiliation: Oak Ridge National Laboratory
+  - name: Viktor Reshniak
+    affiliation: Oak Ridge National Laboratory
+  - name: Sivasankaran Rajamanickam
+    affiliation: Sandia National Laboratories
+  - name: Jim Willenbring
+    affiliation: Sandia National Laboratories
+  - name: Mike Heroux
+    affiliation: Sandia National Laboratories
+  - name: Samuel Knight
+    affiliation: Sandia National Laboratories
+  - name: Erik Boman
+    affiliation: Sandia National Laboratories
+  - name: Ichi Yamazaki
+    affiliation: Sandia National Laboratories
+  - name: Jennifer Loe
+    affiliation: Sandia National Laboratories
+  - name: Piotr Luszczek
+    affiliation: University of Tennessee, Knoxville
+  - name: Ahmad Abdelfattah
+    affiliation: University of Tennessee, Knoxville
+  - name: Jamie Finney
+    affiliation: University of Tennessee, Knoxville
+  - name: Gerald Ragghianti
+    affiliation: University of Tennessee, Knoxville
+  - name: Asim YarKhan
+    affiliation: University of Tennessee, Knoxville
+  - name: Natalie Beams
+    affiliation: University of Tennessee, Knoxville
+  - name: Mark Gates
+    affiliation: University of Tennessee, Knoxville
+  - name: Stan Tomov
+    affiliation: University of Tennessee, Knoxville
+  - name: Terry Cojean
+    affiliation: Karlsruhe Institute of Technology
+  - name: Tobias Ribizel
+    affiliation: Karlsruhe Institute of Technology
+  - name: Thomas Grützmacher
+    affiliation: Karlsruhe Institute of Technology
+  - name: Scott Kruger
+    affiliation: Tech-X Corporation
+
+STMS07-Preparing PETSc/TAO for Exascale:
+  code: 2.3.3.06
+  members:
+  - name: Barry Smith
+    affiliation: Argonne National Laboratory
+  - name: Richard Tran Mills
+    affiliation: Argonne National Laboratory
+  - name: Stefan Wild
+    affiliation: Argonne National Laboratory
+  - name: Satish Balay
+    affiliation: Argonne National Laboratory
+  - name: Getnet Betrie
+    affiliation: Argonne National Laboratory
+  - name: Alp Dener
+    affiliation: Argonne National Laboratory
+  - name: Stephen Hudson
+    affiliation: Argonne National Laboratory
+  - name: Jeffrey Larson
+    affiliation: Argonne National Laboratory
+  - name: Oana Marin
+    affiliation: Argonne National Laboratory
+  - name: Todd Munson
+    affiliation: Argonne National Laboratory
+  - name: Jean-Luke Navarro
+    affiliation: Argonne National Laboratory
+  - name: Junchao Zhang
+    affiliation: Argonne National Laboratory
+
+STRUMPACK/SuperLU/FFTX: Sparse direct solvers, preconditioners, and FFT libraries:
+  code: 2.3.3.07
+  members:
+  - name: Xiaoye Sherry Li
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Pieter Ghysels
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Yang Liu
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Lisa Claus
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Phillip Colella
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Andrew Canning
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Franz Franchetti
+    affiliation: CMU
+  - name: Peter McCorquodale
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Brian van Straalen
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Doru Thom Popovici
+    affiliation: Lawrence Berkeley National Laboratory
+
+Enabling Exascale Simulations with SUNDIALS and hypre:
+  code: 2.3.3.12
+  members:
+  - name: Carol Woodward
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Daniel Reynolds
+    affiliation: Southern Methodist University
+  - name: Ulrike Meier Yang
+    affiliation: Lawrence Livermore National Laboratory
+  - name: David Gardner
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Cody Balos
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Ruipeng Li
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Bjorn Sjogreen
+    affiliation: Lawrence Livermore National Laboratory
+
+CLOVER: Computational Libraries Optimized Via Exascale Research:
+  code: 2.3.3.13
+  members:
+  - name: Jack Dongarra
+    affiliation: University of Tennessee, Knoxville
+  - name: Earl Carr
+    affiliation: University of Tennessee, Knoxville
+  - name: (SLATE) Mark Gates
+    affiliation: University of Tennessee, Knoxville
+  - name: (FFT) Stan Tomov
+    affiliation: University of Tennessee, Knoxville
+  - name: (PEEKS) Erik Boman
+    affiliation: Sandia National Laboratories
+  - name: (PEEKS) Hartwig Anzt
+    affiliation: University of Tennessee, Knoxville
+  - name: (Kokkos Kernels) Sivasankaran Rajamanickam
+    affiliation: Sandia National Laboratories
+  - name: (SLATE) Ahmad Abdelfattah
+    affiliation: University of Tennessee, Knoxville
+  - name: (SLATE) MOHAMMED Alfarhan
+    affiliation: University of Tennessee, Knoxville
+  - name: (SLATE) Ali Charara
+    affiliation: University of Tennessee, Knoxville
+  - name: (SLATE) Jamie Finney
+    affiliation: University of Tennessee, Knoxville
+  - name: (SLATE) Gerald Ragghianti
+    affiliation: University of Tennessee, Knoxville
+  - name: (SLATE) Dalal Sukkari
+    affiliation: University of Tennessee, Knoxville
+  - name: (SLATE) Asim YarKhan
+    affiliation: University of Tennessee, Knoxville
+  - name: (PEEKS) Natalie Beams
+    affiliation: University of Tennessee, Knoxville
+  - name: (PEEKS/FFT) Sebastien Cayrols
+    affiliation: University of Tennessee, Knoxville
+  - name: (PEEKS) Mark Hoemmen
+    affiliation: Sandia National Labs
+  - name: (PEEKS) Jennifer Loe
+    affiliation: Sandia National Labs
+  - name: (PEEKS) Florent Lopez
+    affiliation: University of Tennessee, Knoxville
+  - name: (PEEKS) Ichi Yamazaki
+    affiliation: Sandia National Laboratories
+  - name: (FFT)  Alan Ayala
+    affiliation: University of Tennessee, Knoxville
+  - name: (FFT) Daniel Schultz
+    affiliation: University of Tennessee, Knoxville
+
+ALExa: Accelerated Libraries for Exascale/ForTrilinos: Sustainable Production Fortran Interoperability with Trilinos Libraries:
+  code: 2.3.3.14
+  members:
+  - name: John Turner
+    affiliation: Oak Ridge National Laboratory
+  - name: Alicia Grundhoffer
+    affiliation: Oak Ridge National Laboratory
+  - name: Wayne Joubert
+    affiliation: Oak Ridge National Laboratory
+  - name: Judy Hill
+    affiliation: Oak Ridge National Laboratory
+  - name: Damien Lebrun-Grandie
+    affiliation: Oak Ridge National Laboratory
+  - name: Andrey V. Prokopenko
+    affiliation: Oak Ridge National Laboratory
+  - name: Stuart Slattery
+    affiliation: Oak Ridge National Laboratory
+  - name: Miroslav K. Stoyanov
+    affiliation: Oak Ridge National Laboratory
+  - name: Bruno Turcksin
+    affiliation: Oak Ridge National Laboratory
+  - name: Seth R Johnson
+    affiliation: Oak Ridge National Laboratory
+  - name: Daniel Arndt
+    affiliation: Oak Ridge National Laboratory
+
+STDV01-Data and Visualization Software Development Kit:
+  code: 2.3.4.01
+  members:
+  - name: Chuck Atkins
+    affiliation: Kitware
+  - name: Elena Pourmal
+    affiliation: The HDF Group
+  - name: Scot Breitenfeld
+    affiliation: The HDF Group
+  - name: Larry Knox
+    affiliation: The HDF Group
+  - name: Allen Byrne
+    affiliation: The HDF Group
+  - name: John Mainzer
+    affiliation: The HDF Group
+  - name: Richard Warren
+    affiliation: The HDF Group
+  - name: Dana Robinson
+    affiliation: The HDF Group
+  - name: Neelam Bagha
+    affiliation: The HDF Group
+
+STDM11-ADIOS Framework for Scientific Data on Exascale Systems:
+  code: 2.3.4.09
+  members:
+  - name: Scott Klasky
+    affiliation: Oak Ridge National Laboratory
+  - name: Alicia Grundhoffer
+    affiliation: Oak Ridge National Laboratory
+  - name: John Wu
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Manish Parashar
+    affiliation: Rutgers University
+  - name: Greg Eisenhauer
+    affiliation: Georgia Institute of Technology
+  - name: Chuck Atkins
+    affiliation: Kitware Inc.
+  - name: Junmin Gu
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: William Godoy
+    affiliation: Oak Ridge National Laboratory
+  - name: Norbert Podhorszki
+    affiliation: Oak Ridge National Laboratory
+  - name: Ruonan Wang
+    affiliation: Oak Ridge National Laboratory
+  - name: Matthew Wolf
+    affiliation: Oak Ridge National Laboratory
+  - name: Tahsin Kurc
+    affiliation: Oak Ridge National Laboratory/Stony Brook University
+  - name: Philip Davis
+    affiliation: Rutgers University
+
+STDM12-DataLib: Data Libraries and Services Enabling Exascale Science:
+  code: 2.3.4.10
+  members:
+  - name: Rob Ross
+    affiliation: Argonne National Laboratory
+  - name: Phil Carns
+    affiliation: Argonne National Laboratory
+  - name: Rob Latham
+    affiliation: Argonne National Laboratory
+  - name: Shane Snyder
+    affiliation: Argonne National Laboratory
+  - name: Danqing Wu
+    affiliation: Argonne National Laboratory
+  - name: David Rich
+    affiliation: Los Alamos National Laboratory
+  - name: Robert Robey
+    affiliation: Los Alamos National Laboratory
+  - name: Galen Shipman
+    affiliation: Los Alamos National Laboratory
+  - name: Wei-keng Liao
+    affiliation: Northwestern University
+
+STDA05-ECP/VTK-m:
+  code: 2.3.4.13
+  members:
+  - name: Kenneth Moreland
+    affiliation: Sandia National Laboratories
+  - name: Dave Pugmire
+    affiliation: Oak Ridge National Laboratory
+  - name: David Honegger Rogers
+    affiliation: Los Alamos National Laboratory
+  - name: Berk Geveci
+    affiliation: Kitware, Inc.
+  - name: Hank Childs
+    affiliation: University of Oregon
+  - name: Thomas Otahal
+    affiliation: Sandia National Laboratories
+  - name: Nick Davis
+    affiliation: Sandia National Laboratories
+  - name: James Kress
+    affiliation: Oak Ridge National Laboratory
+  - name: Jieyang Chen
+    affiliation: Oak Ridge National Laboratory
+  - name: Li-Ta (Ollie) Lo
+    affiliation: Los Alamos National Laboratory
+  - name: Robert Maynard
+    affiliation: Kitware, Inc.
+  - name: Sujin Philip
+    affiliation: Kitware, Inc.
+  - name: Abhishek Yenpure
+    affiliation: University of Oregon
+  - name: Steven Walton
+    affiliation: University of Oregon
+
+VeloC: Very Low Overhead Transparent Multilevel Checkpoint/Restart/SZ: Fast, Effective, Parallel Error-bounded Exascale Lossy Compression for Scientific Datat:
+  code: 2.3.4.14
+  members:
+  - name: Franck Cappello
+    affiliation: Argonne National Laboratory
+  - name: Scott A. Ehling
+    affiliation: Argonne National Laboratory
+  - name: Kathryn Mohror
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Sheng Di
+    affiliation: Argonne National Laboratory
+  - name: Bogdan Nicolae
+    affiliation: Argonne National Laboratory
+  - name: Greg Kosinovsky
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Adam Moody
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Cameron Stanavige
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Jon Calhoun
+    affiliation: Clemson University (sub-contract).
+
+ExaIO - Delivering Efficient Parallel I/O on Exascale Computing Systems with HDF5 and UnifyFS:
+  code: 2.3.4.15
+  members:
+  - name: Suren Byna
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Quincey Koziol
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Venkat Vishwanath
+    affiliation: Argonne National Laboratory
+  - name: Kathryn Mohror
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Sarp Oral
+    affiliation: Oak Ridge National Laboratory
+  - name: Scot Breitenfeld
+    affiliation: The HDF Group
+  - name: Paul Coffman
+    affiliation: Argonne National Laboratory
+  - name: Huihuo Zheng
+    affiliation: Argonne National Laboratory
+  - name: Houjun Tang
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Bin Dong
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Tonglin Li
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Richard Warren
+    affiliation: The HDF Group
+  - name: John Mainzer
+    affiliation: The HDF Group
+  - name: Jerome Soumagne
+    affiliation: The HDF Group
+  - name: Dana Robinson
+    affiliation: The HDF Group
+  - name: Jordan Henderson
+    affiliation: The HDF Group
+    email: jhenderson@hdfgroup.org
+  - name: Elena Pourmal
+    affiliation: The HDF Group
+  - name: Neelam Bagha
+    affiliation: The HDF Group
+  - name: Adam Moody
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Cameron Stanavige
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Tony Hutter
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Feiyi Wang
+    affiliation: Oak Ridge National Laboratory
+  - name: Hyogi Sim
+    affiliation: Oak Ridge National Laboratory
+  - name: Michael Brim
+    affiliation: Oak Ridge National Laboratory
+  - name: Swen Boehm
+    affiliation: Oak Ridge National Laboratory
+  - name: Craig Steffen
+    affiliation: NCSA
+  - name: Celso Mendes
+    affiliation: NCSA
+
+ALPINE: Algorithms and Infrastructure for In Situ Visualization and Analysis/ZFP: Compressed Floating-Point Arrays:
+  code: 2.3.4.16
+  members:
+  - name: James Ahrens
+    affiliation: Los Alamos National Laboratory
+  - name: Hank Childs
+    affiliation: University of Oregon
+  - name: Terry Turton
+    affiliation: Los Alamos National Laboratory
+  - name: Ayan Biswas
+    affiliation: Los Alamos National Laboratory
+  - name: Soumya Dutta
+    affiliation: Los Alamos National Laboratory
+  - name: Subhashis Hazarika
+    affiliation: Los Alamos National Laboratory
+  - name: Gunther H. Weber
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Oliver Rubel
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: David Camp
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Eric Brugger
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Cyrus Harrison
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Matthew Larsen
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Peter Lindstrom
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Garrett Morrison
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Timo Bremer
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Sergei Shudler
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Berk Geveci
+    affiliation: Kitware Inc.
+  - name: Dan Lipsa
+    affiliation: Kitware Inc.
+  - name: Dave Pugmire
+    affiliation: Oak Ridge National Laboratory
+  - name: Mark Kim
+    affiliation: Oak Ridge National Laboratory
+  - name: Jieyang Chen
+    affiliation: Oak Ridge National Laboratory
+  - name: Sudhanshu Sane
+    affiliation: University of Oregon
+  - name: Nicole Marsaglia
+    affiliation: University of Oregon
+  - name: Roba Binyahib
+    affiliation: University of Oregon
+  - name: Silvio Rizzi
+    affiliation: Argonne National Laboratory
+  - name: Saumil Patel
+    affiliation: Argonne National Laboratory
+  - name: Janine Bennett
+    affiliation: Sandia National Laboratory
+  - name: Marco Arienti
+    affiliation: Sandia National Laboratory
+  - name: Valerio Pascucci
+    affiliation: University of Utah
+  - name: Will Usher
+    affiliation: University of Utah
+  - name: Steve Petruzza
+    affiliation: University of Utah
+  - name: Xuan Huang
+    affiliation: University of Utah
+  - name: Nate Morrical
+    affiliation: University of Utah
+  - name: Hamish Carr
+    affiliation: University of Leeds
+  - name: Petar Hristov
+    affiliation: University of Leeds
+
+STED01-Software Ecosystem and Delivery Software Development Kit:
+  code: 2.3.5.01
+  members:
+  - name: Jim Willenbring
+    affiliation: Sandia National Laboratories
+
+Software Packaging Technologies:
+  code: 2.3.5.09
+  members:
+  - name: Todd Gamblin
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Andrew Younge
+    affiliation: Sandia National Laboratory
+  - name: Shane Canon
+    affiliation: Lawrence Berkeley National Laboratory
+  - name: Reid Priedhorsky
+    affiliation: Los Alamos National Laboratory
+  - name: Sameer Shende
+    affiliation: U. Oregon
+
+LANL ATDM:
+  code: 2.3.6.01
+  members:
+  - name: Michael Lang
+    affiliation: Los Alamos National Laboratory
+  - name: Tanya Vandenbusch
+    affiliation: Los Alamos National Laboratory
+  - name: Galen Shipman
+    affiliation: Los Alamos National Laboratory
+  - name: Michael Garland
+    affiliation: NVIDIA
+  - name: Mike Bauer
+    affiliation: NVIDIA
+  - name: Saul Cohen
+    affiliation: NVIDIA
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: irina@lanl.gov
+  - name: Mohamed Gadou
+    affiliation: Los Alamos National Laboratory
+  - name: Stuart Herring
+    affiliation: Los Alamos National Laboratory
+  - name: Li-Ta Lo
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: nickm@lanl.gov
+  - name: Eun Jung Park
+    affiliation: Los Alamos National Laboratory
+  - name: Jonathan Pierarila Graham
+    affiliation: Los Alamos National Laboratory
+  - name: Dean Prichard
+    affiliation: Los Alamos National Laboratory
+  - name: Sandra Valdez
+    affiliation: Los Alamos National Laboratory
+  - name: Pat McCormick
+    affiliation: Los Alamos National Laboratory
+  - name: George Stelle
+    affiliation: Los Alamos National Laboratory
+  - name: Eun Jung Park
+    affiliation: Los Alamos National Laboratory
+  - name: Alexis Perry-Holby
+    affiliation: Los Alamos National Laboratory
+  - name: Nirmal Prajapati
+    affiliation: Los Alamos National Laboratory
+  - name: Charles Leiserson
+    affiliation: MIT
+  - name: TB Schardl
+    affiliation: MIT
+  - name: William Moses
+    affiliation: MIT
+  - name: Randal Baker
+    affiliation: Los Alamos National Laboratory
+  - name: Ben Bergen
+    affiliation: Los Alamos National Laboratory
+  - name: Bob Bird
+    affiliation: Los Alamos National Laboratory
+  - name: Gopinath Chennupati
+    affiliation: Los Alamos National Laboratory
+  - name: Kei Davis
+    affiliation: Los Alamos National Laboratory
+  - name: Joshua Dolence
+    affiliation: Los Alamos National Laboratory
+  - name: Stephan Eidenbenz
+    affiliation: Los Alamos National Laboratory
+  - name: Marianne Francois
+    affiliation: Los Alamos National Laboratory
+  - name: Charles Garrett
+    affiliation: Los Alamos National Laboratory
+  - name: Patricia A. Grubel
+    affiliation: Los Alamos National Laboratory
+  - name: David Gunter
+    affiliation: Los Alamos National Laboratory
+  - name: Christopher Hannon
+    affiliation: Los Alamos National Laboratory
+  - name: Christoph Junghans
+    affiliation: Los Alamos National Laboratory
+  - name: Douglas Keating
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: tkelley@lanl.gov
+  - name: Jonas Landsgesell
+    affiliation: Los Alamos National Laboratory
+  - name: Hyun Lim
+    affiliation: Los Alamos National Laboratory
+  - name: Iris Linck
+    affiliation: Los Alamos National Laboratory
+  - name: Jamaludin Mohd-Yusof
+    affiliation: Los Alamos National Laboratory
+  - name: William Nystrom
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: bretto@lanl.gov
+  - name: Robert Pavel
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: payne@lanl.gov
+  - name: Breanna Perera
+    affiliation: Los Alamos National Laboratory
+  - name: Vinay Ramakrishnaiah
+    affiliation: Los Alamos National Laboratory
+  - name: Navamita Ray
+    affiliation: Los Alamos National Laboratory
+  - name: Nandakishore Santhi
+    affiliation: Los Alamos National Laboratory
+  - name: Martin Staley
+    affiliation: Los Alamos National Laboratory
+  - name: Justin Tripp
+    affiliation: Los Alamos National Laboratory
+  - name: Karen Tsai
+    affiliation: Los Alamos National Laboratory
+  - name: Paul Weber
+    affiliation: Los Alamos National Laboratory
+  - name: Florian Weik
+    affiliation: Los Alamos National Laboratory
+  - name: Geoff Womeldorff
+    affiliation: Los Alamos National Laboratory
+  - name: Robert Zerr
+    affiliation: Los Alamos National Laboratory
+  - name: Ting Zhou
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: dbanesh@lanl.gov
+  - name: Todd Berkebile
+    affiliation: Los Alamos National Laboratory
+  - name: Ayan Biswas
+    affiliation: Los Alamos National Laboratory
+  - name: Roxana Bujack
+    affiliation: Los Alamos National Laboratory
+  - name: Soumya Dutta
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: pkf@lanl.gov
+  - name: Hugh Greenberg
+    affiliation: Los Alamos National Laboratory
+  - name: Jeffrey Inman
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: lionkov@lanl.gov
+  - name: Dominic Manno
+    affiliation: Los Alamos National Laboratory
+  - name: David Montoya
+    affiliation: Los Alamos National Laboratory
+  - name: Manuel Pacheco
+    affiliation: Los Alamos National Laboratory
+  - name: David Honegger Rogers
+    affiliation: Los Alamos National Laboratory
+  - name: Terry Turton
+    affiliation: Los Alamos National Laboratory
+  - name: William Vining
+    affiliation: Los Alamos National Laboratory
+  - name: Nathan A. Debardeleben
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: lissa@lanl.gov
+  - name: Sean Blanchard
+    affiliation: Los Alamos National Laboratory
+  - name: Terence Grove
+    affiliation: Los Alamos National Laboratory
+  - name: Unknown
+    affiliation: Los Alamos National Laboratory
+    email: qguan@lanl.gov
+  - name: Xin Liang
+    affiliation: Los Alamos National Laboratory
+  - name: Allen McPherson
+    affiliation: Los Alamos National Laboratory
+  - name: Patricia Patton
+    affiliation: Los Alamos National Laboratory
+  - name: Timothy Randles
+    affiliation: Los Alamos National Laboratory
+  - name: Quellyn Snead
+    affiliation: Los Alamos National Laboratory
+  - name: Louis Vernon
+    affiliation: Los Alamos National Laboratory
+
+LLNL ATDM:
+  code: 2.3.6.02
+  members:
+  - name: Becky Springmeyer
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Todd Gamblin
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Kathryn Mohror
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Matthew Legendre
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Tzanio Kolev
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Veselin Dobrev
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Dan Laney
+    affiliation: Lawrence Livermore National Laboratory
+  - name: Rob Neely
+    affiliation: Lawrence Livermore National Laboratory
+
+SNL ATDM:
+  code: 2.3.6.03
+  members:
+  - name: James Stewart
+    affiliation: Sandia National Laboratories
+  - name: Gabrielle Trujillo
+    affiliation: Sandia National Laboratories
+  - name: Roscoe A. Bartlett
+    affiliation: Sandia National Laboratories
+  - name: Luc Berger-Vergiat
+    affiliation: Sandia National Laboratories
+  - name: Jan Ciesko
+    affiliation: Sandia National Laboratories
+  - name: Vinh Quang Dang
+    affiliation: Sandia National Laboratory
+  - name: Nathan David Ellingwood
+    affiliation: Sandia National Laboratory
+  - name: David Hollman
+    affiliation: Sandia National Laboratory
+  - name: Daniel Alejandro Ibanez
+    affiliation: Sandia National Laboratories
+  - name: Jeffery Scott Miles
+    affiliation: Sandia National Laboratories
+  - name: David Zoeller Poliakoff
+    affiliation: Sandia National Laboratories
+  - name: Daniel Sunderland
+    affiliation: Sandia National Laboratories
+  - name: Christian Trott
+    affiliation: Sandia National Laboratories
+  - name: Jeremiah Wilke
+    affiliation: Sandia National Laboratories
+  - name: Michael Wolf
+    affiliation: Sandia National Laboratories
+  - name: Seher Acer
+    affiliation: Sandia National Laboratories
+  - name: Mark Philippe Blanco
+    affiliation: Sandia National Laboratories
+  - name: Brian Michael Kelley
+    affiliation: Sandia National Laboratories
+  - name: Kyungjoo Kim
+    affiliation: Sandia National Laboratories
+  - name: Sivasankaran Rajamanickam
+    affiliation: Sandia National Laboratories
+  - name: Daniel Zack Turner
+    affiliation: Sandia National Laboratories
+  - name: Nickolas Allen Davis
+    affiliation: Sandia National Laboratories
+  - name: Mike Heroux
+    affiliation: Sandia National Laboratories
+  - name: Mike Glass
+    affiliation: Sandia National Laboratories
+  - name: Cannada Lewis
+    affiliation: Sandia National Laboratories
+  - name: Jeffrey A Mauldin
+    affiliation: Sandia National Laboratories
+  - name: Kenneth Moreland
+    affiliation: Sandia National Laboratories
+  - name: Thomas Otahal
+    affiliation: Sandia National Laboratories
+  - name: Ron Brightwell
+    affiliation: Sandia National Laboratories
+  - name: Gregory V Weirs
+    affiliation: Sandia National Laboratories
+  - name: Andrew Younge
+    affiliation: Sandia National Laboratories
+  - name: Ron Oldfield
+    affiliation: Sandia National Laboratories
+  - name: Noah Evans
+    affiliation: Sandia National Laboratories
+  - name: Kurt Brian Ferreira
+    affiliation: Sandia National Laboratories
+  - name: Ryan Grant
+    affiliation: Sandia National Laboratories
+  - name: Christipher D Jenkins
+    affiliation: Sandia National Laboratories
+  - name: Scott Larson Nicoll Levy
+    affiliation: Sandia National Laboratories
+  - name: Stephen L Olivier
+    affiliation: Sandia National Laboratories

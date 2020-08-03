@@ -1,0 +1,235 @@
+# TODO: check e4s.io for add'l repos!
+#
+# 2.2.1 Chemistry and Materials Applications	
+LatticeQCD:
+    code: 2.2.1.01
+    members:
+    - name: Andreas Kronfeld
+      affiliation: FNAL
+      email: ask@fnal.gov
+
+NWChemEx:
+    code: 2.2.1.02
+    members:
+    - name: Theresa Windus
+      affiliation: Ames
+      email: twindus@iastate.edu
+
+GAMESS:
+    code: 2.2.1.03
+    members:
+    - name: Mark Gordon
+      affiliation: Ames
+      email: mgordon@iastate.edu
+
+EXAALT:
+    code: 2.2.1.04
+    members:
+    - name: Danny Perez
+      affiliation: LANL
+      email: danny_perez@lanl.gov
+
+ExaAM:
+    code: 2.2.1.05
+    members:
+    - name: John Turner
+      affiliation: ORNL
+      email: turnerja@ornl.gov
+
+QMCPACK:
+    code: 2.2.1.06
+    members:
+    - name: Paul Kent
+      affiliation: ORNL
+      email: kentpr@ornl.gov
+
+
+ExaWind:
+    code: 2.2.2.01
+    members:
+    - name: Mike Sprague
+      affiliation: NREL
+      email: Michael.A.Sprague@nrel.gov
+
+Combustion-PELE:
+    code: 2.2.2.02
+    members:
+    - name: Jackie Chen
+      affiliation: SNL
+      email: jhchen@sandia.gov
+
+ExaSMR:
+    code: 2.2.2.03
+    members:
+    - name: Steven Hamilton
+      affiliation: ORNL
+      email: hamiltonsp@ornl.gov
+
+MFIX-Exa:
+    code: 2.2.2.04
+    members:
+    - name: Madhava Syamlal
+      affiliation: NETL
+      email: madhava.syamlal@netl.doe.gov
+
+WDMApp:
+    code: 2.2.2.05
+    members:
+    - name: Amitava Bhattacharjee
+      affiliation: PPPL
+      email: abhattac@pppl.gov
+
+WarpX:
+    code: 2.2.2.06
+    members:
+    - name: Jean-Luc Vay
+      affiliation: LBNL
+      email: jlvay@lbl.gov
+
+ExaStar:
+    code: 2.2.3.01
+    members:
+    - name: Daniel Kasen
+      affiliation: LBNL
+      email: dkasen@lbl.gov
+
+ExaSky:
+    code: 2.2.3.02
+    members:
+    - name: Salman Habib
+      affiliation: ANL
+      email: habib@anl.gov
+
+EQSIM:
+    code: 2.2.3.03
+    members:
+    - name: David McCallen
+      affiliation: LBNL
+      email: dbmccallen@lbl.gov
+
+Subsurface:
+    code: 2.2.3.04
+    members:
+    - name: Carl Steefel
+      affiliation: LBNL
+      email: cisteefel@lbl.gov
+
+E3SM-MMF:
+    code: 2.2.3.05
+    members:
+    - name: Mark Taylor
+      affiliation: SNL
+      email: mataylo@sandia.gov
+
+Urban:
+    code: 2.2.4.01
+    members:
+    - name: Charlie Catlett
+      affiliation: ANL
+      email: catlett@anl.gov
+
+ExaSGD:
+    code: 2.2.4.02
+    members:
+    - name: Slaven Peles
+      affiliation: PNNL
+      email: slaven.peles@pnnl.gov
+
+CANDLE:
+    code: 2.2.4.03
+    members:
+    - name: Rick Stevens
+      affiliation: ANL
+      email: stevens@anl.gov
+
+ExaBiome:
+    code: 2.2.4.04
+    members:
+    - name: Katherine Yelick
+      affiliation: LBNL
+      email: kayelick@lbl.gov
+
+ExaFEL:
+    code: 2.2.4.05
+    members:
+    - name: Amedeo Perazzo
+      affiliation: SLAC
+      email: perazzo@slac.stanford.edu
+
+ASC ATDM LANL Application:
+    code: 2.2.5.01
+    members:
+    - name: Aimee Hungerford
+      affiliation: LANL
+      email: aimee@lanl.gov
+
+ASC ATDM LLNL Application:
+    code: 2.2.5.02
+    members:
+    - name: Rob Rieben
+      affiliation: LLNL
+      email: rieben1@llnl.gov
+
+ASC ATDM SNL Application:
+    code: 2.2.5.03
+    members:
+    - name: Bill Rider
+      affiliation: SNL
+      email: wjrider@sandia.gov
+
+Proxy Applications:
+    code: 2.2.6.01
+    members:
+    - name: David Richards
+      affiliation: LLNL
+      email: richards12@llnl.gov
+
+Application Assessment:
+    code: 2.2.6.02
+    members:
+    - name: Kenneth Roche
+      affiliation: PNNL
+      email: kenneth.roche@pnnl.gov
+
+CODAR:
+    code: 2.2.6.03
+    members:
+    - name: Ian Foster
+      affiliation: ANL
+      email: foster@mcs.anl.gov
+
+CoPA:
+    code: 2.2.6.04
+    members:
+    - name: Sue Mniszewski
+      affiliation: LANL
+      email: smm@lanl.gov
+
+AMReX:
+    code: 2.2.6.05
+    members:
+    - name: John Bell
+      affiliation: LBNL
+      email: jbbell@lbl.gov
+
+CEED:
+    code: 2.2.6.06
+    members:
+    - name: Tzanio Kolev
+      affiliation: LLNL
+      email: kolev1@llnl.gov
+
+ExaGraph:
+    code: 2.2.6.07
+    members:
+    - name: Mahantesh Halappanavar
+      affiliation: PNNL
+      email: Mahantesh.Halappanavar@pnnl.gov
+
+ExaLearn:
+    code: 2.2.6.08
+    members:
+    - name: Frank Alexander
+      affiliation: BNL
+      email: falexander@bnl.gov
+
