@@ -1,0 +1,90 @@
+# Products that were well-known and marginally connected to ECP (like MPI, C++, SYCL, etc.) were omitted
+# where several options existed, I eliminated "lab-level" projects like LANL-ADTM, etc., and copied to all projects if there were reasonable alternatives.
+# Format = semicolon-separated file
+
+project number; product name; product url; description
+
+2.3.4.09;ADIOS2;https://github.com/ornladios/ADIOS2;I/O and data management library for storage I/O, in-memory code coupling and online data analysis and visualization workflows.
+2.3.6.02;AID: STAT;https://github.com/LLNL/stat;Stack Trace Analysis Tool - lightweight debugging at extreme scale
+2.3.6.02;AID: Archer;https://github.com/PRUNERS/archer;Data race detection tool for OpenMP applications
+2.3.6.02;AID: FLiT;https://github.com/PRUNERS/FLiT;Quickly detect discrepancies in floating point computation across hardware, compilers, libraries and software
+2.3.6.02;AID: ReMPI;https://github.com/PRUNERS/ReMPI;A lightweight record-and-replay tool for MPI+OpenMP applications 
+2.3.6.02;AID: FPChecker;https://github.com/LLNL/FPChecker;Floating point exception trapping for NVIDIA GPUs
+2.3.1.19;AML;https://xgitlab.cels.anl.gov/argo/aml;Hierarchical memory management library from Argo.
+2.3.4.16;Ascent;https://github.com/Alpine-DAV/ascent;Ascent: "Flyweight" in situ visualization and analysis runtime for multi-physics HPC simulations
+2.3.4.16;Paraview;https://www.paraview.org;ParaView/Catalyst: Visualization and data analysis system with in situ library within the Paraview product suite.
+2.3.4.16;Paraview;https://www.paraview.org/in-situ;ParaView/Catalyst: Visualization and data analysis system with in situ library within the Paraview product suite.
+2.3.4.16;VisIt;https://wci.llnl.gov/simulation/computer-codes/visit;VisIt/LibSIM: Interactive, scalable, visualization, animation and analysis tool.
+2.3.3.14;ArborX;https://github.com/arborx/ArborX;Performance-portable geometric search library
+2.3.6.01;BEE;https://www.lanl.gov/projects/bee/;https://github.com/lanl/BEE Container-based solution for portable build and execution across HPC systems and cloud resources
+2.3.6.02;Caliper;https://github.com/llnl/caliper;Performance analysis library.
+2.3.1.18;CHAI;https://github.com/LLNL/CHAI;A library that handles automatic data migration to different memory spaces behind an array-style interface.
+2.3.6.02;CHAI;https://github.com/LLNL/CHAI;A library that handles automatic data migration to different memory spaces behind an array-style interface.
+2.3.6.01;Cinema;https://cinemascience.github.io/;Data analysis and visualization tool suite.
+2.3.4.10; Darshan;http://www.mcs.anl.gov/research/projects/darshan;I/O characterization tool.
+2.3.3.14;DTK;https://github.com/ORNL-CEES/DataTransferKit;In-memory code coupling library.
+2.3.2.08;Dyninst;http://www.paradyn.org;Binary analysis and instrumentation framework.
+2.3.5.01;E4S;https://e4s.io;Comprehensive HPC software suite providing access to all mature ECP products.
+2.3.3.13; heFFTe;http://icl.utk.edu/fft/;Parallel FFTs built on vendor and community sequential FFTs.
+2.3.3.07;FFTX;https://github.com/spiralgen/fftx;Parallel FFTs and open source version of Spiral FFTs.
+2.3.6.01;FleCSI;http://www.flecsi.org;A configurable framework designed to support multi-physics application development.
+2.3.6.02;Flux;http://flux-framework.org;Configurable resource management tools and libraries for HPC platforms
+2.3.6.01;Flang compiler;http://www.flang-compiler.org;Early version of an LLVM-based open source Fortran compiler.
+2.3.2.12;New Flang compiler;https://github.com/flang-compiler/f18;Next-generation LLVM-based Fortran compiler. Officially part of the LLVM project. Called F18 in earlier times.
+2.3.3.14;ForTrilinos;https://trilinos.github.io/ForTrilinos;Fortran interface to Trilinos C++ libraries.
+2.3.1.14;GASNet;http://gasnet.lbl.gov;A networking middleware layer that provides portable communication primitives.
+2.3.3.13; Ginkgo;https://github.com/ginkgo-project/ginkgo;A parallel sparse linear algebra library for manycore and accelerator processors.
+2.3.4.15;HDF5;https://www.hdfgroup.org/downloads;A parallel I/O library.
+2.3.2.08;HPCToolkit;http://hpctoolkit.org;Performance analysis tools.
+2.3.3.12;hypre;http://www.llnl.gov/casc/hypre;Scalable sparse iterative preconditioners and solvers.
+2.3.1.18;Kokkos;https://github.com/kokkos;Portable parallel programming library and supporting tools.
+2.3.3.13;Kokkoskernels;https://github.com/kokkos/kokkos-kernels;Parallel linear algebra and graph algorithms build on Kokkos.
+2.3.1.08;Legion;http://legion.stanford.edu;A task-based parallel programming and runtime environment.
+2.3.6.01;Legion;http://legion.stanford.edu;A task-based parallel programming and runtime environment.
+2.3.3.06;libEnsemble;https://github.com/Libensemble/libensemble;A library to support ensemble-based solution algorithms.
+2.3.6.01;MarFS;https://github.com/mar-file-system/marfs;Parallel file system.
+2.3.6.02;MFEM;http://mfem.org/;A parallel finite element math library.
+2.3.1.07;MPICH;http://www.mpich.org;Open source MPI implementation for research. Used as the foundation for most vendor MPI libraries
+2.3.1.17;OpenMPI;https://www.open-mpi.org;Open source MPI implementation used by some vendors and for exploration of new ideas.
+2.3.1.17;Qthreads;https://github.com/Qthreads;Lightweight user threading library, part of OpenMPI software suite
+2.3.4.10; ROMIO;http://www.mcs.anl.gov/projects/romio;Primary implementation of MPI-IO capabilities.
+2.3.1.19; NRM;https://xgitlab.cels.anl.gov/argo/hnrm;Argo Node Resource Manager.
+2.3.2.10;OpenACC;http://www.openacc.org/;Directive-based compilation for many-core and accelerator processors.
+2.3.2.10;Clacc;https://csmd.ornl.gov/project/clacc;LLVM-based OpenACC compiler
+2.3.2.11;OpenMP;https://www.openmp.org/;A markup language for multicore, many-core and accelerator processors.
+2.3.6.03;OpenMP;https://www.openmp.org/;A markup language for multicore, many-core and accelerator processors.
+2.3.2.11;OpenMP: BOLT;https://bolt-omp.org/;OpenMP over lightweight threads.
+2.3.2.11;OpenMP: V & V Suite;https://github.com/SOLLVE/sollve_vv;Effort to provide testing capabilities for new OpenMP features.
+2.3.2.06;PAPI;http://icl.utk.edu/exa-papi;Performance API to provide portable access to vendor performance information for CPUs, GPUs, networks, I/O systems, including power.
+2.3.2.10;Papyrus;https://csmd.ornl.gov/project/papyrus;Programming system for persistent memory.
+2.3.1.09;PaRSEC;http://icl.utk.edu/parsec;Distributed task-based runtime system and programming environment
+2.3.3.06;PETSc/TAO;http://www.mcs.anl.gov/petsc;Library of parallel and sparse linear, nonlinear, optimization and transient solvers.
+2.3.4.10;PnetCDF;https://parallel-netcdf.github.io/;Parallel I/O library.
+2.3.1.19;PowerStack;https://github.com/LLNL/variorum;Power management software.
+2.3.1.19;PowerStack;https://github.com/LLNL/msr-safe;Power management software.
+2.3.1.19;PowerStack;https://github.com/LLNL/libmsr;Power management software.
+2.3.1.19;PowerStack;https://github.com/amarathe84/geopm;Power management software.
+2.3.1.19;PowerStack;https://github.com/geopm/geopm-slurm;Power management software.
+2.3.1.19;PowerStack;https://github.com/tpatki/power-slurm;Power management software.
+2.3.1.19;PowerStack;https://github.com/flux-framework/flux-sched/tree/master/resource/policies;Power management software.
+2.3.1.18;RAJA;https://github.com/LLNL/RAJA;Portable parallel programming library.
+2.3.3.13;ScaLAPACK: SLATE;http://icl.utk.edu/slate;SLATE is the next generation of ScaLAPACK.
+2.3.6.02;SCR;https://github.com/llnl/scr;Scalable Checkpoint-Restart system.
+2.3.1.16;SICM;https://github.com/lanl/SICM;Hierarchical memory interface management software.
+2.3.5.09;Spack;https://github.com/spack/spack;Software product meta-build tool and manager.
+2.3.3.07;STRUMPACK;http://portal.nersc.gov/project/sparse/strumpack;Next generation parallel sparse direct solver package.
+2.3.3.12;SUNDIALS;https://computing.llnl.gov/projects/sundials;Parallel time integrators and solvers for ODES, DAEs, and nonlinear systems.
+2.3.3.07;SuperLU;https://portal.nersc.gov/project/sparse/superlu/;Parallel sparse direct solver package.
+2.3.4.14;SZ;https://github.com/disheng222/SZ;Data compression library.
+2.3.3.14;Tasmanian;http://tasmanian.ornl.gov;A collection of libraries for high dimensional integration and interpolation and parameter calibration. 
+2.3.2.10;TAU;http://tau.uoregon.edu;A performance analysis and tuning library.
+2.3.3.13;Trilinos;https://github.com/trilinos/Trilinos;A collection of libraries for building, managing and solving large sparse linear, nonlinear, transient and optimization problems.
+2.3.1.19;UMap;https://github.com/LLNL/umap;A user space memory management tool.
+2.3.1.19;UMap;https://github.com/LLNL/umap-apps;A user space memory management tool.
+2.3.6.02; Umpire;https://github.com/LLNL/Umpire;A resource management library that allows the discovery, provision, and management of memory on machines with multiple memory devices.
+2.3.4.15;UnifyFS;https://github.com/LLNL/UnifyFS;A distributed burst buffer file system.
+2.3.1.14;UPC++;http://upcxx.lbl.gov;A C++ template library supporting asynchronous RMA/RPC communication in a PGAS model.
+2.3.4.14;VeloC;https://github.com/ECP-VeloC/VELOC;Scalable checkpoint-restart library.
+2.3.4.13;VTK-m;http://m.vtk.org;Parallel on-node visualization toolkit.
+2.3.3.01;xSDK;https://xsdk.info;Math libraries meta product combining the most popular HPC math libraries into a compatible collection.
+2.3.4.16;zfp;https://github.com/LLNL/zfp;In-memory data compression library.
