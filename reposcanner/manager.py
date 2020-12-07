@@ -146,13 +146,8 @@ class ReposcannerRoutineManager:
         def executeWithNoGUI(self):
                 for task in tqdm(self._tasks):
                         task.process(self._routines)
-                        response = task.getResponse()
-                        if response.wasSuccessful():
-                                print("Response: Success")
-                                print("Message: {message}".format(message=response.getMessage()))
-                        else:
-                                print("Response: Failure")
-                                print("Message: {message}".format(message=response.getMessage()))
+                        response = task.getResponseDescription()
+                        print(response)
                                 
         def executeWithGUI(self):
                 def centerTextPosition(text,windowWidth):
