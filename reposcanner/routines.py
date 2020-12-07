@@ -99,15 +99,15 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                 else:
                         try:
                                 if not os.path.exists(request.getCloneDirectory()):
-                                        session = pygit2.clone_repository(repositoryLocation.getURL(), request.getCloneDirectory())
+                                        session = pygit2.clone_repository(request.getRepositoryLocation().getURL(), request.getCloneDirectory())
                                 else:
-                                        session = pygit2.Repository(request.getCloneDirectory)
+                                        session = pygit2.Repository(request.getCloneDirectory())
                                 
                                 return self.offlineImplementation(request=request,session=session)
                                 
                         except Exception as e:
                                 return responseFactory.createFailureResponse(
-                                    message="OfflineRepositoryAnalysisRoutine Encountered an unexpected exception.",
+                                    message="OfflineRepositoryAnalysisRoutine Encountered an unexpected exception ({etype}).".format(etype=type(e)),
                                     attachments=[e])
                 
         def offlineImplementation(self,request,session):
