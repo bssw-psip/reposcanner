@@ -40,9 +40,6 @@ class GrowthRoutine(OfflineRepositoryRoutine):
                                         timestampsByContributor[commit.author.name] = (firstCommit,timeOfCommit)
                         
                 return contributors, numberOfCommitsByContributor, timestampsByContributor
-                
-        def render(self, data):
-                pass
 
         def export(self, data):
                 contributors, numberOfCommitsByContributor, timestampsByContributor = data

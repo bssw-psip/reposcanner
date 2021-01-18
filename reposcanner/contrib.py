@@ -56,9 +56,6 @@ class ContributionPeriodRoutine(OfflineRepositoryRoutine):
                                         timestampsByContributor[commit.author.name] = (firstCommit,timeOfCommit)
                         
                 return contributors,numberOfCommitsByContributor,timestampsByContributor
-                
-        def render(self,request,response):
-                pass
 
         def export(self,request,response):
                 contributors,numberOfCommitsByContributor,timestampsByContributor = data
