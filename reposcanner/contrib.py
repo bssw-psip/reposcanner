@@ -1,4 +1,4 @@
-from reposcanner.routines import OfflineRepositoryAnalysisRoutine,OnlineRepositoryAnalysisRoutine
+from reposcanner.routines import OfflineRepositoryRoutine,OnlineRepositoryRoutine
 from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest
 from reposcanner.response import ResponseFactory
 import pygit2
@@ -16,7 +16,7 @@ class ContributionPeriodRoutineRequest(OfflineRoutineRequest):
                 super().__init__(repositoryURL,outputDirectory,workspaceDirectory)
 
 #TODO: Convert to new routine model.
-class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
+class ContributionPeriodRoutine(OfflineRepositoryRoutine):
         """
         Calculates the extents of code contribution periods of each contributor.
         """
@@ -93,7 +93,7 @@ class ContributionPeriodRoutine(OfflineRepositoryAnalysisRoutine):
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
                                 
 #TODO: Convert to new routine model.                                
-class ContributorListRoutine(OfflineRepositoryAnalysisRoutine):
+class ContributorListRoutine(OfflineRepositoryRoutine):
         """
         Calculates the list of contributors and the number of lines contributed.
         """
@@ -150,7 +150,7 @@ class ContributorAccountListRoutineRequest(OnlineRoutineRequest):
         def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
                 super().__init__(repositoryURL,outputDirectory,username=username,password=password,token=token,keychain=keychain)
 
-class ContributorAccountListRoutine(OnlineRepositoryAnalysisRoutine):
+class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         """
         Contact the version control platform API, and get the account information of everyone who has ever contributed to the repository.
         """

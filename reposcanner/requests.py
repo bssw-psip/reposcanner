@@ -65,7 +65,7 @@ class BaseRequestModel:
 class OnlineRoutineRequest(BaseRequestModel):
         """
         The base class for requests to routines that use an online API to compute results. 
-        Request classes for OnlineRepositoryAnalysisRoutine should inherit from this class.
+        Request classes for OnlineRepositoryRoutine should inherit from this class.
         """
         
         @classmethod      
@@ -115,7 +115,7 @@ class OnlineRoutineRequest(BaseRequestModel):
 class OfflineRoutineRequest(BaseRequestModel):
         """
         The base class for requests to routines that operate on an offline clone to compute results. 
-        Request classes for OfflineRepositoryAnalysisRoutine should inherit from this class.
+        Request classes for OfflineRepositoryRoutine should inherit from this class.
         """
         
         @classmethod      

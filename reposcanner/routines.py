@@ -4,7 +4,7 @@ import os
 from reposcanner.git import GitEntityFactory,RepositoryLocation
 from reposcanner.response import ResponseFactory
 
-class RepositoryAnalysisRoutine(ABC):
+class RepositoryRoutine(ABC):
         """The abstract base class for all repository analysis routines. Methods cover
         the execution of analyses, rendering, and exporting of data."""
         
@@ -65,7 +65,7 @@ class RepositoryAnalysisRoutine(ABC):
                 
         def run(self,request):
                 """
-                Encodes the workflow of a RepositoryAnalysisRoutine object. The client only needs
+                Encodes the workflow of a RepositoryRoutine object. The client only needs
                 to run this method in order to get results. 
                 """
                 response = self.execute(request)
@@ -74,7 +74,7 @@ class RepositoryAnalysisRoutine(ABC):
                 return response    
 
  
-class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
+class OfflineRepositoryRoutine(RepositoryRoutine):
         """
         Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
         """
@@ -107,7 +107,7 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                                 
                         except Exception as e:
                                 return responseFactory.createFailureResponse(
-                                    message="OfflineRepositoryAnalysisRoutine Encountered an unexpected exception ({etype}).".format(etype=type(e)),
+                                    message="OfflineRepositoryRoutine Encountered an unexpected exception ({etype}).".format(etype=type(e)),
                                     attachments=[e])
                 
         def offlineImplementation(self,request,session):
@@ -125,7 +125,7 @@ class OfflineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                         "to handle an offline clone of a repository.") 
         
                       
-class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
+class OnlineRepositoryRoutine(RepositoryRoutine):
         """
         Class that encapsulates the stages of an PyGitHub-based analysis procedure operating on the GitHub API.
         """
@@ -179,7 +179,7 @@ class OnlineRepositoryAnalysisRoutine(RepositoryAnalysisRoutine):
                                                 platform=platform))
                         except Exception as e:
                                 return responseFactory.createFailureResponse(
-                                    message="OnlineRepositoryAnalysisRoutine Encountered an unexpected exception.",
+                                    message="OnlineRepositoryRoutine Encountered an unexpected exception.",
                                     attachments=[e])
                                     
         @property
