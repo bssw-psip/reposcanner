@@ -59,6 +59,21 @@ class ManagerTask:
                         repoNameOrURL = canonicalRepoNameOrUrl,
                         requestType = self._request.__class__.__name__
                 )
+                
+        def getProjectID(self):
+                return self._projectID
+                
+        def getProjectName(self):
+                return self._projectName
+                
+        def getURL(self):
+                return self._url
+                
+        def getRequest(self):
+                return self._response
+                
+        def getResponse(self):
+                return self._response
                                 
         def getResponseDescription(self):
                 repositoryLocation = self._request.getRepositoryLocation()
@@ -80,16 +95,16 @@ class ManagerTask:
                         )
                         
 
-class ReposcannerRoutineManager:
+class ReposcannerManager:
         """
         The ReposcannerRoutineManager is responsible for launching and tracking executions
-        of RepositoryRoutines. The frontend creates an instance of this manager and
+        of RepositoryRoutines and DataAnalyses. The frontend creates an instance of this manager and
         passes the necessary repository and credential data to it.
         """
-        def __init__(self,outputDirectory="./",workspaceDirectory="./",gui=False):
+        def __init__(self,notebook=None,outputDirectory="./",workspaceDirectory="./",gui=False):
+                self._notebook = notebook
                 self._routines = []
                 self._initializeRoutines()
-                self._startTime = None
                 self._tasks = []
                 self._keychain = None
                 self._outputDirectory = outputDirectory
@@ -98,8 +113,14 @@ class ReposcannerRoutineManager:
                 
         def _initializeRoutines(self):
                 """Constructs RepositoryRoutine objects that belong to the manager."""
+                #TODO: Replace this with a routine that initializes routines based on an
+                #input config file.
                 contributorAccountListRoutine = ContributorAccountListRoutine()
                 self._routines.append(contributorAccountListRoutine)
+                
+                for routine in self._routines:
+                        if self._notebook is not None:
+                                self._notebook.onRoutineCreation(routine)
                 
         def _buildTask(self,projectID,projectName,url,routine):
                 """Constructs a task to hold a request/response pair."""
@@ -130,11 +151,13 @@ class ReposcannerRoutineManager:
                            for url in projectEntry["urls"]:
                                    for routine in self._routines:
                                            task = self._buildTask(projectID,projectName,url,routine)
+                                           if self._notebook is not None:
+                                                   self._notebook.onTaskCreation(task)
                                            self._tasks.append(task)
                                            
                 
         def run(self,repositoryDictionary,credentialsDictionary):
-                self._startTime = datetime.datetime.today()
+                #self._startTime = datetime.datetime.today()
                 self._prepareTasks(repositoryDictionary,credentialsDictionary)
                 
                 if not self._guiModeEnabled:
@@ -146,6 +169,8 @@ class ReposcannerRoutineManager:
         def executeWithNoGUI(self):
                 for task in tqdm(self._tasks):
                         task.process(self._routines)
+                        if self._notebook is not None:
+                                self._notebook.onTaskCompletion(task)
                         response = task.getResponseDescription()
                         print(response)
                                 
@@ -231,6 +256,10 @@ class ReposcannerRoutineManager:
                                 footer.border(2)
                                 footer.refresh()
                                 currentTask.process(self._routines)
+                                
+                                if self._notebook is not None:
+                                        self._notebook.onTaskCompletion(currentTask)
+                                
                                 messages.insert(0,currentTask.getResponseDescription())
                                 screen.refresh()
                                 

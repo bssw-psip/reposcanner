@@ -32,11 +32,19 @@ def scannerMain(args):
         """
         The master routine for Reposcanner.
         """
+        
+        notebook = ReposcannerLabNotebook()
+        
+        notebook.onStartup(args)
+        
         repositoryDictionary = loadYAMLFile(args.repositories)
         credentialsDictionary = loadYAMLFile(args.credentials)
         
-        manager = ReposcannerRoutineManager(outputDirectory=args.outputDirectory,workspaceDirectory=args.workspaceDirectory,gui=args.gui)
+        manager = ReposcannerManager(notebook=notebook,outputDirectory=args.outputDirectory,workspaceDirectory=args.workspaceDirectory,gui=args.gui)
         manager.run(repositoryDictionary=repositoryDictionary,credentialsDictionary=credentialsDictionary)
+        
+        notebook.onExit()
+        notebook.publishNotebook(args.notebookOutputPath)
         
         
         
@@ -47,6 +55,8 @@ if __name__ == "__main__":
         parser.add_argument('--credentials', action='store', type=str, help='A list of credentials needed to access the repositories, a YAML file (see example).')
         parser.add_argument('--outputDirectory',action='store',type=str,default='./',help='The path where Reposcanner should output files. \
                 By default this is done in the directory from which this script is run.')
+        parser.add_argument('--notebookOutputPath',action='store',type=str,default="./notebook.log",help='The path where Reposcanner should output a file containing a log that \
+                describes this run.')
         parser.add_argument('--workspaceDirectory',action='store',type=str,default='./',help='The path where Reposcanner should make clones of repositories. \
                 By default this is done in the directory from which this script is run.')
         parser.add_argument('--gui',action='store_true',help="Enables GUI mode, which provides a dynamically refreshed console view of \
