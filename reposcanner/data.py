@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import csv,re
+import csv,re,os,hashlib
 import datetime
 
 class DataEntityFactory:
@@ -64,6 +64,15 @@ class ReposcannerDataEntity(ABC):
                 
         def getCreator(self):
                 return self.getMetadataAttribute("creator")
+                
+        def fileExists(self):
+                return os.path.exists(self._filePath)
+                
+        def getMD5Hash(self):
+                """
+                Compute the MD5 checksum for a file for provenance-tracking purposes.
+                """
+                return hashlib.md5(self._filePath).hexdigest()  
         
         @abstractmethod      
         def validateMetadata(self):

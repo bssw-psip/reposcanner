@@ -78,8 +78,10 @@ def test_AnnotatedCSVData_canProduceRecordDictionaries():
         assert("numberOfCommits" in entry)
         assert(entry["numberOfCommits"] == 552)
         
-def test_AnnotatedCSVData_canStoreDataToDisk():
-        dataEntity = data.AnnotatedCSVData("test.csv")
+def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
+        sub = tmpdir.mkdir("datatest")
+        filePath = str(sub.join("csvtest.csv"))
+        dataEntity = data.AnnotatedCSVData(filePath)
         timestamp = datetime.date.today()
         columnNames = ["contributor","numberOfCommits"]
         columnDatatypes = ["str","int"]
@@ -96,7 +98,9 @@ def test_AnnotatedCSVData_canStoreDataToDisk():
         
         dataEntity.addRecord(["johnsmith",552])
         
+        assert(not dataEntity.fileExists())
         dataEntity.writeToFile()
+        assert(dataEntity.fileExists())
         
         dataEntityB = data.AnnotatedCSVData("test.csv")
         dataEntityB.readFromFile()
