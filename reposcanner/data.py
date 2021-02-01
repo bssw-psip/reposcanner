@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import csv
+import csv,re
 import datetime
 
 class DataEntityFactory:
@@ -19,6 +19,7 @@ class ReposcannerDataEntity(ABC):
                 """
                 self._metadataAttributes = {}
                 self._filePath = filePath
+                self.setReposcannerExecutionID(None)
                 self.setDateCreated(None)
                 self.setCreator(None)
              
@@ -34,11 +35,22 @@ class ReposcannerDataEntity(ABC):
         def getAttributeKeys(self):
                 return self._metadataAttributes.keys()
                 
-        def setDateCreated(self,datetime):
+        def setReposcannerExecutionID(self,executionid):
                 """
-                datetime: A datetime.datetime object.
+                executionid: A string containing an id that uniquely identifies
+                the particular run of the Reposcanner tool that was used to
+                generate the data held by this data entity.
                 """
-                self.setMetadataAttribute("datecreated",datetime)
+                self.setMetadataAttribute("executionid",executionid)
+                
+        def getReposcannerExecutionID(self):
+                return self.getMetadataAttribute("executionid")
+                
+        def setDateCreated(self,date):
+                """
+                datetime: A datetime.date object.
+                """
+                self.setMetadataAttribute("datecreated",date)
          
         def getDateCreated(self):
                 return self.getMetadataAttribute("datecreated")
@@ -177,6 +189,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
                 return recordDicts        
                 
         def validateMetadata(self):
+                hasExecutionID = self.getReposcannerExecutionID() is not None
                 hasCreator = self.getCreator() is not None
                 hasDateCreated = self.getDateCreated() is not None
                 hasProjectID = self.getProjectID() is not None
@@ -185,22 +198,37 @@ class AnnotatedCSVData(ReposcannerDataEntity):
                 hasColumnNames = len(self.getColumnNames()) > 0
                 hasColumnDatatypes = len(self.getColumnDatatypes()) > 0
                 
-                return hasCreator and hasDateCreated \
+                return hasExecutionID and hasCreator and hasDateCreated \
                 and hasProjectID and hasProjectName and hasURL \
                 and hasColumnNames and hasColumnDatatypes
                 
         def readFromFile(self):
                 def readMetadataFromFile(text):
-                        m = re.match("#([a-zA-Z]+)\w+(.*?)",text)
-                        return m.group(0),m.group(1)
+                        try:
+                                #TODO: This may turn out to be a fragile way of parsing the
+                                #metadata line if the metadata value has spaces in it.
+                                #m = re.match("#([a-zA-Z]+)\w+(.*?)",text)
+                                #return m.group(1),m.group(2)
+                                splitResult = text.split()
+                                return splitResult[0][1:],splitResult[1]
+                        except Exception as e:
+                                raise ValueError("Failed to parse metadata in {path}: {text}".format(path=self.getFilePath(),text=text))
                 with open(self.getFilePath(), 'r', newline='\n') as f:
-                        csvreader = csv.reader(csvfile, delimiter=';', quotechar='|')
+                        csvreader = csv.reader(f, delimiter=',', quotechar='|')
                         currentlyReadingMetadata = True
                         for row in csvreader:
                                 if currentlyReadingMetadata:
                                         if len(row) > 0 and row[0][0] == '#':
-                                                metadataKey,metadataValue = readMetadataFromFile(row[0][0])
-                                                #TODO: Parse metadata and assign to appropriate fields.
+                                                metadataKey,metadataValue = readMetadataFromFile(row[0])
+                                                if metadataKey == "names" or metadataKey == "datatypes":
+                                                        #TODO: Parse names and datatypes, which are lists delimited
+                                                        #by semicolons.
+                                                        metadataValue = metadataValue.split(sep=';')
+                                                        self.setMetadataAttribute(metadataKey,metadataValue)
+                                                else:
+                                                        if metadataKey == "datecreated":
+                                                                metadataValue = datetime.date.fromisoformat(metadataValue)
+                                                        self.setMetadataAttribute(metadataKey,metadataValue)
                                         else:
                                                 currentlyReadingMetadata = False
                                 else:
@@ -211,17 +239,19 @@ class AnnotatedCSVData(ReposcannerDataEntity):
                 def writeMetadataFieldToFile(csvwriter,key,value):
                         csvwriter.writerow(["#{key} {value}".format(key=key,value=value)])
                 with open(self.getFilePath(), 'w', newline='\n') as f:
-                        csvwriter = csv.writer(csvfile, delimiter=';',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                        csvwriter = csv.writer(f, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
                         
                         #Expected Metadata for CSV files.
+                        executionid = self.getReposcannerExecutionID()
                         creator = self.getCreator()
                         dateCreated = self.getDateCreated()
                         projectID = self.getProjectID()
                         projectName = self.getProjectName()
                         url = self.getURL()
-                        names = self.getColumnNames()
-                        datatypes = self.getColumnDatatypes()
+                        names = ";".join(self.getColumnNames())
+                        datatypes = ";".join(self.getColumnDatatypes())
                         
+                        writeMetadataFieldToFile(csvwriter,"executionid",executionid)
                         writeMetadataFieldToFile(csvwriter,"creator",creator)
                         writeMetadataFieldToFile(csvwriter,"datecreated",dateCreated)
                         writeMetadataFieldToFile(csvwriter,"projectid",projectID)

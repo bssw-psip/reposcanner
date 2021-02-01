@@ -30,10 +30,11 @@ def test_AnnotatedCSVData_validationOfMetadataFailsInitially():
         
 def test_AnnotatedCSVData_canStoreAndValidateMetadata():
         dataEntity = data.AnnotatedCSVData("test.csv")
-        timestamp = datetime.datetime.now()
+        timestamp = datetime.date.today()
         columnNames = ["contributor","numberOfCommits"]
         columnDatatypes = ["str","int"]
         
+        dataEntity.setReposcannerExecutionID("19m397b")
         dataEntity.setCreator("routine")
         dataEntity.setDateCreated(timestamp)
         dataEntity.setProjectID("ABC552")
@@ -42,6 +43,7 @@ def test_AnnotatedCSVData_canStoreAndValidateMetadata():
         dataEntity.setColumnNames(columnNames)
         dataEntity.setColumnDatatypes(columnDatatypes)
         
+        assert(dataEntity.getReposcannerExecutionID() == "19m397b")
         assert(dataEntity.getCreator() == "routine")
         assert(dataEntity.getDateCreated() == timestamp)
         assert(dataEntity.getProjectID() == "ABC552")
@@ -75,6 +77,39 @@ def test_AnnotatedCSVData_canProduceRecordDictionaries():
         assert(entry["contributor"] == "johnsmith")
         assert("numberOfCommits" in entry)
         assert(entry["numberOfCommits"] == 552)
+        
+def test_AnnotatedCSVData_canStoreDataToDisk():
+        dataEntity = data.AnnotatedCSVData("test.csv")
+        timestamp = datetime.date.today()
+        columnNames = ["contributor","numberOfCommits"]
+        columnDatatypes = ["str","int"]
+        
+        dataEntity.setReposcannerExecutionID("19m397b")
+        dataEntity.setCreator("routine")
+        dataEntity.setDateCreated(timestamp)
+        dataEntity.setProjectID("ABC552")
+        dataEntity.setProjectName("QuantumSorcery")
+        dataEntity.setURL("https://www.github.com/quantsci/quantumsorcery/")
+        dataEntity.setColumnNames(columnNames)
+        dataEntity.setColumnDatatypes(columnDatatypes)
+        assert(dataEntity.validateMetadata())
+        
+        dataEntity.addRecord(["johnsmith",552])
+        
+        dataEntity.writeToFile()
+        
+        dataEntityB = data.AnnotatedCSVData("test.csv")
+        dataEntityB.readFromFile()
+        assert(dataEntityB.getReposcannerExecutionID() == "19m397b")
+        assert(dataEntityB.getCreator() == "routine")
+        assert(dataEntityB.getDateCreated() == timestamp)
+        assert(dataEntityB.getProjectID() == "ABC552")
+        assert(dataEntityB.getProjectName() == "QuantumSorcery")
+        assert(dataEntityB.getURL() == "https://www.github.com/quantsci/quantumsorcery/")
+        assert(dataEntityB.getColumnNames() == columnNames)
+        assert(dataEntityB.getColumnDatatypes() == columnDatatypes)
+        assert(dataEntityB.validateMetadata())
+        
         
         
         
