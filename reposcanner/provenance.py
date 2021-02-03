@@ -21,9 +21,46 @@ These additional artifacts can be quite useful depending on the application scen
 may choose to capture and manage these separately, but outside of the scope of the provenance application.
 """
 from abc import ABC, abstractmethod
-import datetime
+import datetime,json,uuid
 
-def AbstractLabNotebook(ABC):
+"""
+trungdong/prov, a W3C-compliant provenance Data Model 
+supporting PROV-O (RDF), PROV-XML, PROV-JSON, and import/export.
+"""
+import prov.model as prov
+
+
+class ReposcannerRunInformant:
+        """
+        This class is responsible for defining and providing key
+        information for provenance tracking, including a unique
+        identifier for the run of Reposcanner.
+        """
+        
+        #A class variable that uniquely defines the current
+        #run of Reposcanner.
+        EXECUTIONID = uuid.uuid1()
+        
+        def getReposcannerExecutionID(self):
+                """
+                Return a unique identifier string associated with the current run of
+                Reposcanner.
+                This is determined at the time that the ReposcannerRunInformant
+                class is first loaded into memory by the interpreter.
+                """
+                return ReposcannerRunInformant.EXECUTIONID
+                
+        def getReposcannerVersion(self):
+                """
+                
+                """
+                pass
+                
+        
+
+
+
+class AbstractLabNotebook(ABC):
         """
         Abstract base class for classes that encapsulate provenance-tracking code
         for runs of the Reposcanner tool.
@@ -90,7 +127,7 @@ def AbstractLabNotebook(ABC):
                 """
                 pass
 
-def ReposcannerLabNotebook(AbstractLabNotebook):
+class ReposcannerLabNotebook(AbstractLabNotebook):
         """
         This is the default implementation of the lab notebook. We may
         want to create more specialized versions of this notebook in future
@@ -99,15 +136,39 @@ def ReposcannerLabNotebook(AbstractLabNotebook):
         """
         
         def __init__(self):
-                pass
+                self._document = prov.ProvDocument()
+                self._document.add_namespace('rs', 'reposcanner/')
+                
+                self._document.agent(identifier="rs:ReposcannerManager")
 
+        
+        def getJSON(self):
+                """
+                Returns the underlying Prov document in JSON form for testing purposes.
+                """
+                return json.loads(self._document.serialize())
+        
         def onStartup(self,args):
                 """
                 Called when Reposcanner is first initialized.
                 
                 args: Any command-line arguments passed to the main method of Reposcanner.
                 """
-                pass
+                
+                repositoryListEntity = self._document.entity('rs:repositories',(
+                    (prov.PROV_TYPE, "File"),
+                    ('rs:path', args.repositories),
+                    ('rs:creator', "user")
+                ))
+                
+                credentialsListEntity = self._document.entity('rs:credentials',(
+                    (prov.PROV_TYPE, "File"),
+                    ('rs:path', args.credentials),
+                    ('rs:creator', "user")
+                ))
+                
+                self._document.wasInformedBy("rs:ReposcannerManager", repositoryListEntity)
+                self._document.wasInformedBy("rs:ReposcannerManager", credentialsListEntity)
                 
         def onExit(self):
                 """
@@ -121,7 +182,9 @@ def ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 routine: The RepositoryRoutine object.
                 """
-                pass
+                
+                routine = self._document.agent("rs:{clazz}".format(clazz=routine.__class__.__name__))
+                self._document.actedOnBehalfOf(routine,"rs:ReposcannerManager")
                 
         def onAnalysisCreation(self,analysis):
                 """
@@ -129,7 +192,8 @@ def ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 analysis: The DataAnalysis object.
                 """
-                pass
+                analysis = self._document.agent("rs:{clazz}".format(clazz=analysis.__class__.__name__))
+                self._document.actedOnBehalfOf(analysis,"rs:ReposcannerManager")
         
         def onTaskCreation(self,task):
                 """
@@ -137,7 +201,16 @@ def ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 task: The ManagerTask object.
                 """
-                pass
+                task = self._document.activity("rs:task{taskid}".format(taskid=id(task)),
+                        (
+                                    ('rs:requestType', task.getRequestType()),
+                                    ('rs:projectID', task.getProjectID()),
+                                    ('rs:projectName', task.getProjectName()),
+                                    ('rs:URL', task.getURL().getURL()),
+                                    ('rs:creator', "rs:ReposcannerManager")
+                        )
+                )
+                self._document.wasGeneratedBy(task,"rs:ReposcannerManager")
              
         def onTaskCompletion(self,task):
                 """
@@ -157,10 +230,6 @@ def ReposcannerLabNotebook(AbstractLabNotebook):
 
 
 """
-class ProvenanceDocument:
-        pass
-        
-        
 class ProvenanceRecord(ABC):
         pass
         
@@ -185,16 +254,13 @@ class UsedRelation(ProvenanceRelation):
         
         
         
-
+"""
 class ProvenanceGraphNode(ABC):
-        """
-        From MITRE's Provenance Capture and Use: A Practical Guide: "The fundamental 
-        data structure for provenance is a directed acyclic graph (DAG), where the nodes are 
-        process invocations and information about data, called process and data nodes 
-        respectively."
-        
-        This is the abstract base class for Reposcanner's provenance data graph.
-        """
+        #From MITRE's Provenance Capture and Use: A Practical Guide: "The fundamental 
+        #data structure for provenance is a directed acyclic graph (DAG), where the nodes are 
+        #process invocations and information about data, called process and data nodes 
+        #respectively."
+        #This is the abstract base class for Reposcanner's provenance data graph.
         
         def __init__(self,parent=None):
                 self._parent = parent
@@ -224,9 +290,7 @@ class ProvenanceGraphNode(ABC):
         
         @abstractmethod
         def acceptVisitor(self, visitor):
-                """
-                Used by ProvenanceGraphVisitors to implement a visitor pattern.
-                """
+                #Used by ProvenanceGraphVisitors to implement a visitor pattern.
                 pass
                 
 
@@ -234,13 +298,11 @@ class InvocationNode(ProvenanceGraphNode):
         pass   
                 
 class DataNode(ProvenanceGraphNode):
-        """
-        A data node represents data stored in files that is generated and/or consumed
-        by Reposcanner's routines and analyses.
-        """
+        #A data node represents data stored in files that is generated and/or consumed
+        #by Reposcanner's routines and analyses.
         def __init__(self):
                 super().__init__()
                 
-                
+"""               
                 
                 
