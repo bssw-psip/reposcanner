@@ -6,7 +6,7 @@ from reposcanner.response import ResponseFactory
 
 class RepositoryRoutine(ABC):
         """The abstract base class for all repository analysis routines. Methods cover
-        the execution of analyses, rendering, and exporting of data."""
+        the execution of mining routines and exporting of data."""
         
         @abstractmethod
         def canHandleRequest(self,request):
@@ -27,7 +27,7 @@ class RepositoryRoutine(ABC):
         def execute(self,request):
                 """
                 Contains the code for interacting with the GitHub repository via PyGitHub. 
-                Whatever data this method returns will be passed to the render and export methods.
+                Whatever data this method returns will be passed to export methods.
                 
                 Parameters:
                         request (@input): A RequestModel object that encapsulates all the information needed
@@ -38,7 +38,9 @@ class RepositoryRoutine(ABC):
         @abstractmethod       
         def export(self,request,response):
                 """
-                Contains the code for exporting data to a file.
+                Contains the code for exporting data to a file. To have output data logged in provenance records
+                or used by analysis objects, the export method must add ReposcannerDataEntity objects as attachments
+                to the response.
                 
                 Parameters:
                         request (@input): A RequestModel object that encapsulates all the information needed

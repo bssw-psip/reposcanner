@@ -2,7 +2,41 @@ import pytest
 from reposcanner.git import GitEntityFactory
 import reposcanner.routines as routines
 import reposcanner.requests as requests
-import reposcanner.response as response
+import reposcanner.response as responses
+
+def test_RepositoryRoutine_isConstructibleWithMockImplementation(mocker):
+        mocker.patch.multiple(routines.RepositoryRoutine,__abstractmethods__=set())
+        genericRoutine = routines.RepositoryRoutine()
+        
+def test_RepositoryRoutine_runCanReturnResponse(mocker):
+        mocker.patch.multiple(routines.RepositoryRoutine,__abstractmethods__=set())
+        def executeGeneratesResponse(self,request):
+                factory = responses.ResponseFactory()
+                response = factory.createSuccessResponse()
+                return response
+        routines.RepositoryRoutine.execute = executeGeneratesResponse
+        genericRoutine = routines.RepositoryRoutine()
+        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        response = genericRoutine.run(genericRequest)
+        assert(response.wasSuccessful())
+        
+def test_RepositoryRoutine_exportCanAddAttachments(mocker):
+        mocker.patch.multiple(routines.RepositoryRoutine,__abstractmethods__=set())
+        def executeGeneratesResponse(self,request):
+                factory = responses.ResponseFactory()
+                response = factory.createSuccessResponse(attachments=[])
+                return response
+        def exportAddsAnAttachment(self,request,response):
+                response.addAttachment("data")
+        routines.RepositoryRoutine.execute = executeGeneratesResponse
+        routines.RepositoryRoutine.export = exportAddsAnAttachment
+        genericRoutine = routines.RepositoryRoutine()
+        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        response = genericRoutine.run(genericRequest)
+        assert(response.wasSuccessful())
+        assert(response.hasAttachments())
+        assert(len(response.getAttachments()) == 1)
+        
 
 def test_OnlineRepositoryRoutine_isConstructibleWithMockImplementation(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
