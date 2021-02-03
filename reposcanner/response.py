@@ -1,6 +1,6 @@
 import abc
-import six
 from enum import Enum
+import collections
 
 
 class ResponseStatus(Enum):
@@ -43,11 +43,24 @@ class ResponseModel:
             By default this is None.
         attachments:
             A field for storing output data that was the result of a request (if there is any to deliver).
-            By default this is None.
+            By default this is None. Callers are expected to pass either an iterable containing results or
+            a single object.
         """
         self._status = status
         self._message = message
-        self._attachments = attachments
+        self._attachments = []
+        def isIterable(obj):
+                try:
+                        iter(obj)
+                        return True
+                except TypeError as e:
+                        return False
+        if attachments is not None:
+                if isIterable(attachments) and not isinstance(attachments,str):
+                        for attachment in attachments:
+                                self._attachments.append(attachment)
+                else:
+                        self._attachments.append(attachment)
 
     def hasMessage(self):
         return self._message is not None
@@ -56,11 +69,14 @@ class ResponseModel:
         return self._message
 
     def hasAttachments(self):
-        return self._attachments is not None
+        return len(self._attachments) != 0
 
     def getAttachments(self):
         return self._attachments
-
+        
+    def addAttachment(self,attachment):
+        self._attachments.append(attachment)
+        
     def wasSuccessful(self):
         if self._status == ResponseStatus.SUCCESS:
             return True
