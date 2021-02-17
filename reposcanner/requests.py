@@ -61,6 +61,14 @@ class BaseRequestModel:
         def getErrors(self):
                 return self._errors
                 
+        @classmethod
+        def isRoutineRequestType(cls):
+                return False
+        
+        @classmethod      
+        def isAnalysisRequestType(cls):
+                return False
+                
 
 class OnlineRoutineRequest(BaseRequestModel):
         """
@@ -75,6 +83,14 @@ class OnlineRoutineRequest(BaseRequestModel):
                 version control API.
                 """
                 return True
+                
+        @classmethod
+        def isRoutineRequestType(cls):
+                return True
+        
+        @classmethod      
+        def isAnalysisRequestType(cls):
+                return False
         
         def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
                 """
@@ -124,6 +140,14 @@ class OfflineRoutineRequest(BaseRequestModel):
                 Tells the caller whether this request requires access to an online
                 version control API.
                 """
+                return False
+                
+        @classmethod
+        def isRoutineRequestType(cls):
+                return True
+        
+        @classmethod      
+        def isAnalysisRequestType(cls):
                 return False
         
         def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):

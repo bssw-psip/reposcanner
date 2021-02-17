@@ -3,46 +3,79 @@ from reposcanner.git import CredentialKeychain
 from reposcanner.response import ResponseFactory
 import datetime, logging, curses
 from tqdm import tqdm #For progress checking in non-GUI mode.
+from abc import ABC, abstractmethod
 
 
-class ManagerTask:
-        """
-        This is a simple wrapper around requests and responses that makes it
-        easier for the frontend to display execution progress.
-        """
-        def __init__(self,projectID,projectName,url,request):
-                self._projectID = projectID
-                self._projectName = projectName
-                self._url = url
+class TaskFactory:
+        def createManagerRoutineTask(self,projectID,projectName,url,request):
+                return ManagerRoutineTask(projectID,projectName,url,request)
+        
+class ManagerTask(ABC):
+        """Abstract base class for Task objects. Task objects are simple wrappers around
+        requests and responses that makes it easier for the frontend to display execution
+        progress."""
+        
+        def __init__(self,request):
                 self._request = request
                 self._response = None
         
-        def process(self,routines,notebook):
-                """
-                Scan through a set of available routines and see if any can execute
-                the request held by this task. If no routines can handle this request,
-                this method will create a failure response and store it.
+        def getRequestClassName(self):
+                return self._request.__class__.__name__
                 
-                routines: An iterable of RepositoryRoutine objects.
+        def getRequest(self):
+                return self._request
+                
+        def hasResponse(self):
+                return self._response is not None
+                
+        def getResponse(self):
+                return self._response
+                
+        def process(self,agents,notebook):
+                """
+                Scan through a set of available routines or analyses and see if any can
+                execute the request held by this task. If no routines or analyses can handle
+                this request, this method will create a failure response and store it.
+                
+                agents: An iterable of RepositoryRoutine and/or DataAnalysis objects.
                 notebook: A ReposcannerNotebook object, used for logging results.
                 """
                 selectedRoutine = None
-                for routine in routines:
-                        if routine.canHandleRequest(self._request):
-                                selectedRoutine = routine
+                for agent in agents:
+                        if agent.canHandleRequest(self._request):
+                                selectedAgent = agent
                                 break
-                if selectedRoutine is not None:
+                if selectedAgent is not None:
                         if notebook is not None:
-                                notebook.onTaskStart(self,selectedRoutine)     
-                        self._response = selectedRoutine.run(self._request)
+                                notebook.onTaskStart(self,selectedAgent)     
+                        self._response = selectedAgent.run(self._request)
                         if notebook is not None:
-                                notebook.onTaskCompletion(self,selectedRoutine)
+                                notebook.onTaskCompletion(self,selectedAgent)
                 else:
                         responseFactory = ResponseFactory()
                         self._response = responseFactory.createFailureResponse(
                                 message= "No routine was found that could \
                                 execute the request ({requestType}).".format(
                                 requestType=type(request)))
+        
+        @abstractmethod
+        def getResponseDescription(self):
+                """
+                Generate a string that describes the response to the request in a human-readable
+                way.
+                """
+                pass
+        
+
+class ManagerRoutineTask(ManagerTask):
+        """
+        This Task class wraps requests and responses for RepositoryRoutines.
+        """
+        def __init__(self,projectID,projectName,url,request):
+                super().__init__(request)
+                self._projectID = projectID
+                self._projectName = projectName
+                self._url = url
                                 
         def getDescription(self):
                 """
@@ -71,17 +104,8 @@ class ManagerTask:
         def getProjectName(self):
                 return self._projectName
                 
-        def getRequestClassName(self):
-                return self._request.__class__.__name__
-                
         def getURL(self):
                 return self._url
-                
-        def getRequest(self):
-                return self._response
-                
-        def getResponse(self):
-                return self._response
                                 
         def getResponseDescription(self):
                 repositoryLocation = self._request.getRepositoryLocation()
@@ -112,13 +136,14 @@ class ReposcannerManager:
         def __init__(self,notebook=None,outputDirectory="./",workspaceDirectory="./",gui=False):
                 self._notebook = notebook
                 self._routines = []
+                self._analyses = []
                 self._tasks = []
                 self._keychain = None
                 self._outputDirectory = outputDirectory
                 self._workspaceDirectory = workspaceDirectory
                 self._guiModeEnabled = gui
                 
-        def _initializeRoutines(self,configData):
+        def _initializeRoutinesAndAnalyses(self,configData):
                 """Constructs RepositoryRoutine objects that belong to the manager."""
                 #TODO: Replace this with a routine that initializes routines based on an
                 #input config file.
@@ -128,18 +153,25 @@ class ReposcannerManager:
                 for routine in self._routines:
                         if self._notebook is not None:
                                 self._notebook.onRoutineCreation(routine)
+                for analysis in self._analyses:
+                        if self._notebook is not None:
+                                self._notebook.onAnalysisCreation(analysis)
                 
-        def _buildTask(self,projectID,projectName,url,routine):
+        def _buildTask(self,projectID,projectName,url,routineOrAnalysis):
                 """Constructs a task to hold a request/response pair."""
                 requestType = routine.getRequestType()
-                if requestType.requiresOnlineAPIAccess():
-                        request = requestType(repositoryURL=url,
+                
+                if requestType.isRoutineRequestType():
+                        if requestType.requiresOnlineAPIAccess():
+                                request = requestType(repositoryURL=url,
                                 outputDirectory=self._outputDirectory,
                                 keychain=self._keychain)
-                else:
-                        request = requestType(repositoryURL=url,
+                        else:
+                                request = requestType(repositoryURL=url,
                                 outputDirectory=self._outputDirectory,
                                 workspaceDirectory=self._workspaceDirectory)
+                elif requestType.isAnalysisRequestType():
+                        pass #TODO Construct analysis requests.
                 
                 task = ManagerTask(projectID=projectID,projectName=projectName,url=url,request=request)
                 return task
@@ -161,13 +193,20 @@ class ReposcannerManager:
                                            if self._notebook is not None:
                                                    self._notebook.onTaskCreation(task)
                                            self._tasks.append(task)
-                                           
+                for analysis in self._analyses:
+                        task = self._buildTask(projectID,projectName,url,analysis)
+                        if self._notebook is not None:
+                                self._notebook.onTaskCreation(task)
+                        self._tasks.append(task)
+        
+        def isGUIModeEnabled(self):
+                return self._guiModeEnabled
                 
         def run(self,repositoriesDataFile,credentialsDataFile,configDataFile):
-                #self._startTime = datetime.datetime.today()
-                self._prepareTasks(repositoryDictionary,credentialsDictionary)
+                self._initializeRoutinesAndAnalyses(self,configDataFile.getData())
+                self._prepareTasks(repositoriesDataFile.getData(),credentialsDataFile.getData())
                 
-                if not self._guiModeEnabled:
+                if not self.isGUIModeEnabled():
                         self.executeWithNoGUI()
                 else:
                         self.executeWithGUI()
@@ -175,7 +214,7 @@ class ReposcannerManager:
                         
         def executeWithNoGUI(self):
                 for task in tqdm(self._tasks):
-                        task.process(self._routines,self._notebook)
+                        task.process(self._routines,self._analyses,self._notebook)
                         response = task.getResponseDescription()
                         print(response)
                                 
@@ -260,7 +299,7 @@ class ReposcannerManager:
                                 footer.addstr(1,4,taskDescription,curses.A_BOLD)
                                 footer.border(2)
                                 footer.refresh()
-                                currentTask.process(self._routines,self._notebook)
+                                currentTask.process(self._routines,self._analyses,self._notebook)
                                 
                                 messages.insert(0,currentTask.getResponseDescription())
                                 screen.refresh()

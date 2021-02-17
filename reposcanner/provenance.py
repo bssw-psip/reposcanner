@@ -29,6 +29,7 @@ trungdong/prov, a W3C-compliant provenance Data Model
 supporting PROV-O (RDF), PROV-XML, PROV-JSON, and import/export.
 """
 import prov.model as prov
+from prov.dot import prov_to_dot
 
 
 class ReposcannerRunInformant:
@@ -55,7 +56,7 @@ class ReposcannerRunInformant:
                 """
                 Return a string indicating what version of Reposcanner was used for this run.
                 """
-                pass
+                pass #TODO: Figure out the best way to determine version of Reposcanner at runtime.
                 
         
 
@@ -150,11 +151,6 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         def __init__(self):
                 self._document = prov.ProvDocument()
                 self._document.add_namespace('rs', 'reposcanner/')
-                #self._document.agent(identifier="rs:ReposcannerManager")
-                informant = ReposcannerRunInformant()
-                self._document.agent(identifier="rs:ReposcannerManager",other_attributes=(
-                ('rs:executionID', informant.getReposcannerExecutionID()),
-                ))
 
         
         def getJSONRepresentation(self):
@@ -177,6 +173,13 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 args: Any command-line arguments passed to the main method of Reposcanner.
                 """
                 
+                informant = ReposcannerRunInformant()
+                
+                
+                self._document.agent(identifier="rs:ReposcannerManager",other_attributes=(
+                ('rs:executionID', informant.getReposcannerExecutionID()),
+                ))
+                
                 repositoryListEntity = self._document.entity('rs:repositories',(
                     (prov.PROV_TYPE, "File"),
                     ('rs:path', args.repositories),
@@ -189,8 +192,15 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                     ('rs:creator', "user")
                 ))
                 
+                configListEntity = self._document.entity('rs:config',(
+                    (prov.PROV_TYPE, "File"),
+                    ('rs:path', args.config),
+                    ('rs:creator', "user")
+                ))
+                
                 self._document.wasInformedBy("rs:ReposcannerManager", repositoryListEntity)
                 self._document.wasInformedBy("rs:ReposcannerManager", credentialsListEntity)
+                self._document.wasInformedBy("rs:ReposcannerManager", configListEntity)
                 
         def onExit(self):
                 """
@@ -259,7 +269,11 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 endTime = datetime.datetime.now()
                 taskWasSuccessful = task.getResponse().wasSuccessful()
-                self._document.wasEndedBy(activity=taskID,trigger=routineID,time=endTime,other_attributes=( ("rs:wasSuccessful",taskWasSuccessful),))
+                taskMessage = task.getResponse().getMessage()
+                self._document.wasEndedBy(activity=taskID,trigger=routineID,time=endTime,other_attributes=(
+                        ("rs:wasSuccessful",taskWasSuccessful),
+                        ("rs:message",str(taskMessage))        
+                ))
                 
                 if taskWasSuccessful:
                         attachments = task.getResponse().getAttachments()
@@ -305,7 +319,9 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 outputPath: The path to the file where the provenance records will be written.
                 """
-                pass
+                dotRepresentation = prov_to_dot(self._document)
+                executionID = ReposcannerRunInformant().getReposcannerExecutionID()
+                dotRepresentation.write_png("run_{executionID}.png".format(executionID=executionID))
 
             
                 

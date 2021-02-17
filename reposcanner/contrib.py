@@ -104,9 +104,7 @@ class ContributorListRoutine(OfflineRepositoryRoutine):
                                 numberOfCommitsByContributor[commit.author.name] += 1
                         
                 return numberOfCommitsByContributor
-                
-        def render(self,data):
-                pass
+
 
         def export(self,data):
                 contributors,numberOfCommitsByContributor,timestampsByContributor = data
@@ -196,14 +194,10 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
                 
         #def bitbucketImplementation(self,request,session):
         #        pass
-                
-        def render(self,request,response):
-                if not response.wasSuccessful():
-                        return None
         
         def export(self,request,response):
                 if not response.wasSuccessful():
-                        return None
+                        return response
                 contributors = response.getAttachments()
                 today = datetime.datetime.now()
                 
@@ -222,6 +216,7 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
                         ])
                         
                         for contributor in contributors:
-                                contributionWriter.writerow([contributor["username"],contributor["name"], ';'.join(contributor["emails"])])                       
+                                contributionWriter.writerow([contributor["username"],contributor["name"], ';'.join(contributor["emails"])])
+                return response                      
                         
 

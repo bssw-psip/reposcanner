@@ -58,7 +58,7 @@ def test_ReposcannerLabNotebook_canLogCreatedTasks():
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         notebook = provenance.ReposcannerLabNotebook()
         notebook.onTaskCreation(task)
@@ -85,7 +85,7 @@ def test_ReposcannerLabNotebook_canLogStartOfTask():
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         notebook.onTaskCreation(task)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
@@ -150,7 +150,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
         
@@ -159,7 +159,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        task.process(routines=[routine],notebook=notebook)
+        task.process(agents=[routine],notebook=notebook)
         
         jsonDocument = notebook.getJSONRepresentation()
         taskID = list(jsonDocument['activity'].keys())[0]
@@ -202,7 +202,7 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
         
@@ -211,7 +211,7 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        task.process(routines=[routine],notebook=notebook)
+        task.process(agents=[routine],notebook=notebook)
         
         jsonDocument = notebook.getJSONRepresentation()
         print(jsonDocument)
@@ -273,7 +273,7 @@ def test_ReposcannerLabNotebook_canPublishResults():
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
         
@@ -282,7 +282,7 @@ def test_ReposcannerLabNotebook_canPublishResults():
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        task.process(routines=[routine],notebook=notebook)
+        task.process(agents=[routine],notebook=notebook)
         
         notebook.publishNotebook(outputPath="output.log")
         
