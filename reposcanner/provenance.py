@@ -22,6 +22,7 @@ may choose to capture and manage these separately, but outside of the scope of t
 """
 from abc import ABC, abstractmethod
 import datetime,json,uuid
+import reposcanner.data as dataEntities
 
 """
 trungdong/prov, a W3C-compliant provenance Data Model 
@@ -52,7 +53,7 @@ class ReposcannerRunInformant:
                 
         def getReposcannerVersion(self):
                 """
-                
+                Return a string indicating what version of Reposcanner was used for this run.
                 """
                 pass
                 
@@ -108,13 +109,24 @@ class AbstractLabNotebook(ABC):
                 task: The ManagerTask object.
                 """
                 pass
+                
+        @abstractmethod
+        def onTaskStart(self,task,routine):
+                """
+                Called when a ManagerTask object is created.
+                
+                task: The ManagerTask object.
+                routine: The RepositoryRoutine object that is expected to handle the task.
+                """
+                pass
         
         @abstractmethod     
-        def onTaskCompletion(self,task):
+        def onTaskCompletion(self,task,routine):
                 """
                 Called when a ManagerTask object has been processed and has received a response.
                 
                 task: The ManagerTask object.
+                routine: The RepositoryRoutine object that is expected to handle the task.
                 """
                 pass
         
@@ -142,11 +154,18 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 self._document.agent(identifier="rs:ReposcannerManager")
 
         
-        def getJSON(self):
+        def getJSONRepresentation(self):
                 """
                 Returns the underlying Prov document in JSON form for testing purposes.
                 """
-                return json.loads(self._document.serialize())
+                serialized = self._document.serialize()
+                return json.loads(serialized)
+                
+        def getProvnRepresentation(self):
+                """
+                Returns the underlying Prov document in PROV-N form for testing purposes.
+                """
+                return self._document.get_provn()
         
         def onStartup(self,args):
                 """
@@ -201,24 +220,79 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 task: The ManagerTask object.
                 """
-                task = self._document.activity("rs:task{taskid}".format(taskid=id(task)),
-                        (
-                                    ('rs:requestType', task.getRequestType()),
+                
+                task = self._document.activity("rs:task{taskid}".format(taskid=id(task)),other_attributes=(
+                                    ('rs:requestType', task.getRequestClassName()),
                                     ('rs:projectID', task.getProjectID()),
                                     ('rs:projectName', task.getProjectName()),
-                                    ('rs:URL', task.getURL().getURL()),
-                                    ('rs:creator', "rs:ReposcannerManager")
+                                    ('rs:URL', task.getURL())
                         )
                 )
-                self._document.wasGeneratedBy(task,"rs:ReposcannerManager")
+                
+                self._document.wasGeneratedBy("rs:ReposcannerManager",task)
+                
+        def onTaskStart(self,task,routine):
+                """
+                Called when a ManagerTask object is created.
+                
+                task: The ManagerTask object.
+                routine: The RepositoryRoutine object that is expected to handle the task.
+                """
+                taskID = "rs:task{taskid}".format(taskid=id(task))
+                routineID = "rs:{clazz}".format(clazz=routine.__class__.__name__)
+                
+                startTime = datetime.datetime.now()
+                
+                self._document.wasStartedBy(activity=taskID,trigger=routineID,time=startTime)
              
-        def onTaskCompletion(self,task):
+        def onTaskCompletion(self,task,routine):
                 """
                 Called when a ManagerTask object has been processed and has received a response.
                 
                 task: The ManagerTask object.
                 """
-                pass
+                taskID = "rs:task{taskid}".format(taskid=id(task))
+                routineID = "rs:{clazz}".format(clazz=routine.__class__.__name__)
+                
+                endTime = datetime.datetime.now()
+                taskWasSuccessful = task.getResponse().wasSuccessful()
+                self._document.wasEndedBy(activity=taskID,trigger=routineID,time=endTime,other_attributes=( ("rs:wasSuccessful",taskWasSuccessful),))
+                
+                if taskWasSuccessful:
+                        attachments = task.getResponse().getAttachments()
+                        for attachment in attachments:
+                                if isinstance(attachment,dataEntities.ReposcannerDataEntity):
+                                        md5Hash = None
+                                        if attachment.fileExists():
+                                                md5Hash = attachment.getMD5Hash()
+                                        dataEntityID = 'rs:dataentity:{objID}'.format(objID=id(attachment))
+                                        dataEntity = self._document.entity(dataEntityID,(
+                                            (prov.PROV_TYPE, "File"),
+                                            ('rs:executionID', attachment.getReposcannerExecutionID()),
+                                            ('rs:path', attachment.getFilePath()),
+                                            ('rs:creator', attachment.getCreator()),
+                                            ('rs:dateCreated', attachment.getDateCreated()),
+                                            ('rs:md5hash', md5Hash),
+                                        ))
+                                        
+                                        if isinstance(attachment,dataEntities.AnnotatedCSVData):
+                                                dataEntity.add_attributes((
+                                                        ('rs:projectID', attachment.getProjectID()),
+                                                        ('rs:projectName', attachment.getProjectName()),
+                                                        ('rs:URL', attachment.getURL()),
+                                                ))
+                                        self._document.wasGeneratedBy(dataEntityID,taskID)
+                                        self._document.wasAttributedTo(dataEntityID,routineID)
+                                else:
+                                        pass #TODO: Add entity data for arbitrary objects generated by repositories, at least so we know they
+                                        #were created.
+                                        
+                                        
+                                        
+                # ('rs:projectid', attachment.getProjectID()),
+                # ('rs:projectname', attachment.getProjectName()),
+                #self._document.wasAttributedTo(artifact, routineID)
+                
              
         def publishNotebook(self,outputPath):
                 """
@@ -228,81 +302,6 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 """
                 pass
 
-
-"""
-class ProvenanceRecord(ABC):
-        pass
-        
-class ProvenanceNode(ProvenanceRecord):
-        pass
-        
-class EntityNode(ProvenanceNode):
-        pass
-        
-class ProcessNode(ProvenanceNode):
-        pass
-        
-class AgentNode(ProvenanceNode):
-        pass
-        
-class ProvenanceRelation(ProvenanceRecord):
-        pass
-        
-        
-class UsedRelation(ProvenanceRelation):
-"""      
-        
-        
-        
-"""
-class ProvenanceGraphNode(ABC):
-        #From MITRE's Provenance Capture and Use: A Practical Guide: "The fundamental 
-        #data structure for provenance is a directed acyclic graph (DAG), where the nodes are 
-        #process invocations and information about data, called process and data nodes 
-        #respectively."
-        #This is the abstract base class for Reposcanner's provenance data graph.
-        
-        def __init__(self,parent=None):
-                self._parent = parent
-                self._children = []
-        
-        def isRootNode(self):
-                return self._parent == None        
-        
-        def setParent(self,parent):
-                self._parent = parent
-                
-        def getParent(self):
-                return self._parent 
-        
-        def hasChild(self,child):
-                return child in self._children
-        
-        def addChild(self,child):
-                if self.hasChild(child):
-                        raise ValueError("Cannot add node as a child because it\
-                        already is a child of the given node.")
-                self._children.append(child)
-                child.setParent(self)
-                
-        def getChildren(self):
-                return self._children
-        
-        @abstractmethod
-        def acceptVisitor(self, visitor):
-                #Used by ProvenanceGraphVisitors to implement a visitor pattern.
-                pass
-                
-
-class InvocationNode(ProvenanceGraphNode):
-        pass   
-                
-class DataNode(ProvenanceGraphNode):
-        #A data node represents data stored in files that is generated and/or consumed
-        #by Reposcanner's routines and analyses.
-        def __init__(self):
-                super().__init__()
-                
-"""               
+            
                 
                 

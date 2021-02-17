@@ -102,7 +102,7 @@ def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
         dataEntity.writeToFile()
         assert(dataEntity.fileExists())
         
-        dataEntityB = data.AnnotatedCSVData("test.csv")
+        dataEntityB = data.AnnotatedCSVData(filePath)
         dataEntityB.readFromFile()
         assert(dataEntityB.getReposcannerExecutionID() == "19m397b")
         assert(dataEntityB.getCreator() == "routine")

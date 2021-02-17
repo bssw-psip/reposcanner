@@ -17,7 +17,7 @@ class ManagerTask:
                 self._request = request
                 self._response = None
         
-        def process(self,routines):
+        def process(self,routines,notebook):
                 """
                 Scan through a set of available routines and see if any can execute
                 the request held by this task. If no routines can handle this request,
@@ -30,8 +30,12 @@ class ManagerTask:
                         if routine.canHandleRequest(self._request):
                                 selectedRoutine = routine
                                 break
-                if selectedRoutine is not None:      
+                if selectedRoutine is not None:
+                        if notebook is not None:
+                                notebook.onTaskStart(self,selectedRoutine)     
                         self._response = selectedRoutine.run(self._request)
+                        if notebook is not None:
+                                notebook.onTaskCompletion(self,selectedRoutine)
                 else:
                         responseFactory = ResponseFactory()
                         self._response = responseFactory.createFailureResponse(
@@ -65,6 +69,9 @@ class ManagerTask:
                 
         def getProjectName(self):
                 return self._projectName
+                
+        def getRequestClassName(self):
+                return self._request.__class__.__name__
                 
         def getURL(self):
                 return self._url
@@ -168,9 +175,7 @@ class ReposcannerManager:
                         
         def executeWithNoGUI(self):
                 for task in tqdm(self._tasks):
-                        task.process(self._routines)
-                        if self._notebook is not None:
-                                self._notebook.onTaskCompletion(task)
+                        task.process(self._routines,self._notebook)
                         response = task.getResponseDescription()
                         print(response)
                                 
@@ -255,10 +260,7 @@ class ReposcannerManager:
                                 footer.addstr(1,4,taskDescription,curses.A_BOLD)
                                 footer.border(2)
                                 footer.refresh()
-                                currentTask.process(self._routines)
-                                
-                                if self._notebook is not None:
-                                        self._notebook.onTaskCompletion(currentTask)
+                                currentTask.process(self._routines,self._notebook)
                                 
                                 messages.insert(0,currentTask.getResponseDescription())
                                 screen.refresh()
