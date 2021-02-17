@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
-import csv,re,os,hashlib
+import csv,re,os,hashlib,yaml
 import datetime
 
 class DataEntityFactory:
         def createAnnotatedCSVData(self,filePath):
                 return AnnotatedCSVData(filePath=filePath)
+                
+        def createYAMLData(self,filePath):
+                return YAMLData(filePath=filePath)
 
 class ReposcannerDataEntity(ABC):
         """
@@ -102,7 +105,53 @@ class ReposcannerDataEntity(ABC):
                 Write data held by this object to the file.
                 """
                 pass
+
+class YAMLData(ReposcannerDataEntity):
+        """
+        This data entity class represents a YAML file, such as those generated
+        by reposcanner-data or config files containing runtime parameters for
+        Reposcanner's execution.
+        
+        These files have no metadata associated with them.
+        """
+        def __init__(self,filePath):
+                """
+                filepath: The path to the file where the data will be written (or read from).
+                data: The data loaded from or written to the output file in dictionary form.
+                """
+                super().__init__(filePath)
+                self._data = {}
                 
+        def validateMetadata(self):
+                return True
+                
+        def getData(self):
+                return self._data
+                
+        def setData(self,data):
+                self._data = data
+                
+        def readFromFile(self):
+                if not os.path.exists(self.getFilePath()):
+                        raise OSError("Reposcanner couldn't find the YAML file ({path})\
+                        Shutting down as a precaution.".format(path=filePath))
+                with open(self.getFilePath()) as f:
+                        try:
+                                contents = yaml.safe_load(f)
+                        except yaml.YAMLError as exception:
+                                print("While loading a YAML file ({path}), Reposcanner encountered \
+                                an exception via PyYAML.".format(path=filePath))
+                                raise exception
+                        if contents == None:
+                                raise OSError("PyYAML tried parsing a file ({path}), but that \
+                                result was None, which means it failed to read the contents of \
+                                the file.".format(path=filePath))
+                self._data = contents
+                
+        def writeToFile(self):
+                with open(self.getFilePath(), 'w') as outfile:
+                    yaml.dump(self._data, outfile, default_flow_style=False)
+                   
 
 class AnnotatedCSVData(ReposcannerDataEntity):
         """

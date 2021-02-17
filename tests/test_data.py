@@ -113,6 +113,62 @@ def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
         assert(dataEntityB.getColumnNames() == columnNames)
         assert(dataEntityB.getColumnDatatypes() == columnDatatypes)
         assert(dataEntityB.validateMetadata())
+
+def test_YAMLData_isDirectlyConstructible():
+        dataEntity = data.YAMLData("test.yaml")
+        
+def test_AnnotatedCSVData_isConstructibleByFactory():
+        factory = data.DataEntityFactory()
+        factory.createYAMLData("test.yaml")
+        
+def test_YAMLData_initiallyHoldsNoData():
+        dataEntity = data.YAMLData("test.yaml")
+        assert(len(dataEntity.getData()) == 0 )
+        
+def test_AnnotatedCSVData_canReadDataFromDisk(tmpdir):
+        sub = tmpdir.mkdir("datatest")
+        filePath = str(sub.join("test.yaml"))
+        
+        with open(filePath, 'w') as outfile:
+                contents = """
+                ADTR02:
+                  name: IDEAS Productivity
+                  urls: 
+                  - https://github.com/bssw-psip/ptc-catalog
+                  - https://github.com/bssw-psip/practice-guides
+                  - https://github.com/bssw-psip/bssw-psip.github.io
+                """
+                outfile.write(contents)
+        dataEntity = data.YAMLData(filePath)
+        dataEntity.readFromFile()
+        dataDict = dataEntity.getData()
+        assert('ADTR02' in dataDict)
+        assert('name' in dataDict['ADTR02'] and dataDict['ADTR02']['name'] == 'IDEAS Productivity')
+        assert('urls' in dataDict['ADTR02'] and len(dataDict['ADTR02']['urls']) == 3)
+
+def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
+        sub = tmpdir.mkdir("datatest")
+        filePath = str(sub.join("test.yaml"))
+        dataEntity = data.YAMLData(filePath)
+        dataDict = {'ADTR02': {'name': 'IDEAS Productivity',
+                'urls': ['https://github.com/bssw-psip/ptc-catalog', 
+                        'https://github.com/bssw-psip/practice-guides', 
+                        'https://github.com/bssw-psip/bssw-psip.github.io']}}
+        dataEntity.setData(dataDict)
+        dataEntity.writeToFile()
+        
+        dataEntityB = data.YAMLData(filePath)
+        dataEntityB.readFromFile()
+        dataDictB = dataEntityB.getData()
+        assert('ADTR02' in dataDictB)
+        assert('name' in dataDictB['ADTR02'] and dataDictB['ADTR02']['name'] == 'IDEAS Productivity')
+        assert('urls' in dataDictB['ADTR02'] and len(dataDictB['ADTR02']['urls']) == 3)       
+        
+        
+        
+        
+               
+        
         
         
         
