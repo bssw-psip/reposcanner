@@ -244,33 +244,33 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 self._document.wasGeneratedBy("rs:ReposcannerManager",task)
                 
-        def onTaskStart(self,task,routine):
+        def onTaskStart(self,task,agent):
                 """
                 Called when a ManagerTask object is created.
                 
                 task: The ManagerTask object.
-                routine: The RepositoryRoutine object that is expected to handle the task.
+                agent: The RepositoryRoutine or DataAnalysis object that is expected to handle the task.
                 """
                 taskID = "rs:task{taskid}".format(taskid=id(task))
-                routineID = "rs:{clazz}".format(clazz=routine.__class__.__name__)
+                agentID = "rs:{clazz}".format(clazz=agent.__class__.__name__)
                 
                 startTime = datetime.datetime.now()
                 
-                self._document.wasStartedBy(activity=taskID,trigger=routineID,time=startTime)
+                self._document.wasStartedBy(activity=taskID,trigger=agentID,time=startTime)
              
-        def onTaskCompletion(self,task,routine):
+        def onTaskCompletion(self,task,agent):
                 """
                 Called when a ManagerTask object has been processed and has received a response.
                 
                 task: The ManagerTask object.
                 """
                 taskID = "rs:task{taskid}".format(taskid=id(task))
-                routineID = "rs:{clazz}".format(clazz=routine.__class__.__name__)
+                agentID = "rs:{clazz}".format(clazz=agent.__class__.__name__)
                 
                 endTime = datetime.datetime.now()
                 taskWasSuccessful = task.getResponse().wasSuccessful()
                 taskMessage = task.getResponse().getMessage()
-                self._document.wasEndedBy(activity=taskID,trigger=routineID,time=endTime,other_attributes=(
+                self._document.wasEndedBy(activity=taskID,trigger=agentID,time=endTime,other_attributes=(
                         ("rs:wasSuccessful",taskWasSuccessful),
                         ("rs:message",str(taskMessage))        
                 ))
@@ -299,7 +299,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                                                         ('rs:URL', attachment.getURL()),
                                                 ))
                                         self._document.wasGeneratedBy(dataEntityID,taskID)
-                                        self._document.wasAttributedTo(dataEntityID,routineID)
+                                        self._document.wasAttributedTo(dataEntityID,agentID)
                                 else:
                                         """
                                         Routines are free to return objects that are not of the type ReposcannerDataEntity,
@@ -310,7 +310,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                                             ('rs:dataType',str(attachment.__class__.__name__)),
                                             ))
                                         self._document.wasGeneratedBy(dataEntityID,taskID)
-                                        self._document.wasAttributedTo(dataEntityID,routineID)
+                                        self._document.wasAttributedTo(dataEntityID,agentID)
                 
              
         def publishNotebook(self,outputPath):
