@@ -112,22 +112,22 @@ class AbstractLabNotebook(ABC):
                 pass
                 
         @abstractmethod
-        def onTaskStart(self,task,routine):
+        def onTaskStart(self,task,agent):
                 """
                 Called when a ManagerTask object is created.
                 
                 task: The ManagerTask object.
-                routine: The RepositoryRoutine object that is expected to handle the task.
+                agent: The RepositoryRoutine or DataAnalysis object that is expected to handle the task.
                 """
                 pass
         
         @abstractmethod     
-        def onTaskCompletion(self,task,routine):
+        def onTaskCompletion(self,task,agent):
                 """
                 Called when a ManagerTask object has been processed and has received a response.
                 
                 task: The ManagerTask object.
-                routine: The RepositoryRoutine object that is expected to handle the task.
+                agent: The RepositoryRoutine or DataAnalysis object that is expected to handle the task.
                 """
                 pass
         
@@ -321,7 +321,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 """
                 dotRepresentation = prov_to_dot(self._document)
                 executionID = ReposcannerRunInformant().getReposcannerExecutionID()
-                dotRepresentation.write_png("run_{executionID}.png".format(executionID=executionID))
+                #dotRepresentation.write_png("run_{executionID}.png".format(executionID=executionID))
 
             
                 

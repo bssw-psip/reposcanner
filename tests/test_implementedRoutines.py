@@ -18,7 +18,7 @@ def test_ContributionPeriodRoutine_canHandleAppropriateRequest():
         assert(routine.canHandleRequest(request))
         
 def test_ContributionPeriodRoutine_willRejectInAppropriateRequest():
-        request = reposcanner.requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        request = reposcanner.requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         routine = contributionRoutines.ContributionPeriodRoutine()
         assert(not routine.canHandleRequest(request))
         
@@ -38,7 +38,7 @@ def test_ContributorAccountListRoutine_canHandleAppropriateRequest():
         assert(routine.canHandleRequest(request))
         
 def test_ContributorAccountListRoutine_willRejectInAppropriateRequest():
-        request = reposcanner.requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        request = reposcanner.requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         routine = contributionRoutines.ContributorAccountListRoutine()
         assert(not routine.canHandleRequest(request))
         

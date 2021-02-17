@@ -54,7 +54,7 @@ class ManagerTask(ABC):
                 else:
                         responseFactory = ResponseFactory()
                         self._response = responseFactory.createFailureResponse(
-                                message= "No routine was found that could \
+                                message= "No routine/analysis was found that could \
                                 execute the request ({requestType}).".format(
                                 requestType=type(request)))
         
@@ -126,6 +126,14 @@ class ManagerRoutineTask(ManagerTask):
                                 reason=self._response.getMessage()
                         )
                         
+class ManagerAnalysisTask(ManagerTask):
+        """
+        This Task class wraps requests and responses for RepositoryRoutines.
+        """
+        
+        def getResponseDescription(self):
+                pass
+                        
 
 class ReposcannerManager:
         """
@@ -159,7 +167,7 @@ class ReposcannerManager:
                 
         def _buildTask(self,projectID,projectName,url,routineOrAnalysis):
                 """Constructs a task to hold a request/response pair."""
-                requestType = routine.getRequestType()
+                requestType = routineOrAnalysis.getRequestType()
                 
                 if requestType.isRoutineRequestType():
                         if requestType.requiresOnlineAPIAccess():
@@ -170,11 +178,13 @@ class ReposcannerManager:
                                 request = requestType(repositoryURL=url,
                                 outputDirectory=self._outputDirectory,
                                 workspaceDirectory=self._workspaceDirectory)
+                        task = ManagerRoutineTask(projectID=projectID,projectName=projectName,url=url,request=request)
+                        return task
                 elif requestType.isAnalysisRequestType():
                         pass #TODO Construct analysis requests.
-                
-                task = ManagerTask(projectID=projectID,projectName=projectName,url=url,request=request)
-                return task
+                        
+                        #task = ManagerAnalysisTask(request=request)
+                        #return task
         
         def _prepareTasks(self,repositoryDictionary,credentialsDictionary):
                 """Interpret the user's inputs so we know what repositories we need to

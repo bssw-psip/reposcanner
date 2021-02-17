@@ -2,15 +2,15 @@ import pytest
 import reposcanner.requests as requests
 from reposcanner.git import CredentialKeychain
 
-def test_BaseRequestModel_isDirectlyConstructible():
-        requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+def test_RoutineRequestModel_isDirectlyConstructible():
+        requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         
-def test_BaseRequestModel_hasNoErrorsForValidInput():
-        request = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+def test_RoutineRequestModel_hasNoErrorsForValidInput():
+        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         assert(not request.hasErrors())
         
-def test_BaseRequestModel_canGenerateAndStoreRepositoryLocation():
-        request = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+def test_RoutineRequestModel_canGenerateAndStoreRepositoryLocation():
+        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         location = request.getRepositoryLocation()
         assert(location != None)
         assert(location.isRecognizable())
@@ -18,25 +18,25 @@ def test_BaseRequestModel_canGenerateAndStoreRepositoryLocation():
         assert(location.getRepositoryName() == "repo")
         
         
-def test_BaseRequestModel_badURLMeansError():
-        requestA = requests.BaseRequestModel(repositoryURL="garbage",outputDirectory="./")
+def test_RoutineRequestModel_badURLMeansError():
+        requestA = requests.RoutineRequestModel(repositoryURL="garbage",outputDirectory="./")
         assert(requestA.hasErrors())
         
-        requestB = requests.BaseRequestModel(repositoryURL="https://unrecognizedhost.org/owner/repo",outputDirectory="./")
+        requestB = requests.RoutineRequestModel(repositoryURL="https://unrecognizedhost.org/owner/repo",outputDirectory="./")
         assert(requestB.hasErrors())
         
-        requestC = requests.BaseRequestModel(repositoryURL=None,outputDirectory="./")
+        requestC = requests.RoutineRequestModel(repositoryURL=None,outputDirectory="./")
         assert(requestC.hasErrors())
 
-def test_BaseRequestModel_canStoreOutputDirectory():
-        request = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+def test_RoutineRequestModel_canStoreOutputDirectory():
+        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         assert(request.getOutputDirectory() == "./")
         
-def test_BaseRequestModel_badOutputDirectoryMeansError():
-        requestA = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory=None)
+def test_RoutineRequestModel_badOutputDirectoryMeansError():
+        requestA = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory=None)
         assert(requestA.hasErrors())
         
-        requestB = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./nonexistent/directory/")
+        requestB = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./nonexistent/directory/")
         assert(requestB.hasErrors())
         
 def test_OnlineRoutineRequest_isDirectlyConstructible():

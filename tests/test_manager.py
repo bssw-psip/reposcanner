@@ -1,5 +1,10 @@
 import reposcanner.manager as management
 
+#def test_ManagerRoutineTask_isDirectlyConstructible():
+        
+#        projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit/",request
+
+
 def test_ReposcannerManager_isDirectlyConstructible():
         args = type('', (), {})()
         args.outputDirectory = "./"

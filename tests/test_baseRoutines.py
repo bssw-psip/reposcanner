@@ -16,7 +16,7 @@ def test_RepositoryRoutine_runCanReturnResponse(mocker):
                 return response
         routines.RepositoryRoutine.execute = executeGeneratesResponse
         genericRoutine = routines.RepositoryRoutine()
-        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         response = genericRoutine.run(genericRequest)
         assert(response.wasSuccessful())
         
@@ -31,7 +31,7 @@ def test_RepositoryRoutine_exportCanAddAttachments(mocker):
         routines.RepositoryRoutine.execute = executeGeneratesResponse
         routines.RepositoryRoutine.export = exportAddsAnAttachment
         genericRoutine = routines.RepositoryRoutine()
-        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         response = genericRoutine.run(genericRequest)
         assert(response.wasSuccessful())
         assert(response.hasAttachments())
@@ -49,7 +49,7 @@ def test_OfflineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespon
         routines.OfflineRepositoryRoutine.canHandleRequest = canNeverHandleRequest
         genericRoutine = routines.OfflineRepositoryRoutine()
         
-        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         response = genericRoutine.run(genericRequest)
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
@@ -63,7 +63,7 @@ def test_OfflineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker
         routines.OfflineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
         genericRoutine = routines.OfflineRepositoryRoutine()
         
-        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         genericRequest.addError(message="Something has gone horribly wrong.")
         response = genericRoutine.run(genericRequest)
         assert(not response.wasSuccessful())
@@ -83,7 +83,7 @@ def test_OnlineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespons
         routines.OnlineRepositoryRoutine.canHandleRequest = canNeverHandleRequest
         genericRoutine = routines.OnlineRepositoryRoutine()
         
-        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         response = genericRoutine.run(genericRequest)
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
@@ -96,7 +96,7 @@ def test_OnlineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker)
         routines.OnlineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
         genericRoutine = routines.OnlineRepositoryRoutine()
         
-        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         genericRequest.addError(message="Something has gone horribly wrong.")
         response = genericRoutine.run(genericRequest)
         assert(not response.wasSuccessful())
@@ -114,7 +114,7 @@ def test_OnlineRepositoryRoutine_inabilityOfSessionCreatorToHandleRepositoryResu
         emptyAPICreator = gitEntityFactory.createVCSAPISessionCompositeCreator()
         genericRoutine.sessionCreator = emptyAPICreator
         
-        genericRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         response = genericRoutine.run(genericRequest)
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
@@ -125,14 +125,14 @@ def test_OnlineRepositoryRoutine_sessionCreatorSupportsGitHub(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
         genericRoutine = routines.OnlineRepositoryRoutine()
         sessionCreator = genericRoutine.sessionCreator
-        genericGitHubRequest = requests.BaseRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        genericGitHubRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         assert(sessionCreator.canHandleRepository(genericGitHubRequest.getRepositoryLocation()))
         
 def test_OnlineRepositoryRoutine_sessionCreatorSupportsGitlab(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
         genericRoutine = routines.OnlineRepositoryRoutine()
         sessionCreator = genericRoutine.sessionCreator
-        genericGitlabRequest = requests.BaseRequestModel(repositoryURL="https://gitlab.com/owner/repo",outputDirectory="./")
+        genericGitlabRequest = requests.RoutineRequestModel(repositoryURL="https://gitlab.com/owner/repo",outputDirectory="./")
         assert(sessionCreator.canHandleRepository(genericGitlabRequest.getRepositoryLocation()))
 
 

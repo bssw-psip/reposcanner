@@ -3,8 +3,30 @@ import reposcanner.git as gitEntities
 import os.path
 from abc import ABC, abstractmethod
 
-
 class BaseRequestModel:
+        """
+        The base class for all request models. The frontend is responsible for phrasing their requests in the
+        form of a request model which routines/analyses understand.
+        """
+        def addError(self, message):
+                self._errors.append(message)
+
+        def hasErrors(self):
+                return len(self._errors) > 0
+
+        def getErrors(self):
+                return self._errors
+                
+        @classmethod
+        def isRoutineRequestType(cls):
+                return False
+        
+        @classmethod      
+        def isAnalysisRequestType(cls):
+                return False     
+
+
+class RoutineRequestModel(BaseRequestModel):
         """
         The base class for all request models. The frontend is responsible for phrasing their requests in the
         form of a request model which routines understand.
@@ -52,25 +74,16 @@ class BaseRequestModel:
         def getOutputDirectory(self):
                 return self._outputDirectory
 
-        def addError(self, message):
-                self._errors.append(message)
-
-        def hasErrors(self):
-                return len(self._errors) > 0
-
-        def getErrors(self):
-                return self._errors
-                
         @classmethod
         def isRoutineRequestType(cls):
-                return False
+                return True
         
         @classmethod      
         def isAnalysisRequestType(cls):
                 return False
                 
 
-class OnlineRoutineRequest(BaseRequestModel):
+class OnlineRoutineRequest(RoutineRequestModel):
         """
         The base class for requests to routines that use an online API to compute results. 
         Request classes for OnlineRepositoryRoutine should inherit from this class.
@@ -83,14 +96,6 @@ class OnlineRoutineRequest(BaseRequestModel):
                 version control API.
                 """
                 return True
-                
-        @classmethod
-        def isRoutineRequestType(cls):
-                return True
-        
-        @classmethod      
-        def isAnalysisRequestType(cls):
-                return False
         
         def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
                 """
@@ -128,7 +133,7 @@ class OnlineRoutineRequest(BaseRequestModel):
         def getCredentials(self):
                 return self._credentials
                 
-class OfflineRoutineRequest(BaseRequestModel):
+class OfflineRoutineRequest(RoutineRequestModel):
         """
         The base class for requests to routines that operate on an offline clone to compute results. 
         Request classes for OfflineRepositoryRoutine should inherit from this class.
@@ -140,14 +145,6 @@ class OfflineRoutineRequest(BaseRequestModel):
                 Tells the caller whether this request requires access to an online
                 version control API.
                 """
-                return False
-                
-        @classmethod
-        def isRoutineRequestType(cls):
-                return True
-        
-        @classmethod      
-        def isAnalysisRequestType(cls):
                 return False
         
         def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
