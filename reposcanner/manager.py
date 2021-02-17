@@ -24,6 +24,7 @@ class ManagerTask:
                 this method will create a failure response and store it.
                 
                 routines: An iterable of RepositoryRoutine objects.
+                notebook: A ReposcannerNotebook object, used for logging results.
                 """
                 selectedRoutine = None
                 for routine in routines:
@@ -111,14 +112,13 @@ class ReposcannerManager:
         def __init__(self,notebook=None,outputDirectory="./",workspaceDirectory="./",gui=False):
                 self._notebook = notebook
                 self._routines = []
-                self._initializeRoutines()
                 self._tasks = []
                 self._keychain = None
                 self._outputDirectory = outputDirectory
                 self._workspaceDirectory = workspaceDirectory
                 self._guiModeEnabled = gui
                 
-        def _initializeRoutines(self):
+        def _initializeRoutines(self,configData):
                 """Constructs RepositoryRoutine objects that belong to the manager."""
                 #TODO: Replace this with a routine that initializes routines based on an
                 #input config file.
@@ -163,7 +163,7 @@ class ReposcannerManager:
                                            self._tasks.append(task)
                                            
                 
-        def run(self,repositoryDictionary,credentialsDictionary):
+        def run(self,repositoriesDataFile,credentialsDataFile,configDataFile):
                 #self._startTime = datetime.datetime.today()
                 self._prepareTasks(repositoryDictionary,credentialsDictionary)
                 

@@ -1,32 +1,8 @@
 from reposcanner.manager import ReposcannerRoutineManager
 import argparse, os, logging
-import yaml
+import reposcanner.data as data
 
 logging.basicConfig(filename='reposcanner.log',level=logging.DEBUG)
-
-def loadYAMLFile(filePath):
-        """
-        Load in a YAML file containing the repositories the user wants to collect data on.
-        
-        filePath: The path to the YAML file, a string.
-        """
-        if not os.path.exists(filePath):
-                raise OSError("Reposcanner couldn't find the YAML file ({path})\
-                Shutting down as a precaution.".format(path=filePath))
-        with open(filePath) as f:
-                try:
-                        contents = yaml.safe_load(f)
-                except yaml.YAMLError as exception:
-                        print("While loading a YAML file ({path}), Reposcanner encountered \
-                        an exception via PyYAML.".format(path=filePath))
-                        raise exception
-                if contents == None:
-                        raise OSError("PyYAML tried parsing a file ({path}), but that \
-                        result was None, which means it failed to read the contents of \
-                        the file.".format(path=filePath))
-        return contents
-                
-                
 
 def scannerMain(args):
         """
@@ -35,13 +11,21 @@ def scannerMain(args):
         
         notebook = ReposcannerLabNotebook()
         
+        dataEntityFactory = data.DataEntityFactory()
+        
+        repositoriesDataFile = dataEntityFactory.createYAMLData(args.repositories)
+        credentialsDataFile = dataEntityFactory.createYAMLData(args.credentials)
+        configDataFile = dataEntityFactory.createYAMLData(args.config)
+        
+        repositoriesDataFile.readFromFile()
+        credentialsDataFile.readFromFile()
+        configDataFile.readFromFile()
+        
         notebook.onStartup(args)
         
-        repositoryDictionary = loadYAMLFile(args.repositories)
-        credentialsDictionary = loadYAMLFile(args.credentials)
         
         manager = ReposcannerManager(notebook=notebook,outputDirectory=args.outputDirectory,workspaceDirectory=args.workspaceDirectory,gui=args.gui)
-        manager.run(repositoryDictionary=repositoryDictionary,credentialsDictionary=credentialsDictionary)
+        manager.run(repositoriesDataFile,credentialsDataFile,configDataFile)
         
         notebook.onExit()
         notebook.publishNotebook(args.notebookOutputPath)
@@ -53,6 +37,7 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description='The IDEAS-ECP PSIP Team Repository Scanner.')
         parser.add_argument('--repositories', action='store', type=str, help='A list of repositories to collect data on, a YAML file (see example).')
         parser.add_argument('--credentials', action='store', type=str, help='A list of credentials needed to access the repositories, a YAML file (see example).')
+        parser.add_argument('--config', action='store', type=str, help='A YAML file specifying what routines and analyses Reposcanner should run (see example).')
         parser.add_argument('--outputDirectory',action='store',type=str,default='./',help='The path where Reposcanner should output files. \
                 By default this is done in the directory from which this script is run.')
         parser.add_argument('--notebookOutputPath',action='store',type=str,default="./notebook.log",help='The path where Reposcanner should output a file containing a log that \

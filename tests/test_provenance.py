@@ -5,24 +5,6 @@ import reposcanner.manager as manager
 import reposcanner.response as responses
 import reposcanner.data as dataEntities
 
-import prov.model as prov #TMP
-import json
-
-def test_TMP_canStoreEntitiesInProvDocument():
-        document = prov.ProvDocument()
-        document.add_namespace('rs', 'reposcanner/')
-        dataEntity = document.entity("rs:dataentity:4599552400",(
-            (prov.PROV_TYPE, "File"),
-            ('rs:executionID', "b86d8a4c-7131-11eb-a73f-4c3275929e39"),
-            ('rs:path', "loggedentitytest.csv"),
-            ('rs:creator', "ContributorAccountListRoutine"),
-            ('rs:dateCreated', "2021-02-17"),
-            ('rs:projectID', "PROJID"),
-            ('rs:projectName', "SciKit"),
-            ('rs:URL', "https://github.com/scikit/scikit")
-        ))
-        serialized = document.serialize()
-
 def test_ReposcannerRunInformant_isDirectlyConstructible():
         informant = provenance.ReposcannerRunInformant()
 
@@ -38,22 +20,21 @@ def test_ReposcannerRunInformant_differentInstancesProvideTheSameExecutionID():
 def test_ReposcannerLabNotebook_isDirectlyConstructible():
         notebook = provenance.ReposcannerLabNotebook()
         
-def test_ReposcannerLabNotebook_logsManagerOnConstruction():
-        notebook = provenance.ReposcannerLabNotebook()
-        jsonDocument = notebook.getJSONRepresentation()
-        print(jsonDocument)
-        assert('agent' in jsonDocument)
-        assert('rs:ReposcannerManager' in jsonDocument['agent'])
-        
 def test_ReposcannerLabNotebook_canLogArgsOnStartup():
         notebook = provenance.ReposcannerLabNotebook()
         args = type('', (), {})()
         args.repositories = "repositories.yaml"
         args.credentials = "credentials.yaml"
+        args.config = "config.yaml"
         notebook.onStartup(args)
         jsonDocument = notebook.getJSONRepresentation()
+        
+        assert('agent' in jsonDocument)
+        assert('rs:ReposcannerManager' in jsonDocument['agent'])
+        
         assert(jsonDocument['entity']['rs:repositories']['rs:path'] == 'repositories.yaml')
         assert(jsonDocument['entity']['rs:credentials']['rs:path'] == 'credentials.yaml')
+        assert(jsonDocument['entity']['rs:config']['rs:path'] == 'config.yaml')
         
 def test_ReposcannerLabNotebook_canLogCreatedRoutines():
         routine = contributionRoutines.ContributorAccountListRoutine()
@@ -249,6 +230,61 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
                 if relation['prov:entity'] == dataEntityID and relation['prov:activity'] == taskID:
                         relationExistsBetweenTaskAndFile = True
         assert(relationExistsBetweenTaskAndFile)
+        
+def test_ReposcannerLabNotebook_canPublishResults():
+        
+        def generateCSVDataFile():
+                informant = provenance.ReposcannerRunInformant()
+                dataEntity = dataEntities.AnnotatedCSVData("loggedentitytest.csv")
+                timestamp = datetime.date.today()
+        
+                columnNames = ["Login Name","Actual Name","Email(s)"]
+                columnDatatypes = ["str","str","str"]
+        
+                dataEntity.setReposcannerExecutionID(informant.getReposcannerExecutionID())
+                dataEntity.setCreator("ContributorAccountListRoutine")
+                dataEntity.setDateCreated(timestamp)
+                dataEntity.setProjectID("PROJID")
+                dataEntity.setProjectName("SciKit")
+                dataEntity.setURL("https://github.com/scikit/scikit")
+                dataEntity.setColumnNames(columnNames)
+                dataEntity.setColumnDatatypes(columnDatatypes)
+        
+                dataEntity.addRecord(["johnsmith","John Smith","jsmith@gmail.com"])
+                dataEntity.addRecord(["alicejones","Alice Jones","alice@llnl.gov"])
+                dataEntity.writeToFile()
+        
+        generateCSVDataFile()
+        
+        def executeGeneratesResponse(self,request):
+                factory = responses.ResponseFactory()
+                response = factory.createSuccessResponse(attachments=[])
+                return response
+        def exportAddsAnAttachment(self,request,response):
+                factory = dataEntities.DataEntityFactory()
+                csvDataEntity = factory.createAnnotatedCSVData(filePath="loggedentitytest.csv")
+                csvDataEntity.readFromFile()
+                response.addAttachment(csvDataEntity)
+        contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
+        contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
+        
+        notebook = provenance.ReposcannerLabNotebook()
+        
+        request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
+        outputDirectory="./",
+        token = "ab5571mc1")
+        task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        
+        routine = contributionRoutines.ContributorAccountListRoutine()
+        
+        
+        
+        notebook.onTaskCreation(task)
+        notebook.onRoutineCreation(routine)
+        
+        task.process(routines=[routine],notebook=notebook)
+        
+        notebook.publishNotebook(outputPath="output.log")
         
         
         
