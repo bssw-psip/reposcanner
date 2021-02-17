@@ -178,16 +178,9 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        
-        print(notebook.getJSONRepresentation()) #TMP
-        
         task.process(routines=[routine],notebook=notebook)
         
-        
-        print(notebook.getProvnRepresentation())
-        
         jsonDocument = notebook.getJSONRepresentation()
-        print(jsonDocument)
         taskID = list(jsonDocument['activity'].keys())[0]
         
         relationExistsBetweenRoutineAndTask = False
@@ -211,6 +204,51 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
                         relationExistsBetweenTaskAndFile = True
         assert(relationExistsBetweenTaskAndFile)
         
+def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpdir):
+        def executeGeneratesResponse(self,request):
+                factory = responses.ResponseFactory()
+                response = factory.createSuccessResponse(attachments=[])
+                return response
+        def exportAddsAnAttachment(self,request,response):
+                factory = dataEntities.DataEntityFactory()
+                nonstandardData = {"a" : 5, "b" : 255}
+                response.addAttachment(nonstandardData)
+        contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
+        contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
+        
+        notebook = provenance.ReposcannerLabNotebook()
+        
+        request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
+        outputDirectory="./",
+        token = "ab5571mc1")
+        task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        
+        routine = contributionRoutines.ContributorAccountListRoutine()
+        
+        
+        
+        notebook.onTaskCreation(task)
+        notebook.onRoutineCreation(routine)
+        
+        task.process(routines=[routine],notebook=notebook)
+        
+        jsonDocument = notebook.getJSONRepresentation()
+        print(jsonDocument)
+        taskID = list(jsonDocument['activity'].keys())[0]
+        
+        dataEntityID = None
+        for entityID in jsonDocument['entity']:
+                dataEntity = jsonDocument['entity'][entityID]
+                if dataEntity['rs:dataType'] == 'dict':
+                        dataEntityID = entityID
+        assert(dataEntityID is not None)
+        
+        relationExistsBetweenTaskAndFile = False
+        for relationID in jsonDocument['wasGeneratedBy']:
+                relation = jsonDocument['wasGeneratedBy'][relationID]
+                if relation['prov:entity'] == dataEntityID and relation['prov:activity'] == taskID:
+                        relationExistsBetweenTaskAndFile = True
+        assert(relationExistsBetweenTaskAndFile)
         
         
         
