@@ -72,7 +72,12 @@ class ReposcannerDataEntity(ABC):
                 """
                 Compute the MD5 checksum for a file for provenance-tracking purposes.
                 """
-                return hashlib.md5(self._filePath).hexdigest()  
+
+                hash_md5 = hashlib.md5()
+                with open(self._filePath, "rb") as f:
+                        for chunk in iter(lambda: f.read(4096), b""):
+                                hash_md5.update(chunk)
+                return hash_md5.hexdigest()
         
         @abstractmethod      
         def validateMetadata(self):
@@ -195,7 +200,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
                         for index in range(len(columnNames)):
                                 recordDict[columnNames[index]] = record[index]
                         recordDicts.append(recordDict)
-                return recordDicts        
+                return recordDicts       
                 
         def validateMetadata(self):
                 hasExecutionID = self.getReposcannerExecutionID() is not None

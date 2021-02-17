@@ -5,6 +5,24 @@ import reposcanner.manager as manager
 import reposcanner.response as responses
 import reposcanner.data as dataEntities
 
+import prov.model as prov #TMP
+import json
+
+def test_TMP_canStoreEntitiesInProvDocument():
+        document = prov.ProvDocument()
+        document.add_namespace('rs', 'reposcanner/')
+        dataEntity = document.entity("rs:dataentity:4599552400",(
+            (prov.PROV_TYPE, "File"),
+            ('rs:executionID', "b86d8a4c-7131-11eb-a73f-4c3275929e39"),
+            ('rs:path', "loggedentitytest.csv"),
+            ('rs:creator', "ContributorAccountListRoutine"),
+            ('rs:dateCreated', "2021-02-17"),
+            ('rs:projectID', "PROJID"),
+            ('rs:projectName', "SciKit"),
+            ('rs:URL', "https://github.com/scikit/scikit")
+        ))
+        serialized = document.serialize()
+
 def test_ReposcannerRunInformant_isDirectlyConstructible():
         informant = provenance.ReposcannerRunInformant()
 
@@ -19,6 +37,13 @@ def test_ReposcannerRunInformant_differentInstancesProvideTheSameExecutionID():
 
 def test_ReposcannerLabNotebook_isDirectlyConstructible():
         notebook = provenance.ReposcannerLabNotebook()
+        
+def test_ReposcannerLabNotebook_logsManagerOnConstruction():
+        notebook = provenance.ReposcannerLabNotebook()
+        jsonDocument = notebook.getJSONRepresentation()
+        print(jsonDocument)
+        assert('agent' in jsonDocument)
+        assert('rs:ReposcannerManager' in jsonDocument['agent'])
         
 def test_ReposcannerLabNotebook_canLogArgsOnStartup():
         notebook = provenance.ReposcannerLabNotebook()
@@ -145,12 +170,20 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         outputDirectory="./",
         token = "ab5571mc1")
         task = manager.ManagerTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
-        notebook.onTaskCreation(task)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
+        
+        
+        
+        notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        task.process([routine],notebook)
+        
+        print(notebook.getJSONRepresentation()) #TMP
+        
+        task.process(routines=[routine],notebook=notebook)
+        
+        
         print(notebook.getProvnRepresentation())
         
         jsonDocument = notebook.getJSONRepresentation()
@@ -161,14 +194,13 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         for relationID in jsonDocument['wasEndedBy']:
                 relation = jsonDocument['wasEndedBy'][relationID]
                 if relation['prov:activity'] == taskID and relation['prov:trigger'] == 'rs:ContributorAccountListRoutine':
-                        assert('prov:time' in relation)
                         relationExistsBetweenRoutineAndTask = True
         assert(relationExistsBetweenRoutineAndTask)
         
         dataEntityID = None
         for entityID in jsonDocument['entity']:
-                dataEntity = jsonDocument['entity']['entityID']
-                if dataEntity['rs:path'] == 'datatest/loggedentitytest.csv':
+                dataEntity = jsonDocument['entity'][entityID]
+                if dataEntity['rs:path'] == 'loggedentitytest.csv':
                         dataEntityID = entityID
         assert(dataEntityID is not None)
         
@@ -176,11 +208,9 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         for relationID in jsonDocument['wasGeneratedBy']:
                 relation = jsonDocument['wasGeneratedBy'][relationID]
                 if relation['prov:entity'] == dataEntityID and relation['prov:activity'] == taskID:
-                        assert('prov:time' in relation)
                         relationExistsBetweenTaskAndFile = True
         assert(relationExistsBetweenTaskAndFile)
         
-        assert(False)
         
         
         
