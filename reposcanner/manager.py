@@ -53,7 +53,9 @@ class ManagerTask(ABC):
                                 break
                 if selectedAgent is not None:
                         if notebook is not None:
-                                notebook.onTaskStart(self,store,selectedAgent)     
+                                notebook.onTaskStart(self,store,selectedAgent)
+                        if self._request.isAnalysisRequestType():
+                                self._request.fetchDataFromStore(store)
                         self._response = selectedAgent.run(self._request)
                         if notebook is not None:
                                 notebook.onTaskCompletion(self,selectedAgent)

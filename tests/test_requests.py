@@ -2,8 +2,33 @@ import pytest
 import reposcanner.requests as requests
 from reposcanner.git import CredentialKeychain
 
+
+def test_AnalysisRequestModel_isDirectlyConstructible():
+        analysisRequest = requests.AnalysisRequestModel()
+
+def test_AnalysisRequestModel_isAnAnalysisRequestType():
+        analysisRequest = requests.AnalysisRequestModel()
+        assert(analysisRequest.isAnalysisRequestType())
+        assert(not analysisRequest.isRoutineRequestType())
+
+def test_AnalysisRequestModel_hasNoErrorsByDefault():
+        analysisRequest = requests.AnalysisRequestModel()
+        assert(not analysisRequest.hasErrors())
+
+def test_AnalysisRequestModel_defaultDataCriteriaAcceptsLiterallyEverything():
+        analysisRequest = requests.AnalysisRequestModel()
+        assert(analysisRequest.getDataCriteria() == analysisRequest.criteriaFunction)
+        assert(analysisRequest.criteriaFunction("garbage") is True)
+        assert(analysisRequest.criteriaFunction(42) is True)
+        assert(analysisRequest.criteriaFunction(analysisRequest) is True)
+
 def test_RoutineRequestModel_isDirectlyConstructible():
         requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        
+def test_AnalysisRequestModel_isARoutineRequestType():
+        routineRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        assert(not routineRequest.isAnalysisRequestType())
+        assert(routineRequest.isRoutineRequestType())
         
 def test_RoutineRequestModel_hasNoErrorsForValidInput():
         request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")

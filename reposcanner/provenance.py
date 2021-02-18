@@ -259,6 +259,20 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 startTime = datetime.datetime.now()
                 
                 self._document.wasStartedBy(activity=taskID,trigger=agentID,time=startTime)
+                
+                #If the request is an analysis request, we can probe the request to see which
+                #files it intends to grab from the data store.
+                request = task.getRequest()
+                if request.isAnalysisRequestType():
+                        filesToBeUsedInAnalysis = store.getByCriteria(request.getDataCriteria())
+                        for entity in filesToBeUsedInAnalysis:
+                                entityID = None
+                                if isinstance(attachment,dataEntities.ReposcannerDataEntity):
+                                        entityID = 'rs:dataentity:{objID}'.format(objID=id(entity)) 
+                                else:
+                                        entityID = 'rs:dataentity:nonstandard:{objID}'.format(objID=id(entity))
+                                self._document.usage(taskID,entityID)
+                                        
              
         def onTaskCompletion(self,task,agent):
                 """

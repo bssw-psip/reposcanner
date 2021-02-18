@@ -37,6 +37,7 @@ class AnalysisRequestModel(BaseRequestModel):
                 
         def __init__(self):
                 super().__init__()
+                self._data = []
                 
         def criteriaFunction(self,entity):
                 """
@@ -61,6 +62,24 @@ class AnalysisRequestModel(BaseRequestModel):
                 is needed by the analysis.
                 """
                 return self.criteriaFunction
+                
+        def fetchDataFromStore(self,store):
+                """
+                This is called by ManagerTask.process() prior to running an analysis request.
+                It loads any data that fits the request's criteria into the request.
+                
+                store: A DataEntityStore instance.
+                """
+                for entity in store.getByCriteria(self.getDataCriteria()):
+                        self._data.append(entity)
+                
+        def getData(self):
+                """
+                Get any stored data associated with this request.
+                Called by the DataAnalysis instance responsible for handling the request.
+                """
+                return self._data
+                
 
 class RoutineRequestModel(BaseRequestModel):
         """
