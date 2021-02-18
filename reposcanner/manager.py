@@ -10,8 +10,8 @@ from abc import ABC, abstractmethod
 class TaskFactory:
         def createManagerRoutineTask(self,projectID,projectName,url,request):
                 return ManagerRoutineTask(projectID,projectName,url,request)
-        def createManagerAnalysisTask(self):
-                pass #TODO: Create factory method for ManagerAnalysisTask
+        def createManagerAnalysisTask(self,request):
+                return ManagerAnalysisTask(request)
         
 
         
@@ -113,31 +113,41 @@ class ManagerRoutineTask(ManagerTask):
                 return self._url
                                 
         def getResponseDescription(self):
-                repositoryLocation = self._request.getRepositoryLocation()
+                repositoryLocation = self.getRequest().getRepositoryLocation()
                 if repositoryLocation.isRecognizable():
                         canonicalRepoNameOrUrl = repositoryLocation.getCanonicalName()
                 else:
                         canonicalRepoNameOrUrl = self._url
                 
                 if self._response.wasSuccessful():
-                        return "✅ ({repoNameOrURL} --> {requestType}) was successful!".format(
+                        return "✅ Routine ({repoNameOrURL} --> {requestType}) was successful!".format(
                                 repoNameOrURL = canonicalRepoNameOrUrl,
-                                requestType = self._request.__class__.__name__
+                                requestType = self.getRequest().__class__.__name__
                         )
                 else:
-                        return "❌ ({repoNameOrURL} --> {requestType}) failed. Reason: {reason}".format(
+                        return "❌ Routine ({repoNameOrURL} --> {requestType}) failed. Reason: {reason}".format(
                                 repoNameOrURL = canonicalRepoNameOrUrl,
-                                requestType = self._request.__class__.__name__,
-                                reason=self._response.getMessage()
+                                requestType = self.getRequest().__class__.__name__,
+                                reason=self.getResponse().getMessage()
                         )
                         
 class ManagerAnalysisTask(ManagerTask):
         """
-        This Task class wraps requests and responses for RepositoryRoutines.
+        This Task class wraps requests and responses for DataAnalyses.
         """
+        def __init__(self,request):
+                super().__init__(request)
         
         def getResponseDescription(self):
-                pass
+                if self._response.wasSuccessful():
+                        return "✅ Analysis ({requestType}) was successful!".format(
+                                requestType = self.getRequest().__class__.__name__
+                        )
+                else:
+                        return "❌ Analysis ({requestType}) failed. Reason: {reason}".format(
+                                requestType = self.getRequest().__class__.__name__,
+                                reason=self.getResponse().getMessage()
+                        )
                         
 
 class ReposcannerManager:

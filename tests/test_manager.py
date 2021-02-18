@@ -1,11 +1,29 @@
 import reposcanner.manager as management
+import reposcanner.requests as requests
 import reposcanner.data as data
 import pytest
 
-#def test_ManagerRoutineTask_isDirectlyConstructible():
-        
-#        projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit/",request
+def test_ManagerRoutineTask_isDirectlyConstructible():
+        task = management.ManagerRoutineTask(projectID="PROJID",
+                projectName="SciKit",
+                url="https://github.com/scikit/scikit/",
+                request=requests.RoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
 
+def test_ManagerRoutineTask_isConstructibleByFactory():
+        factory = management.TaskFactory()
+        task = factory.createManagerRoutineTask(projectID="PROJID",
+                projectName="SciKit",
+                url="https://github.com/scikit/scikit/",
+                request=requests.RoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
+
+def test_ManagerAnalysisTask_isDirectlyConstructible():
+        task = management.ManagerAnalysisTask(request=requests.AnalysisRequestModel())
+
+def test_ManagerRoutineTask_isConstructibleByFactory():
+        factory = management.TaskFactory()
+        task = factory.createManagerAnalysisTask(request=requests.AnalysisRequestModel())
+                
+                
 
 def test_ReposcannerManager_isDirectlyConstructible():
         args = type('', (), {})()
