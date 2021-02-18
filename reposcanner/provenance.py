@@ -112,11 +112,12 @@ class AbstractLabNotebook(ABC):
                 pass
                 
         @abstractmethod
-        def onTaskStart(self,task,agent):
+        def onTaskStart(self,task,store,agent):
                 """
                 Called when a ManagerTask object is created.
                 
                 task: The ManagerTask object.
+                store: A DataEntityStore instance provided by the manager responsible for the task.
                 agent: The RepositoryRoutine or DataAnalysis object that is expected to handle the task.
                 """
                 pass
@@ -244,11 +245,12 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 self._document.wasGeneratedBy("rs:ReposcannerManager",task)
                 
-        def onTaskStart(self,task,agent):
+        def onTaskStart(self,task,store,agent):
                 """
                 Called when a ManagerTask object is created.
                 
                 task: The ManagerTask object.
+                store: A DataEntityStore instance provided by the manager responsible for the task.
                 agent: The RepositoryRoutine or DataAnalysis object that is expected to handle the task.
                 """
                 taskID = "rs:task{taskid}".format(taskid=id(task))

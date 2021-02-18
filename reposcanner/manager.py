@@ -36,13 +36,14 @@ class ManagerTask(ABC):
         def getResponse(self):
                 return self._response
                 
-        def process(self,agents,notebook):
+        def process(self,agents,store,notebook):
                 """
                 Scan through a set of available routines or analyses and see if any can
                 execute the request held by this task. If no routines or analyses can handle
                 this request, this method will create a failure response and store it.
                 
                 agents: An iterable of RepositoryRoutine and/or DataAnalysis objects.
+                store: A DataEntityStore instance, provided by the manager.
                 notebook: A ReposcannerNotebook object, used for logging results.
                 """
                 selectedRoutine = None
@@ -52,7 +53,7 @@ class ManagerTask(ABC):
                                 break
                 if selectedAgent is not None:
                         if notebook is not None:
-                                notebook.onTaskStart(self,selectedAgent)     
+                                notebook.onTaskStart(self,store,selectedAgent)     
                         self._response = selectedAgent.run(self._request)
                         if notebook is not None:
                                 notebook.onTaskCompletion(self,selectedAgent)
@@ -194,7 +195,16 @@ class ReposcannerManager:
                 for analysis in self._analyses:
                         if self._notebook is not None:
                                 self._notebook.onAnalysisCreation(analysis)
-                                
+        
+        
+        def addDataEntityToStore(self,entity):
+                """
+                Allows the user to add additional data to the DataEntityStore
+                prior to execution (e.g. from reposcanner-data)
+                """
+                self._store.insert(entity)
+        
+                               
         def getRoutines(self):
                 """
                 Provides a list of routines available for the manager
@@ -208,6 +218,9 @@ class ReposcannerManager:
                 to delgate tasks to. Used for testing purposes.
                 """
                 return self._analyses
+                
+        def isGUIModeEnabled(self):
+                return self._guiModeEnabled
                 
         def buildTask(self,projectID,projectName,url,routineOrAnalysis):
                 """Constructs a task to hold a request/response pair."""
@@ -254,9 +267,6 @@ class ReposcannerManager:
                         if self._notebook is not None:
                                 self._notebook.onTaskCreation(task)
                         self._tasks.append(task)
-        
-        def isGUIModeEnabled(self):
-                return self._guiModeEnabled
                 
         def run(self,repositoriesDataFile,credentialsDataFile,configDataFile):
                 """
@@ -276,7 +286,7 @@ class ReposcannerManager:
                 Plain-text execution mode.
                 """
                 for task in tqdm(self._tasks):
-                        task.process(self._routines,self._analyses,self._notebook)
+                        task.process(self._routines+self._analyses,self._store,self._notebook)
                         response = task.getResponseDescription()
                         print(response)
                         for attachment in response.getAttachments():
@@ -366,7 +376,7 @@ class ReposcannerManager:
                                 footer.addstr(1,4,taskDescription,curses.A_BOLD)
                                 footer.border(2)
                                 footer.refresh()
-                                currentTask.process(self._routines,self._analyses,self._notebook)
+                                currentTask.process(self._routines+self._analyses,self._store,self._notebook)
                                 for attachment in currentTask.getResponse().getAttachments():
                                         self._store.insert(attachment)
                                 

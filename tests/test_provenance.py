@@ -91,7 +91,7 @@ def test_ReposcannerLabNotebook_canLogStartOfTask():
         routine = contributionRoutines.ContributorAccountListRoutine()
         notebook.onRoutineCreation(routine)
         
-        notebook.onTaskStart(task,routine)
+        notebook.onTaskStart(task,dataEntities.DataEntityStore(),routine)
         
         jsonDocument = notebook.getJSONRepresentation()
         
@@ -158,7 +158,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        task.process(agents=[routine],notebook=notebook)
+        task.process(agents=[routine],store=dataEntities.DataEntityStore(),notebook=notebook)
         
         jsonDocument = notebook.getJSONRepresentation()
         taskID = list(jsonDocument['activity'].keys())[0]
@@ -209,7 +209,7 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        task.process(agents=[routine],notebook=notebook)
+        task.process(agents=[routine],store=dataEntities.DataEntityStore(),notebook=notebook)
         
         jsonDocument = notebook.getJSONRepresentation()
         print(jsonDocument)
@@ -280,7 +280,7 @@ def test_ReposcannerLabNotebook_canPublishResults():
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
-        task.process(agents=[routine],notebook=notebook)
+        task.process(agents=[routine],store=dataEntities.DataEntityStore(),notebook=notebook)
         
         notebook.publishNotebook(outputPath="output.log")
         
