@@ -8,6 +8,9 @@ class BaseRequestModel:
         The base class for all request models. The frontend is responsible for phrasing their requests in the
         form of a request model which routines/analyses understand.
         """
+        def __init__(self):
+                self._errors = []
+        
         def addError(self, message):
                 self._errors.append(message)
 
@@ -26,9 +29,42 @@ class BaseRequestModel:
                 return False     
 
 
+class AnalysisRequestModel(BaseRequestModel):
+        
+        @classmethod      
+        def isAnalysisRequestType(cls):
+                return True
+                
+        def __init__(self):
+                super().__init__()
+                
+        def criteriaFunction(self,entity):
+                """
+                Classes that inherit from AnalysisRequestModel must
+                override the criteriaFunction to describe the data
+                objects that the analysis expects to work with. By
+                default, this function returns True, which means
+                that the analysis will get all of the data held in
+                ReposcannerManager's DataEntityStore.
+                 
+                
+                entity: A ReposcannerDataEntity object. This function 
+                should return True if the entity will be used in the
+                analysis and False otherwise.
+                """
+                return True
+                
+        def getDataCriteria(self):
+                """
+                This is called to get the criteria function, which is passed
+                to DataEntityStore.getByCriteria() to retrieve the data which
+                is needed by the analysis.
+                """
+                return self.criteriaFunction
+
 class RoutineRequestModel(BaseRequestModel):
         """
-        The base class for all request models. The frontend is responsible for phrasing their requests in the
+        The base class for all routine request models. The frontend is responsible for phrasing their requests in the
         form of a request model which routines understand.
         """
 
@@ -42,7 +78,7 @@ class RoutineRequestModel(BaseRequestModel):
                                 by the routine should be stored.
                 
                 """
-                self._errors = []
+                super().__init__()
                 factory = gitEntities.GitEntityFactory()
                 self._repositoryLocation = None
                 try:
@@ -77,10 +113,6 @@ class RoutineRequestModel(BaseRequestModel):
         @classmethod
         def isRoutineRequestType(cls):
                 return True
-        
-        @classmethod      
-        def isAnalysisRequestType(cls):
-                return False
                 
 
 class OnlineRoutineRequest(RoutineRequestModel):

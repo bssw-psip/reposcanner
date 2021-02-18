@@ -28,6 +28,7 @@ class DataAnalysis(ABC):
                 Parameters:
                         request (@input): A RequestModel object that encapsulates all the information needed
                         to run the analysis.
+                
                 """
                 pass
                 
@@ -51,6 +52,6 @@ class DataAnalysis(ABC):
                 Encodes the workflow of a RepositoryRoutine object. The client only needs
                 to run this method in order to get results. 
                 """
-                response = self.execute(request)
+                response = self.execute(request,dataset)
                 self.export(request,response)
                 return response

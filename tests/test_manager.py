@@ -1,4 +1,6 @@
 import reposcanner.manager as management
+import reposcanner.data as data
+import pytest
 
 #def test_ManagerRoutineTask_isDirectlyConstructible():
         
@@ -19,3 +21,51 @@ def test_ReposcannerManager_GUIModeIsDisabledByDefault():
 def test_ReposcannerManager_GUIModeCanBeEnabledAtConstructionTime():
         manager = management.ReposcannerManager(notebook=None,outputDirectory=None,workspaceDirectory=None,gui=True)
         assert(manager.isGUIModeEnabled())
+        
+def test_ReposcannerManager_initiallyHasNoRoutinesOrAnalyses():
+        manager = management.ReposcannerManager(notebook=None,outputDirectory=None,workspaceDirectory=None,gui=True)
+        assert(len(manager.getRoutines()) == 0)
+        assert(len(manager.getAnalyses()) == 0)
+              
+def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmpdir):
+        manager = management.ReposcannerManager(notebook=None,outputDirectory=None,workspaceDirectory=None,gui=True)
+        sub = tmpdir.mkdir("managertest")
+        filePath = str(sub.join("config.yaml"))
+        
+        with open(filePath, 'w') as outfile:
+                contents = """
+                routines:
+                  - ContributorAccountListRoutine
+                """
+                outfile.write(contents)
+        
+        configEntity = data.YAMLData(filePath)
+        configEntity.readFromFile()
+        configDict = configEntity.getData()
+        
+        manager.initializeRoutinesAndAnalyses(configDict)
+        routines = manager.getRoutines()
+        assert(len(routines) == 1)
+        assert(routines[0].__class__.__name__ == "ContributorAccountListRoutine")
+        
+def test_ReposcannerManager_missingRoutinesInConfigCausesValueError(tmpdir):
+        manager = management.ReposcannerManager(notebook=None,outputDirectory=None,workspaceDirectory=None,gui=True)
+        sub = tmpdir.mkdir("managertest")
+        filePath = str(sub.join("config.yaml"))
+        
+        with open(filePath, 'w') as outfile:
+                contents = """
+                routines:
+                  - ContributorAccountListRoutine
+                  - NonexistentRoutine
+                """
+                outfile.write(contents)
+        
+        configEntity = data.YAMLData(filePath)
+        configEntity.readFromFile()
+        configDict = configEntity.getData()
+        
+        #Attempting to find and initialize NonexistentRoutine will trigger a ValueError.
+        with pytest.raises(ValueError):
+                manager.initializeRoutinesAndAnalyses(configDict)
+                

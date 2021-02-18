@@ -125,7 +125,7 @@ def test_YAMLData_initiallyHoldsNoData():
         dataEntity = data.YAMLData("test.yaml")
         assert(len(dataEntity.getData()) == 0 )
         
-def test_AnnotatedCSVData_canReadDataFromDisk(tmpdir):
+def test_YAMLData_canReadDataFromDisk(tmpdir):
         sub = tmpdir.mkdir("datatest")
         filePath = str(sub.join("test.yaml"))
         
@@ -146,7 +146,7 @@ def test_AnnotatedCSVData_canReadDataFromDisk(tmpdir):
         assert('name' in dataDict['ADTR02'] and dataDict['ADTR02']['name'] == 'IDEAS Productivity')
         assert('urls' in dataDict['ADTR02'] and len(dataDict['ADTR02']['urls']) == 3)
 
-def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
+def test_YAMLData_canStoreDataToDisk(tmpdir):
         sub = tmpdir.mkdir("datatest")
         filePath = str(sub.join("test.yaml"))
         dataEntity = data.YAMLData(filePath)
@@ -163,6 +163,94 @@ def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
         assert('ADTR02' in dataDictB)
         assert('name' in dataDictB['ADTR02'] and dataDictB['ADTR02']['name'] == 'IDEAS Productivity')
         assert('urls' in dataDictB['ADTR02'] and len(dataDictB['ADTR02']['urls']) == 3)       
+        
+        
+def test_DataEntityStore_isDirectlyConstructible():
+        store = data.DataEntityStore()
+        
+def test_DataEntityStore_isInitiallyEmpty():
+        store = data.DataEntityStore()
+        assert(len(store) == 0)
+        
+def test_DataEntityStore_canInsertAndRemoveEntities():
+        store = data.DataEntityStore()
+        
+        entityA = data.YAMLData("repositories.yaml")
+        entityB = data.AnnotatedCSVData("routineresults.csv")
+        
+        store.insert(entityA)
+        assert(entityA in store)
+        assert(len(store) == 1)
+        
+        store.insert(entityB)
+        assert(entityB in store)
+        assert(len(store) == 2)
+        
+        store.remove(entityB)
+        assert(entityB not in store)
+        assert(len(store) == 1)
+        
+        store.remove(entityA)
+        assert(entityA not in store)
+        assert(len(store) == 0)
+        
+def test_DataEntityStore_canReadOverAllEntities():
+        store = data.DataEntityStore()
+        
+        for i in range(20):
+                entity = data.AnnotatedCSVData("routineresults{i}.csv".format(i=i))
+                store.insert(entity)
+        
+        numberOfEntitiesInStore = 0
+        for entity in store.read():
+                numberOfEntitiesInStore += 1
+        assert(numberOfEntitiesInStore == 20)
+        
+def test_DataEntityStore_canFilterByCriteria():
+        commitCountsA = data.AnnotatedCSVData("commitcounts_a.csv")
+        commitCountsB = data.AnnotatedCSVData("commitcounts_b.csv")
+        commitCountsC = data.AnnotatedCSVData("commitcounts_c.csv")
+        
+        commitCountsA.setCreator("CommitCountRoutine")
+        commitCountsB.setCreator("CommitCountRoutine")
+        commitCountsC.setCreator("CommitCountRoutine")
+        commitCountsA.setURL("https://github.com/Super-Net/SNet")
+        commitCountsB.setURL("https://gitlab.com/TeamSciKit/SciKit")
+        commitCountsC.setURL("https://bitbucket.com/Ligre/AdAstra")
+        
+        contributorListA = data.AnnotatedCSVData("contributorlist_a.csv")
+        contributorListB = data.AnnotatedCSVData("contributorlist_b.csv")
+        contributorListC = data.AnnotatedCSVData("contributorlist_c.csv")
+        
+        contributorListA.setCreator("ContributorListRoutine")
+        contributorListB.setCreator("ContributorListRoutine")
+        contributorListC.setCreator("ContributorListRoutine")
+        contributorListA.setURL("https://github.com/Super-Net/SNet")
+        contributorListB.setURL("https://gitlab.com/TeamSciKit/SciKit")
+        contributorListC.setURL("https://bitbucket.com/Ligre/AdAstra")
+        
+        store = data.DataEntityStore()
+        store.insert(commitCountsA)
+        store.insert(commitCountsB)
+        store.insert(commitCountsC)
+        store.insert(contributorListA)
+        store.insert(contributorListB)
+        store.insert(contributorListC)
+        
+        
+        def criteria_OnlyCommitCounts(entity):
+                return entity.getCreator() == "CommitCountRoutine"
+        
+        onlyCommitCounts = store.getByCriteria(criteria_OnlyCommitCounts)
+        assert(len(onlyCommitCounts) == 3)
+                
+        def criteria_OnlyAdAstraRelated(entity):
+                return entity.getURL() == "https://bitbucket.com/Ligre/AdAstra"
+        
+        onlyAdAstraRelated = store.getByCriteria(criteria_OnlyAdAstraRelated)
+        assert(len(onlyAdAstraRelated) == 2)
+        
+        
         
         
         

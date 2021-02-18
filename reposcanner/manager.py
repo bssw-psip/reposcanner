@@ -1,7 +1,8 @@
 from reposcanner.contrib import ContributorAccountListRoutine
 from reposcanner.git import CredentialKeychain
+from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
-import datetime, logging, curses
+import datetime, logging, curses, sys
 from tqdm import tqdm #For progress checking in non-GUI mode.
 from abc import ABC, abstractmethod
 
@@ -9,6 +10,10 @@ from abc import ABC, abstractmethod
 class TaskFactory:
         def createManagerRoutineTask(self,projectID,projectName,url,request):
                 return ManagerRoutineTask(projectID,projectName,url,request)
+        def createManagerAnalysisTask(self):
+                pass #TODO: Create factory method for ManagerAnalysisTask
+        
+
         
 class ManagerTask(ABC):
         """Abstract base class for Task objects. Task objects are simple wrappers around
@@ -150,13 +155,28 @@ class ReposcannerManager:
                 self._outputDirectory = outputDirectory
                 self._workspaceDirectory = workspaceDirectory
                 self._guiModeEnabled = gui
+                self._dataEntityStore = DataEntityStore()
                 
-        def _initializeRoutinesAndAnalyses(self,configData):
-                """Constructs RepositoryRoutine objects that belong to the manager."""
-                #TODO: Replace this with a routine that initializes routines based on an
-                #input config file.
-                contributorAccountListRoutine = ContributorAccountListRoutine()
-                self._routines.append(contributorAccountListRoutine)
+        def initializeRoutinesAndAnalyses(self,configData):
+                """Constructs RepositoryRoutine and DataAnalysis objects that belong to the manager."""
+                
+                if 'routines' in configData:
+                        for routineName in configData['routines']:
+                                try:
+                                        routineClazz = getattr(sys.modules[__name__], routineName)
+                                        routineInstance = routineClazz()
+                                        self._routines.append(routineInstance)
+                                except:
+                                        raise ValueError("Can't find routine matching name {name}".format(name=routineName))
+                                        
+                if 'analyses' in configData:
+                        for analysisName in configData['analyses']:
+                                try:
+                                        analysisClazz = getattr(sys.modules[__name__], analysisName)
+                                        analysisInstance = analysisClazz()
+                                        self._analyses.append(analysisInstance)
+                                except:
+                                        raise ValueError("Can't find analysis matching name {name}".format(name=analysisName))     
                 
                 for routine in self._routines:
                         if self._notebook is not None:
@@ -164,8 +184,22 @@ class ReposcannerManager:
                 for analysis in self._analyses:
                         if self._notebook is not None:
                                 self._notebook.onAnalysisCreation(analysis)
+                                
+        def getRoutines(self):
+                """
+                Provides a list of routines available for the manager
+                to delgate tasks to. Used for testing purposes.
+                """
+                return self._routines
                 
-        def _buildTask(self,projectID,projectName,url,routineOrAnalysis):
+        def getAnalyses(self):
+                """
+                Provides a list of analyses available for the manager
+                to delgate tasks to. Used for testing purposes.
+                """
+                return self._analyses
+                
+        def buildTask(self,projectID,projectName,url,routineOrAnalysis):
                 """Constructs a task to hold a request/response pair."""
                 requestType = routineOrAnalysis.getRequestType()
                 
@@ -181,12 +215,14 @@ class ReposcannerManager:
                         task = ManagerRoutineTask(projectID=projectID,projectName=projectName,url=url,request=request)
                         return task
                 elif requestType.isAnalysisRequestType():
-                        pass #TODO Construct analysis requests.
-                        
-                        #task = ManagerAnalysisTask(request=request)
-                        #return task
+                        request = requestType()
+                        task = ManagerAnalysisTask(request)
+                        return task
+                else:
+                        raise TypeError("Encountered unrecognized request type when building task: {requestType}.".format(
+                        requestType=requestType))
         
-        def _prepareTasks(self,repositoryDictionary,credentialsDictionary):
+        def prepareTasks(self,repositoryDictionary,credentialsDictionary):
                 """Interpret the user's inputs so we know what repositories we need to
                 collect data on and how we can access them."""
                 self._keychain = CredentialKeychain(credentialsDictionary)
@@ -199,12 +235,12 @@ class ReposcannerManager:
                            
                            for url in projectEntry["urls"]:
                                    for routine in self._routines:
-                                           task = self._buildTask(projectID,projectName,url,routine)
+                                           task = self.buildTask(projectID,projectName,url,routine)
                                            if self._notebook is not None:
                                                    self._notebook.onTaskCreation(task)
                                            self._tasks.append(task)
                 for analysis in self._analyses:
-                        task = self._buildTask(projectID,projectName,url,analysis)
+                        task = self.buildTask(projectID,projectName,url,analysis)
                         if self._notebook is not None:
                                 self._notebook.onTaskCreation(task)
                         self._tasks.append(task)
@@ -213,8 +249,12 @@ class ReposcannerManager:
                 return self._guiModeEnabled
                 
         def run(self,repositoriesDataFile,credentialsDataFile,configDataFile):
-                self._initializeRoutinesAndAnalyses(self,configDataFile.getData())
-                self._prepareTasks(repositoriesDataFile.getData(),credentialsDataFile.getData())
+                """
+                run() is the primary method that is called by the main function.
+                This method starts Reposcanner's execution.
+                """
+                self.initializeRoutinesAndAnalyses(self,configDataFile.getData())
+                self.prepareTasks(repositoriesDataFile.getData(),credentialsDataFile.getData())
                 
                 if not self.isGUIModeEnabled():
                         self.executeWithNoGUI()
@@ -223,12 +263,20 @@ class ReposcannerManager:
                         
                         
         def executeWithNoGUI(self):
+                """
+                Plain-text execution mode.
+                """
                 for task in tqdm(self._tasks):
                         task.process(self._routines,self._analyses,self._notebook)
                         response = task.getResponseDescription()
                         print(response)
+                        for attachment in response.getAttachments():
+                                self._store.insert(attachment)
                                 
         def executeWithGUI(self):
+                """
+                Fancy Curses-based GUI execution mode.
+                """
                 def centerTextPosition(text,windowWidth):
                         half_length_of_text = int(len(text) / 2)
                         middle_column = int(windowWidth / 2)
@@ -310,6 +358,8 @@ class ReposcannerManager:
                                 footer.border(2)
                                 footer.refresh()
                                 currentTask.process(self._routines,self._analyses,self._notebook)
+                                for attachment in currentTask.getResponse().getAttachments():
+                                        self._store.insert(attachment)
                                 
                                 messages.insert(0,currentTask.getResponseDescription())
                                 screen.refresh()
