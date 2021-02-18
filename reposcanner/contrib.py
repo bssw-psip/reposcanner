@@ -1,6 +1,7 @@
 from reposcanner.routines import OfflineRepositoryRoutine,OnlineRepositoryRoutine
 from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest
 from reposcanner.response import ResponseFactory
+from reposcanner.data import DataEntityFactory
 import pygit2
 
 #import matplotlib.pyplot as plt
@@ -196,8 +197,8 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         #        pass
         
         def export(self,request,response):
-                if not response.wasSuccessful():
-                        return response
+                
+                
                 contributors = response.getAttachments()
                 today = datetime.datetime.now()
                 

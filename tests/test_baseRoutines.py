@@ -25,11 +25,10 @@ def test_RepositoryRoutine_exportCanAddAttachments(mocker):
         def executeGeneratesResponse(self,request):
                 factory = responses.ResponseFactory()
                 response = factory.createSuccessResponse(attachments=[])
-                return response
-        def exportAddsAnAttachment(self,request,response):
                 response.addAttachment("data")
+                return response
+        
         routines.RepositoryRoutine.execute = executeGeneratesResponse
-        routines.RepositoryRoutine.export = exportAddsAnAttachment
         genericRoutine = routines.RepositoryRoutine()
         genericRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         response = genericRoutine.run(genericRequest)

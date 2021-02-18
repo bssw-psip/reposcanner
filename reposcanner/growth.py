@@ -72,11 +72,3 @@ class GrowthRoutine(OfflineRepositoryRoutine):
                                 activeInPastYear = ((today.timestamp() - lastCommitTimestamp) / 60 / 60 / 24) <= 365
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
-
-
-#from subprocess import check_output
-#
-#for c in repo.walk(repo.head.target, pygit2.GIT_SORT_TIME):
-#    datetime.date.fromtimestamp(c.commit_time)
-#    repo.reset(c.id, pygit2.GIT_RESET_HARD)
-#    out = check_output('wc temporary_repo_clone/*/*.cpp', shell=True)

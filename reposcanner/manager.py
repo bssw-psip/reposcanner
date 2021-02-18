@@ -270,8 +270,7 @@ class ReposcannerManager:
                         self.executeWithNoGUI()
                 else:
                         self.executeWithGUI()
-                        
-                        
+           
         def executeWithNoGUI(self):
                 """
                 Plain-text execution mode.

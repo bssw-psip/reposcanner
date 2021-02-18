@@ -136,14 +136,13 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         def executeGeneratesResponse(self,request):
                 factory = responses.ResponseFactory()
                 response = factory.createSuccessResponse(attachments=[])
-                return response
-        def exportAddsAnAttachment(self,request,response):
                 factory = dataEntities.DataEntityFactory()
                 csvDataEntity = factory.createAnnotatedCSVData(filePath="loggedentitytest.csv")
                 csvDataEntity.readFromFile()
                 response.addAttachment(csvDataEntity)
+                return response
+        
         contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
-        contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
         
         notebook = provenance.ReposcannerLabNotebook()
         
@@ -189,13 +188,12 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
         def executeGeneratesResponse(self,request):
                 factory = responses.ResponseFactory()
                 response = factory.createSuccessResponse(attachments=[])
-                return response
-        def exportAddsAnAttachment(self,request,response):
                 factory = dataEntities.DataEntityFactory()
                 nonstandardData = {"a" : 5, "b" : 255}
                 response.addAttachment(nonstandardData)
+                return response
+
         contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
-        contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
         
         notebook = provenance.ReposcannerLabNotebook()
         
