@@ -1,26 +1,25 @@
 from reposcanner.routines import OfflineRepositoryRoutine,OnlineRepositoryRoutine
 from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest
 from reposcanner.response import ResponseFactory
+from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory
 import pygit2
 
-#import matplotlib.pyplot as plt
-#import seaborn as sns
 import time, datetime
-#import statistics
 import csv
 
 
-
+"""
 class ContributionPeriodRoutineRequest(OfflineRoutineRequest):
         def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
                 super().__init__(repositoryURL,outputDirectory,workspaceDirectory)
+"""
 
-#TODO: Convert to new routine model.
+"""
 class ContributionPeriodRoutine(OfflineRepositoryRoutine):
-        """
-        Calculates the extents of code contribution periods of each contributor.
-        """
+        
+        #Calculates the extents of code contribution periods of each contributor.
+        
         
         def canHandleRequest(self,request):
                 if isinstance(request, ContributionPeriodRoutineRequest):
@@ -89,12 +88,11 @@ class ContributionPeriodRoutine(OfflineRepositoryRoutine):
                                 activeInPastYear = ((today.timestamp() - lastCommitTimestamp) / 60 / 60 / 24) <= 365
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
+"""
                                 
-#TODO: Convert to new routine model.                                
+"""                              
 class ContributorListRoutine(OfflineRepositoryRoutine):
-        """
-        Calculates the list of contributors and the number of lines contributed.
-        """
+        #Calculates the list of contributors and the number of lines contributed.
         def execute(self):
                 numberOfCommitsByContributor = {}
                 
@@ -138,6 +136,7 @@ class ContributorListRoutine(OfflineRepositoryRoutine):
                                 activeInPastYear = ((today.timestamp() - lastCommitTimestamp) / 60 / 60 / 24) <= 365
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
+"""
  
 
 
@@ -166,58 +165,60 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
                 else:
                         return value
         
-        def githubImplementation(self,request,session):
-                contributors = [contributor for contributor in session.get_contributors()]
-                output = []
-                for contributor in contributors:
-                        entry = {}
-                        entry["username"] = self._replaceNoneWithEmptyString(contributor.login)
-                        entry["name"] = self._replaceNoneWithEmptyString(contributor.name)
-                        entry["emails"] = [self._replaceNoneWithEmptyString(contributor.email)]
-                        output.append(entry)
+        def githubImplementation(self,request,session):                
+                factory = DataEntityFactory()
+                output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_contributorAccounts.csv".format(
+                        outputDirectory=request.getOutputDirectory(),
+                        repoName=request.getRepositoryLocation().getRepositoryName()))
                 
+                output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+                output.setCreator(self.__class__.__name__)
+                output.setDateCreated(datetime.date.today())
+                output.setURL(request.getRepositoryLocation().getURL())
+                output.setColumnNames(["Login Name","Actual Name","Email(s)"])
+                output.setColumnDatatypes(["str","str","str"])
+                
+                contributors = [contributor for contributor in session.get_contributors()]
+                for contributor in contributors:
+                        output.addRecord([
+                                self._replaceNoneWithEmptyString(contributor.login),
+                                self._replaceNoneWithEmptyString(contributor.name),
+                                ';'.join([self._replaceNoneWithEmptyString(contributor.email)])
+                                
+                        ])
+                
+                output.writeToFile()
                 responseFactory = ResponseFactory()
                 return responseFactory.createSuccessResponse(
                         message="Completed!",attachments=output)
                 
         def gitlabImplementation(self,request,session):
                 contributors = [contributor for contributor in session.users.list()]
-                output = []
+                output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_contributorAccounts.csv".format(
+                        outputDirectory=request.getOutputDirectory(),
+                        repoName=request.getRepositoryLocation().getRepositoryName()))
+                
+                output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+                output.setCreator(self.__class__.__name__)
+                output.setDateCreated(datetime.date.today())
+                output.setURL(request.getRepositoryLocation().getURL())
+                output.setColumnNames(["Login Name","Actual Name","Email(s)"])
+                output.setColumnDatatypes(["str","str","str"])
+                
+                contributors = [contributor for contributor in session.get_contributors()]
                 for contributor in contributors:
-                        entry = {}
-                        entry["username"] = self._replaceNoneWithEmptyString(contributor.username)
-                        entry["name"] = self._replaceNoneWithEmptyString(contributor.name)
-                        entry["emails"] = [user.emails.list()]
-                        output.append(entry)
+                        output.addRecord([
+                                self._replaceNoneWithEmptyString(contributor.username),
+                                self._replaceNoneWithEmptyString(contributor.name),
+                                ';'.join(contributor.emails.list())
+                                
+                        ])
+                output.writeToFile()
                 responseFactory = ResponseFactory()
                 return responseFactory.createSuccessResponse(
                         message="Completed!",attachments=output)
                 
         #def bitbucketImplementation(self,request,session):
-        #        pass
-        
-        def export(self,request,response):
-                
-                
-                contributors = response.getAttachments()
-                today = datetime.datetime.now()
-                
-                with open('{outputDirectory}/{repoName}_contributorAccounts.csv'.format(
-                        outputDirectory=request.getOutputDirectory(),repoName=request.getRepositoryLocation().getRepositoryName()),'w', newline='\n') as contributorAccountsFile:
-                        
-                        contributionWriter = csv.writer(contributorAccountsFile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                        contributionWriter.writerow(["Date/Time of Analysis", "{dateOfAnalysis}".format(dateOfAnalysis=str(today))])
-                        contributionWriter.writerow(["Repository", "{canonicalName}".format(canonicalName=request.getRepositoryLocation().getCanonicalName())])
-                        
-                        
-                        contributionWriter.writerow([
-                                "Login Name",
-                                "Actual Name",
-                                "Email(s)"
-                        ])
-                        
-                        for contributor in contributors:
-                                contributionWriter.writerow([contributor["username"],contributor["name"], ';'.join(contributor["emails"])])
-                return response                      
+        #        pass             
                         
 
