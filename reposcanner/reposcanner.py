@@ -1,4 +1,4 @@
-from reposcanner.manager import ReposcannerRoutineManager
+from reposcanner.manager import ReposcannerManager
 import argparse, os, logging
 import reposcanner.data as data
 
