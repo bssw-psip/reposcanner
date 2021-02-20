@@ -4,13 +4,16 @@ class DataAnalysis(ABC):
         """The abstract base class for all data analyses. Methods cover
         the execution of analyses, rendering, and exporting of data."""
         
-        @abstractmethod
+        
         def canHandleRequest(self,request):
                 """
                 Returns True if the routine is capable of handling the request (i.e. the
                 RequestModel is of the type that the analysis expects), and False otherwise.
                 """
-                pass
+                if isinstance(request, self.getRequestType()):
+                        return True
+                else:
+                        return False
         
         @abstractmethod      
         def getRequestType(self):

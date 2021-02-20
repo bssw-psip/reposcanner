@@ -8,13 +8,16 @@ class RepositoryRoutine(ABC):
         """The abstract base class for all repository analysis routines. Methods cover
         the execution of mining routines and exporting of data."""
         
-        @abstractmethod
+        
         def canHandleRequest(self,request):
                 """
                 Returns True if the routine is capable of handling the request (i.e. the
                 RequestModel is of the type that the routine expects), and False otherwise.
                 """
-                pass
+                if isinstance(request, self.getRequestType()):
+                        return True
+                else:
+                        return False
         
         @abstractmethod      
         def getRequestType(self):
