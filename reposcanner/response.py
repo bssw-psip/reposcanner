@@ -60,7 +60,7 @@ class ResponseModel:
                         for attachment in attachments:
                                 self._attachments.append(attachment)
                 else:
-                        self._attachments.append(attachment)
+                        self._attachments.append(attachments)
 
     def hasMessage(self):
         return self._message is not None
