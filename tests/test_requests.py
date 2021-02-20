@@ -34,6 +34,10 @@ def test_RoutineRequestModel_hasNoErrorsForValidInput():
         request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         assert(not request.hasErrors())
         
+def test_RoutineRequestModel_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
+        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="/")
+        assert(request.hasErrors())
+        
 def test_RoutineRequestModel_canGenerateAndStoreRepositoryLocation():
         request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         location = request.getRepositoryLocation()

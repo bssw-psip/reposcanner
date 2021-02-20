@@ -66,7 +66,6 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                         return responseFactory.createFailureResponse(
                         message="The routine was passed a request of the wrong type.")
                 elif request.hasErrors():
-                        print(request.getErrors()) #RMMTMP: Remove me.
                         return responseFactory.createFailureResponse(
                         message="The request had errors in it and cannot be processed.",
                         attachments=request.getErrors())
