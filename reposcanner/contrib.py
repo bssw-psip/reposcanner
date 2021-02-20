@@ -9,6 +9,11 @@ import time, datetime
 import csv
 
 
+
+
+
+
+        
 """
 class ContributionPeriodRoutineRequest(OfflineRoutineRequest):
         def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
@@ -89,7 +94,7 @@ class ContributionPeriodRoutine(OfflineRepositoryRoutine):
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
 """
-                                
+
 """                              
 class ContributorListRoutine(OfflineRepositoryRoutine):
         #Calculates the list of contributors and the number of lines contributed.
@@ -137,7 +142,52 @@ class ContributorListRoutine(OfflineRepositoryRoutine):
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
 """
- 
+
+
+class OfflineCommitCountsRoutineRequest(OfflineRoutineRequest):
+        def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
+                super().__init__(repositoryURL,outputDirectory,workspaceDirectory)
+
+class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
+        """
+        This routine clones a repository and calculates the total number of commits associated with the
+        emails of contributors.
+        """
+        
+        def getRequestType(self):
+                return OfflineCommitCountsRoutineRequest
+        
+        def offlineImplementation(self,request,session):
+                numberOfCommitsByContributor = {}
+                
+                for commit in session.repository.walk(session.repository.head.target, pygit2.GIT_SORT_TOPOLOGICAL):
+                        if commit.author.email not in numberOfCommitsByContributor:
+                                numberOfCommitsByContributor[commit.author.email] = 1
+                        else:
+                                numberOfCommitsByContributor[commit.author.email] += 1
+                        
+                factory = DataEntityFactory()
+                output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_offlineCommitCounts.csv".format(
+                        outputDirectory=request.getOutputDirectory(),
+                        repoName=request.getRepositoryLocation().getRepositoryName()))
+                        
+                output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+                output.setCreator(self.__class__.__name__)
+                output.setDateCreated(datetime.date.today())
+                output.setURL(request.getRepositoryLocation().getURL())
+                output.setColumnNames(["email","commitCount"])
+                output.setColumnDatatypes(["str","int"])
+                
+                for emailAddress in numberOfCommitsByContributor:
+                        output.addRecord([
+                                emailAddress,
+                                numberOfCommitsByContributor[emailAddress]
+                                ])
+                output.writeToFile()
+                responseFactory = ResponseFactory()
+                return responseFactory.createSuccessResponse(message="Completed!",attachments=output)
+                        
+                
 
 
 
@@ -149,12 +199,6 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         """
         Contact the version control platform API, and get the account information of everyone who has ever contributed to the repository.
         """
-        
-        def canHandleRequest(self,request):
-                if isinstance(request, ContributorAccountListRoutineRequest):
-                        return True
-                else:
-                        return False
         
         def getRequestType(self):
                 return ContributorAccountListRoutineRequest

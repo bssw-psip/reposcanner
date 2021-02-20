@@ -21,7 +21,7 @@ These additional artifacts can be quite useful depending on the application scen
 may choose to capture and manage these separately, but outside of the scope of the provenance application.
 """
 from abc import ABC, abstractmethod
-import datetime,json,uuid
+import datetime,json,uuid,sys,subprocess
 import reposcanner.data as dataEntities
 
 """
@@ -56,6 +56,7 @@ class ReposcannerRunInformant:
                 """
                 Return a string indicating what version of Reposcanner was used for this run.
                 """
+                #Perhaps we should use "git rev-parse HEAD" called via subprocess? Not sure.
                 pass #TODO: Figure out the best way to determine version of Reposcanner at runtime.
                 
         
@@ -337,7 +338,8 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 """
                 dotRepresentation = prov_to_dot(self._document)
                 executionID = ReposcannerRunInformant().getReposcannerExecutionID()
-                #dotRepresentation.write_png("run_{executionID}.png".format(executionID=executionID))
+                dotRepresentation.write_png("{outputPath}/run_{executionID}.png".format(outputPath=outputPath,executionID=executionID))
+                dotRepresentation.write_raw("{outputPath}/run_{executionID}.dot".format(outputPath=outputPath,executionID=executionID))
 
             
                 

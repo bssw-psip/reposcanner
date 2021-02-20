@@ -1,4 +1,4 @@
-from reposcanner.contrib import ContributorAccountListRoutine
+from reposcanner.contrib import ContributorAccountListRoutine,OfflineCommitCountsRoutine
 from reposcanner.git import CredentialKeychain
 from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
@@ -168,7 +168,7 @@ class ReposcannerManager:
                 self._outputDirectory = outputDirectory
                 self._workspaceDirectory = workspaceDirectory
                 self._guiModeEnabled = gui
-                self._dataEntityStore = DataEntityStore()
+                self._store = DataEntityStore()
                 
         def initializeRoutinesAndAnalyses(self,configData):
                 """Constructs RepositoryRoutine and DataAnalysis objects that belong to the manager."""
@@ -275,7 +275,7 @@ class ReposcannerManager:
                 run() is the primary method that is called by the main function.
                 This method starts Reposcanner's execution.
                 """
-                self.initializeRoutinesAndAnalyses(self,configDataFile.getData())
+                self.initializeRoutinesAndAnalyses(configDataFile.getData())
                 self.prepareTasks(repositoriesDataFile.getData(),credentialsDataFile.getData())
                 
                 if not self.isGUIModeEnabled():
@@ -289,8 +289,8 @@ class ReposcannerManager:
                 """
                 for task in tqdm(self._tasks):
                         task.process(self._routines+self._analyses,self._store,self._notebook)
-                        response = task.getResponseDescription()
-                        print(response)
+                        response = task.getResponse()
+                        print(task.getResponseDescription())
                         for attachment in response.getAttachments():
                                 self._store.insert(attachment)
                                 

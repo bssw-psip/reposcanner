@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 import urllib3
 import os
+import pygit2
 from reposcanner.git import GitEntityFactory,RepositoryLocation
 from reposcanner.response import ResponseFactory
 
 class RepositoryRoutine(ABC):
         """The abstract base class for all repository analysis routines. Methods cover
         the execution of mining routines and exporting of data."""
-        
         
         def canHandleRequest(self,request):
                 """
@@ -66,6 +66,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                         return responseFactory.createFailureResponse(
                         message="The routine was passed a request of the wrong type.")
                 elif request.hasErrors():
+                        print(request.getErrors()) #RMMTMP: Remove me.
                         return responseFactory.createFailureResponse(
                         message="The request had errors in it and cannot be processed.",
                         attachments=request.getErrors())

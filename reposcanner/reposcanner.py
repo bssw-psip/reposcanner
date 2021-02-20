@@ -1,4 +1,5 @@
 from reposcanner.manager import ReposcannerManager
+from reposcanner.provenance import ReposcannerLabNotebook
 import argparse, os, logging
 import reposcanner.data as data
 
@@ -22,7 +23,6 @@ def scannerMain(args):
         configDataFile.readFromFile()
         
         notebook.onStartup(args)
-        
         
         manager = ReposcannerManager(notebook=notebook,outputDirectory=args.outputDirectory,workspaceDirectory=args.workspaceDirectory,gui=args.gui)
         manager.run(repositoriesDataFile,credentialsDataFile,configDataFile)

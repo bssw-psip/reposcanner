@@ -168,7 +168,14 @@ def test_OfflineRoutineRequest_canStoreValidWorkspaceDirectory():
         assert(not request.hasErrors())
         assert(request.getWorkspaceDirectory() == "./")
         
-def test_OnlineRoutineRequest_badWorkspaceDirectoryMeansError():
+        
+def test_OfflineRoutineRequest_cloneDirectoryIsBasedOnWorkspaceDirectory():
+        request = requests.OfflineRoutineRequest(repositoryURL="https://github.com/scikit/scikit-data",
+                outputDirectory="./outputs/",
+                workspaceDirectory="./workspace")
+        assert(request.getCloneDirectory() == "./workspace/scikit-data")
+        
+def test_OfflineRoutineRequest_badWorkspaceDirectoryMeansError():
         requestA = requests.OfflineRoutineRequest(repositoryURL="https://github.com/owner/repo",
                 outputDirectory="./",
                 workspaceDirectory = None)

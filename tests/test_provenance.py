@@ -212,7 +212,6 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
         task.process(agents=[routine],store=dataEntities.DataEntityStore(),notebook=notebook)
         
         jsonDocument = notebook.getJSONRepresentation()
-        print(jsonDocument)
         taskID = list(jsonDocument['activity'].keys())[0]
         
         dataEntityID = None
@@ -229,7 +228,7 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
                         relationExistsBetweenTaskAndFile = True
         assert(relationExistsBetweenTaskAndFile)
         
-def test_ReposcannerLabNotebook_canPublishResults():
+def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
         
         def generateCSVDataFile():
                 informant = provenance.ReposcannerRunInformant()
@@ -282,7 +281,7 @@ def test_ReposcannerLabNotebook_canPublishResults():
         
         task.process(agents=[routine],store=dataEntities.DataEntityStore(),notebook=notebook)
         
-        notebook.publishNotebook(outputPath="output.log")
+        #notebook.publishNotebook(outputPath="outputs/")
         
         
         
