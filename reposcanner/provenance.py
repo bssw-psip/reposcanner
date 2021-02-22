@@ -21,7 +21,7 @@ These additional artifacts can be quite useful depending on the application scen
 may choose to capture and manage these separately, but outside of the scope of the provenance application.
 """
 from abc import ABC, abstractmethod
-import datetime,json,uuid,sys,subprocess
+import datetime,json,uuid,sys,subprocess,os
 import reposcanner.data as dataEntities
 
 """
@@ -59,7 +59,6 @@ class ReposcannerRunInformant:
                 current revision/commit of Reposcanner.
                 """
                 try:
-                        #git log --pretty=format:'%h' -n 1
                         completedProcess = subprocess.run(["git", "log", "--pretty=format:'%h'", "-n 1"])
                         return completedProcess.stdout
                 except Exception as e:
@@ -140,7 +139,7 @@ class AbstractLabNotebook(ABC):
                 pass
         
         @abstractmethod        
-        def publishNotebook(self,outputPath):
+        def publishNotebook(self):
                 """
                 Output the lab notebook's contents to a file.
                 
@@ -156,10 +155,22 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         class.
         """
         
-        def __init__(self):
+        def __init__(self,notebookOutputDirectory):
+                """
+                notebookOutputDirectory: The directory where provenance files should be stored when calling
+                publishNotebook().
+                """
                 self._document = prov.ProvDocument()
                 self._document.add_namespace('rs', 'reposcanner/')
-
+                
+                self._notebookOutputDirectory = notebookOutputDirectory
+                if not os.path.isdir(self._notebookOutputDirectory) or not os.path.exists(self._notebookOutputDirectory):
+                        raise IOError("The notebook output directory {notebookOutputDirectory} either does not exist or \
+                        is not a valid directory.".format(notebookOutputDirectory=self._notebookOutputDirectory))
+                if not os.access(self._notebookOutputDirectory, os.W_OK):
+                        raise IOError("Reposcanner does not have permissions to write to the notebook output directory \
+                        {notebookOutputDirectory}.".format(notebookOutputDirectory=self._notebookOutputDirectory))
+        
         
         def getJSONRepresentation(self):
                 """
@@ -337,17 +348,31 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                                         self._document.wasAttributedTo(dataEntityID,agentID)
                 
              
-        def publishNotebook(self,outputPath):
+        def publishNotebook(self):
                 """
                 Output the lab notebook's contents to a file.
                 
                 outputPath: The path to the file where the provenance records will be written.
                 """
+                
+                #Output dot files representing provenance log.
                 dotRepresentation = prov_to_dot(self._document)
                 executionID = ReposcannerRunInformant().getReposcannerExecutionID()
-                dotRepresentation.write_png("{outputPath}/run_{executionID}.png".format(outputPath=outputPath,executionID=executionID))
-                dotRepresentation.write_raw("{outputPath}/run_{executionID}.dot".format(outputPath=outputPath,executionID=executionID))
-
-            
+                dotRepresentation.write_png("{outputPath}/run_{executionID}.png".format(outputPath=self._notebookOutputDirectory,executionID=executionID))
+                dotRepresentation.write_raw("{outputPath}/run_{executionID}.dot".format(outputPath=self._notebookOutputDirectory,executionID=executionID))
+                
+                #Output PROV-N representation of provenance log.
+                provnRepresentation =  self.getProvnRepresentation()
+                with open("{outputPath}/provn_{executionID}.log".format(outputPath=self._notebookOutputDirectory,executionID=executionID),'w') as provnFile:
+                        provnFile.write(provnRepresentation)
+                
+                #Output Markdown data for file.
+                with open("{outputPath}/report_{executionID}.md".format(outputPath=self._notebookOutputDirectory,executionID=executionID),'w') as markdownFile:
+                        pass
+                
+                
+                
+                
+                
                 
                 

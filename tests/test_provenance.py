@@ -27,10 +27,10 @@ def test_ReposcannerRunInformant_differentInstancesProvideTheSameVersionInfo():
         assert(versionInfoA == versionInfoB)
 
 def test_ReposcannerLabNotebook_isDirectlyConstructible():
-        notebook = provenance.ReposcannerLabNotebook()
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         
 def test_ReposcannerLabNotebook_canLogArgsOnStartup():
-        notebook = provenance.ReposcannerLabNotebook()
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         args = type('', (), {})()
         args.repositories = "repositories.yaml"
         args.credentials = "credentials.yaml"
@@ -47,7 +47,7 @@ def test_ReposcannerLabNotebook_canLogArgsOnStartup():
         
 def test_ReposcannerLabNotebook_canLogCreatedRoutines():
         routine = contributionRoutines.ContributorAccountListRoutine()
-        notebook = provenance.ReposcannerLabNotebook()
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         notebook.onRoutineCreation(routine)
         jsonDocument = notebook.getJSONRepresentation()
         assert("rs:ContributorAccountListRoutine" in jsonDocument['agent'])
@@ -69,7 +69,7 @@ def test_ReposcannerLabNotebook_canLogCreatedTasks():
         token = "ab5571mc1")
         task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
-        notebook = provenance.ReposcannerLabNotebook()
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         notebook.onTaskCreation(task)
         jsonDocument = notebook.getJSONRepresentation()
         
@@ -89,7 +89,7 @@ def test_ReposcannerLabNotebook_canLogCreatedTasks():
         
 def test_ReposcannerLabNotebook_canLogStartOfTask():
         
-        notebook = provenance.ReposcannerLabNotebook()
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
@@ -153,7 +153,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         
         contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
         
-        notebook = provenance.ReposcannerLabNotebook()
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
@@ -204,7 +204,7 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
 
         contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
         
-        notebook = provenance.ReposcannerLabNotebook()
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
@@ -274,7 +274,8 @@ def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
         contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
         contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
         
-        notebook = provenance.ReposcannerLabNotebook()
+        outputDir = tmpdir.mkdir("notebookOutput/")
+        notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory=outputDir)
         
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
@@ -282,15 +283,13 @@ def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
         task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
-        
-        
-        
+
         notebook.onTaskCreation(task)
         notebook.onRoutineCreation(routine)
         
         task.process(agents=[routine],store=dataEntities.DataEntityStore(),notebook=notebook)
         
-        #notebook.publishNotebook(outputPath="outputs/")
+        notebook.publishNotebook()
         
         
         

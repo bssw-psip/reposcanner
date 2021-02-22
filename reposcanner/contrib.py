@@ -160,7 +160,7 @@ class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
         def offlineImplementation(self,request,session):
                 numberOfCommitsByContributor = {}
                 
-                for commit in session.repository.walk(session.repository.head.target, pygit2.GIT_SORT_TOPOLOGICAL):
+                for commit in session.walk(session.head.target, pygit2.GIT_SORT_TOPOLOGICAL):
                         if commit.author.email not in numberOfCommitsByContributor:
                                 numberOfCommitsByContributor[commit.author.email] = 1
                         else:

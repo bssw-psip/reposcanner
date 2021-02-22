@@ -10,7 +10,7 @@ def scannerMain(args):
         The master routine for Reposcanner.
         """
         
-        notebook = ReposcannerLabNotebook()
+        notebook = ReposcannerLabNotebook(args.notebookOutputPath)
         
         dataEntityFactory = data.DataEntityFactory()
         
@@ -28,7 +28,7 @@ def scannerMain(args):
         manager.run(repositoriesDataFile,credentialsDataFile,configDataFile)
         
         notebook.onExit()
-        notebook.publishNotebook(args.notebookOutputPath)
+        notebook.publishNotebook()
         
         
         
