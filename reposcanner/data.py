@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import csv,re,os,hashlib,yaml
+import pandas as pd
 import datetime
 
 class DataEntityStore:
@@ -308,6 +309,12 @@ class AnnotatedCSVData(ReposcannerDataEntity):
                 and users should call getRecordsForDicts instead.
                 """
                 return self._records
+                
+        def getDataFrame(self):
+                """
+                Returns file data in the form of a pandas DataFrame.
+                """
+                return pd.DataFrame.from_records(self._records,columns=self.getColumnNames())
                 
         def getRecordsAsDicts(self):
                 """
