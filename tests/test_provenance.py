@@ -21,8 +21,8 @@ def test_ReposcannerRunInformant_differentInstancesProvideTheSameVersionInfo():
         informantA = provenance.ReposcannerRunInformant()
         informantB = provenance.ReposcannerRunInformant()
         
-        versionInfoA = informantA.getReposcannerExecutionID()
-        versionInfoB = informantB.getReposcannerExecutionID()
+        versionInfoA = informantA.getReposcannerVersion()
+        versionInfoB = informantB.getReposcannerVersion()
         
         assert(versionInfoA == versionInfoB)
 

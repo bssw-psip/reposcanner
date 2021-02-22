@@ -59,7 +59,8 @@ class ReposcannerRunInformant:
                 current revision/commit of Reposcanner.
                 """
                 try:
-                        completedProcess = subprocess.run(["git", "rev-parse", "HEAD"])
+                        #git log --pretty=format:'%h' -n 1
+                        completedProcess = subprocess.run(["git", "log", "--pretty=format:'%h'", "-n 1"])
                         return completedProcess.stdout
                 except Exception as e:
                         return "UNKNOWN"
@@ -187,6 +188,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 ('rs:executionID', informant.getReposcannerExecutionID()),
                 ('rs:reposcannerVersion', informant.getReposcannerVersion())
                 ))
+                
                 repositoryListEntity = self._document.entity('rs:repositories',(
                     (prov.PROV_TYPE, "File"),
                     ('rs:path', args.repositories),
