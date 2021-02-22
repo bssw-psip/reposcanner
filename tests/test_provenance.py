@@ -16,6 +16,15 @@ def test_ReposcannerRunInformant_differentInstancesProvideTheSameExecutionID():
         executionIDB = informantB.getReposcannerExecutionID()
         
         assert(executionIDA == executionIDB)
+        
+def test_ReposcannerRunInformant_differentInstancesProvideTheSameVersionInfo():
+        informantA = provenance.ReposcannerRunInformant()
+        informantB = provenance.ReposcannerRunInformant()
+        
+        versionInfoA = informantA.getReposcannerExecutionID()
+        versionInfoB = informantB.getReposcannerExecutionID()
+        
+        assert(versionInfoA == versionInfoB)
 
 def test_ReposcannerLabNotebook_isDirectlyConstructible():
         notebook = provenance.ReposcannerLabNotebook()

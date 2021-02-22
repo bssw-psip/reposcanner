@@ -55,9 +55,14 @@ class ReposcannerRunInformant:
         def getReposcannerVersion(self):
                 """
                 Return a string indicating what version of Reposcanner was used for this run.
+                Since we aren't yet versioning releases of the tool, this is the hash of the
+                current revision/commit of Reposcanner.
                 """
-                #Perhaps we should use "git rev-parse HEAD" called via subprocess? Not sure.
-                pass #TODO: Figure out the best way to determine version of Reposcanner at runtime.
+                try:
+                        completedProcess = subprocess.run(["git", "rev-parse", "HEAD"])
+                        return completedProcess.stdout
+                except Exception as e:
+                        return "UNKNOWN"
                 
         
 
@@ -180,8 +185,8 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 self._document.agent(identifier="rs:ReposcannerManager",other_attributes=(
                 ('rs:executionID', informant.getReposcannerExecutionID()),
+                ('rs:reposcannerVersion', informant.getReposcannerVersion())
                 ))
-                
                 repositoryListEntity = self._document.entity('rs:repositories',(
                     (prov.PROV_TYPE, "File"),
                     ('rs:path', args.repositories),
