@@ -7,10 +7,12 @@ import time, datetime
 import csv
 
 #TODO: Convert to new routine model.
+
+"""
 class GrowthRoutine(OfflineRepositoryRoutine):
-        """
-        Calculates the number of lines of code over time.
-        """
+        #
+        #Calculates the number of lines of code over time.
+        #
         #def __init__(self,repositoryName,localRepoDirectory,outputDirectory):
         #        super().__init__(repositoryName=repositoryName,localRepoDirectory=localRepoDirectory,outputDirectory=outputDirectory)
         
@@ -72,3 +74,4 @@ class GrowthRoutine(OfflineRepositoryRoutine):
                                 activeInPastYear = ((today.timestamp() - lastCommitTimestamp) / 60 / 60 / 24) <= 365
                                 
                                 contributionWriter.writerow([contributorName,numberOfCommits,firstCommitTimestamp,lastCommitTimestamp,contributionPeriod,activeInPastYear])
+"""
