@@ -93,6 +93,21 @@ def test_AnnotatedCSVData_canConvertToDataFrame():
         assert(frame["numberOfCommits"][1] == 231)
         assert(frame["numberOfCommits"][2] == 77)
         
+def test_AnnotatedCSVData_canConvertToDataFrameFromFileWithFirstRowHeader():
+        dataEntity = data.AnnotatedCSVData("test.csv")
+        dataEntity.addRecord(["contributor","numberOfCommits"])
+        dataEntity.addRecord(["johnsmith",552])
+        dataEntity.addRecord(["alicejones",231])
+        dataEntity.addRecord(["carolcarson",77])
+        frame = dataEntity.getDataFrame(firstRowContainsHeaders=True)
+        assert(frame["contributor"][0] == "johnsmith")
+        assert(frame["contributor"][1] == "alicejones")
+        assert(frame["contributor"][2] == "carolcarson")
+        assert(frame["numberOfCommits"][0] == 552)
+        assert(frame["numberOfCommits"][1] == 231)
+        assert(frame["numberOfCommits"][2] == 77)
+        
+        
         
 def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
         sub = tmpdir.mkdir("datatest")

@@ -310,11 +310,17 @@ class AnnotatedCSVData(ReposcannerDataEntity):
                 """
                 return self._records
                 
-        def getDataFrame(self):
+        def getDataFrame(self,firstRowContainsHeaders=False):
                 """
                 Returns file data in the form of a pandas DataFrame.
+                
+                firstRowContainsHeaders: False if the column names are stored in metadata, True if 
+                the column names are found in the first row of the records (default False).
                 """
-                return pd.DataFrame.from_records(self._records,columns=self.getColumnNames())
+                if not firstRowContainsHeaders:
+                        return pd.DataFrame.from_records(self._records,columns=self.getColumnNames())
+                else:
+                        return pd.DataFrame.from_records(self._records[1:],columns=self._records[0])
                 
         def getRecordsAsDicts(self):
                 """
