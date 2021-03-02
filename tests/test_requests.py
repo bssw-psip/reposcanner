@@ -4,19 +4,31 @@ from reposcanner.git import CredentialKeychain
 
 
 def test_AnalysisRequestModel_isDirectlyConstructible():
-        analysisRequest = requests.AnalysisRequestModel()
+        analysisRequest = requests.AnalysisRequestModel(outputDirectory="./")
 
 def test_AnalysisRequestModel_isAnAnalysisRequestType():
-        analysisRequest = requests.AnalysisRequestModel()
+        analysisRequest = requests.AnalysisRequestModel(outputDirectory="./")
         assert(analysisRequest.isAnalysisRequestType())
         assert(not analysisRequest.isRoutineRequestType())
 
-def test_AnalysisRequestModel_hasNoErrorsByDefault():
-        analysisRequest = requests.AnalysisRequestModel()
+def test_AnalysisRequestModel_hasNoErrorsForValidInput():
+        analysisRequest = requests.AnalysisRequestModel(outputDirectory="./")
         assert(not analysisRequest.hasErrors())
+        
+def test_AnalysisRequestModel_passingGarbageOutputDirectoryIsAnError():
+        analysisRequest = requests.AnalysisRequestModel(outputDirectory=42)
+        assert(analysisRequest.hasErrors())
+        
+def test_AnalysisRequestModel_passingNonexistentOutputDirectoryIsAnError():
+        analysisRequest = requests.AnalysisRequestModel(outputDirectory="./nonexistentDirectory/")
+        assert(analysisRequest.hasErrors())
+        
+def test_AnalysisRequestModel_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
+        analysisRequest = requests.AnalysisRequestModel(outputDirectory="/")
+        assert(analysisRequest.hasErrors())
 
 def test_AnalysisRequestModel_defaultDataCriteriaAcceptsLiterallyEverything():
-        analysisRequest = requests.AnalysisRequestModel()
+        analysisRequest = requests.AnalysisRequestModel(outputDirectory="./")
         assert(analysisRequest.getDataCriteria() == analysisRequest.criteriaFunction)
         assert(analysisRequest.criteriaFunction("garbage") is True)
         assert(analysisRequest.criteriaFunction(42) is True)

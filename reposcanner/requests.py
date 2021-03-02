@@ -35,9 +35,26 @@ class AnalysisRequestModel(BaseRequestModel):
         def isAnalysisRequestType(cls):
                 return True
                 
-        def __init__(self):
+        def __init__(self,outputDirectory="./"):
                 super().__init__()
                 self._data = []
+                try:
+                        self._outputDirectory = outputDirectory
+                        if not os.path.isdir(self._outputDirectory) or not os.path.exists(self._outputDirectory):
+                                self.addError("The output directory {outputDirectory} either does not exist or \
+                                is not a valid directory.".format(outputDirectory=self._outputDirectory))
+                        if not os.access(self._outputDirectory, os.W_OK):
+                                self.addError("Reposcanner does not have permissions to write to the output directory \
+                                {outputDirectory}.".format(outputDirectory=self._outputDirectory))
+                                
+                except Exception as exception:
+                        self.addError("Encountered an unexpected exception \
+                        while parsing output directory \
+                        {outputDirectory}: {exception}".format(outputDirectory=self._outputDirectory,
+                        exception=exception))
+                        
+        def getOutputDirectory(self):
+                return self._outputDirectory
                 
         def criteriaFunction(self,entity):
                 """
