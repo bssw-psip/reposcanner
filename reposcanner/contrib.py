@@ -1,5 +1,6 @@
 from reposcanner.routines import OfflineRepositoryRoutine,OnlineRepositoryRoutine
-from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest
+from reposcanner.analyses import DataAnalysis
+from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest,AnalysisRequestModel
 from reposcanner.response import ResponseFactory
 from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory
@@ -7,6 +8,10 @@ import pygit2
 
 import time, datetime
 import csv
+import numpy as np
+
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 
 
 
@@ -186,9 +191,6 @@ class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
                 output.writeToFile()
                 responseFactory = ResponseFactory()
                 return responseFactory.createSuccessResponse(message="Completed!",attachments=output)
-                        
-                
-
 
 
 class ContributorAccountListRoutineRequest(OnlineRoutineRequest):
@@ -199,6 +201,7 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         """
         Contact the version control platform API, and get the account information of everyone who has ever contributed to the repository.
         """
+        #TODO: ContributorAccountListRoutine lacks a bitbucketImplementation(self,request,session) method.
         
         def getRequestType(self):
                 return ContributorAccountListRoutineRequest
@@ -262,7 +265,117 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
                 return responseFactory.createSuccessResponse(
                         message="Completed!",attachments=output)
                 
-        #def bitbucketImplementation(self,request,session):
-        #        pass             
+
+class TeamSizeAndDistributionAnalysisRequest(AnalysisRequestModel):
+        def criteriaFunction(self,entity):
+                """
+                Here we assume that the entity is, in fact, a
+                ReposcannerDataEntity. Because we haven't yet
+                decided to enforce a restriction such that only
+                ReposcannerDataEntity objects can be stored by
+                a DataEntityStore, we'll wrap it in a try block.
+                We may revisit this decision later.
+                """
+                try:
+                        creator = entity.getCreator()
+                        if creator == "ContributorAccountListRoutine" or creator == "external":
+                                return True
+                        else:
+                                return False
+                        
+                except AttributeError as e:
+                        return False
                         
 
+class TeamSizeAndDistributionAnalysis(DataAnalysis):
+        """
+        This analysis examines the number of contributors to each repository and
+        the distribution of those contributors across institutions to get a sense
+        for the scope and scale of a software project.
+        
+        Output from this analysis includes Matplotlib/Seaborn graphs describing
+        the data, and a CSV file containing the data used to generate those graphs.
+        """      
+        def getRequestType(self):
+                """
+                Returns the class object for the routine's companion request type.
+                """
+                return TeamSizeAndDistributionAnalysisRequest
+        
+        def execute(self,request):
+                responseFactory = ResponseFactory()
+                
+                data = request.getData()
+                contributorListEntities = [ entity for entity in data if entity.getCreator() == "ContributorAccountListRoutine" ]
+                if len(contributorListEntities) == 0:
+                        return responseFactory.createFailureResponse(message="Received no ContributorAccountListRoutine data.")
+                
+                loginData = next((entity for entity in data if "github_login.csv" in entity.getFilePath()), None)
+                if loginData == None:
+                        return responseFactory.createFailureResponse(message="Failed to find github_login.csv from reposcanner-data.")
+                else:
+                        loginData = loginData.getDataFrame(firstRowContainsHeaders=True)
+                        
+                memberData = next((entity for entity in data if "members.csv" in entity.getFilePath()), None)
+                if memberData == None:
+                        return responseFactory.createFailureResponse(message="Failed to find members.csv from reposcanner-data.")
+                else:
+                        memberData = memberData.getDataFrame(firstRowContainsHeaders=True)
+                
+                dataEntityFactory = DataEntityFactory()
+                analysisCSVOutput = dataEntityFactory.createAnnotatedCSVData("{outputDirectory}/TeamSizeAndDistributionAnalysis_results.csv".format(
+                        outputDirectory=request.getOutputDirectory()))
+                
+                analysisCSVOutput.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+                analysisCSVOutput.setCreator(self.__class__.__name__)
+                analysisCSVOutput.setDateCreated(datetime.date.today())
+                analysisCSVOutput.setColumnNames(["URL","numberOfContributors","numberOfKnownECPContributors","numberOfInstitutionsInvolved"])
+                analysisCSVOutput.setColumnDatatypes(["str","int","int","int"])
+                
+                for contributorListEntity in contributorListEntities:
+                        contributorListFrame = contributorListEntity.getDataFrame()
+                        
+                        repositoryURL = contributorListEntity.getURL()
+                        numberOfContributors = len(contributorListFrame.index)
+                        numberOfKnownECPContributors = 0
+                        institutionIDsInvolved = set()
+                        
+                        for index, individualContributor in contributorListFrame.iterrows():
+                                if individualContributor["Login Name"] in loginData["login"].values:
+                                        folksID = loginData.loc[loginData['login'] == individualContributor["Login Name"]]['FID'].values[0]
+                                        
+                                        if folksID in memberData['FID'].values: 
+                                                numberOfKnownECPContributors += 1
+                                                ecpMemberEntry = memberData.loc[memberData['FID'] == folksID]
+                                                
+                                                
+                                                #Note: Though the vast majority of ECP members belong to only one institution, it is
+                                                #possible for a member to belong to more than one (e.g. simultaneously holding a position
+                                                #at a national lab and a university).
+                                                firstInstitutionOfECPMember = ecpMemberEntry['IID'].values[0]
+                                                secondInstitutionOfECPMember = ecpMemberEntry['IID2'].values[0]
+                                                if firstInstitutionOfECPMember is not None and not np.isnan(firstInstitutionOfECPMember):
+                                                        institutionIDsInvolved.add(firstInstitutionOfECPMember)
+                                                if secondInstitutionOfECPMember is not None and not np.isnan(secondInstitutionOfECPMember):
+                                                        institutionIDsInvolved.add(secondInstitutionOfECPMember)
+                        
+                        analysisCSVOutput.addRecord([repositoryURL,numberOfContributors,numberOfKnownECPContributors,len(institutionIDsInvolved)])
+                
+                analysisCSVOutput.writeToFile()
+                
+                return responseFactory.createSuccessResponse(message="Completed!",attachments=analysisCSVOutput)
+                                                
+                                
+                                
+                                
+                                        
+                                
+                                
+                                
+                        
+                        
+                    
+                        
+                         
+                
+                

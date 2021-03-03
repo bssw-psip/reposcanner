@@ -291,7 +291,20 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                                 else:
                                         entityID = 'rs:dataentity:nonstandard:{objID}'.format(objID=id(entity))
                                 self._document.usage(taskID,entityID)
-                                        
+        
+        def logAdditionalDataEntity(self,entity):
+                """
+                Convenience method added to enable us to log reposcanner-data files added
+                to the data store at start-up.
+                """
+                dataEntityID = 'rs:dataentity:{objID}'.format(objID=id(attachment))
+                dataEntity = self._document.entity(dataEntityID,(
+                    (prov.PROV_TYPE, "File"),
+                    ('rs:executionID', attachment.getReposcannerExecutionID()),
+                    ('rs:path', attachment.getFilePath()),
+                    ('rs:creator', attachment.getCreator()),
+                    ('rs:md5hash', str(entity.getMD5Hash())),
+                )) 
              
         def onTaskCompletion(self,task,agent):
                 """

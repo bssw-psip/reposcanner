@@ -6,6 +6,9 @@ import reposcanner.data as data
 logging.basicConfig(filename='reposcanner.log',level=logging.DEBUG)
 
 
+#TODO: Update this to be more generic (e.g. allow for reloading of data generated on) previous runs.
+#If the file doesn't have readable metadata associated with it, we can just say the creator is
+#"external" or unlisted.
 def loadReposcannerData(reposcannerDataDirectory,notebook,manager):
         """
         Read in additional data files held by bssw-psip/reposcanner-data
@@ -16,7 +19,7 @@ def loadReposcannerData(reposcannerDataDirectory,notebook,manager):
                 dataEntityFactory = data.DataEntityFactory()
                 dataEntity = dataEntityFactory.createAnnotatedCSVData(path)
                 dataEntity.readFromFile()
-                dataEntity.setCreator("reposcanner-data")
+                dataEntity.setCreator("external")
                 dataEntity.setReposcannerExecutionID(informant.getReposcannerExecutionID())
                 return dataEntity                
         
