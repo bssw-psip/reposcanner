@@ -264,6 +264,75 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
                 responseFactory = ResponseFactory()
                 return responseFactory.createSuccessResponse(
                         message="Completed!",attachments=output)
+                        
+class FileInteractionRoutineRequest(OfflineRoutineRequest):
+        def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
+                super().__init__(repositoryURL,outputDirectory,workspaceDirectory)
+
+
+class FileInteractionRoutine(OfflineRepositoryRoutine):
+        def getRequestType(self):
+                return FileInteractionRoutineRequest
+        
+        def offlineImplementation(self,request,session):
+                #TODO: Implement offline, commit-based file interaction routine (in the vein of Vasilescu et al.).
+                pass
+                
+
+class CommitAuthorIdentificationRoutineRequest(OnlineRoutineRequest):
+        def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
+                super().__init__(repositoryURL,outputDirectory,username=username,password=password,token=token,keychain=keychain)
+                
+                
+class CommitAuthorIdentificationRoutine(OnlineRepositoryRoutine):
+        """
+        Contact the version control platform API, and get the account information of everyone who has ever contributed to the repository.
+        """
+        #TODO: CommitAuthorIdentificationRoutine lacks a bitbucketImplementation(self,request,session) method.
+        
+        def getRequestType(self):
+                return CommitAuthorIdentificationRoutineRequest
+                
+        
+        def githubImplementation(self,request,session):
+                #TODO: Implement Commit Author Identification Routine implementation for GitHub.
+                pass
+                
+        def gitlabImplementation(self,request,session):
+                #TODO: Implement Commit Author Identification Routine implementation for Gitlab.
+                pass     
+
+
+      
+class ContributorFileInteractionAnalysisRequest(AnalysisRequestModel):
+        def criteriaFunction(self,entity):
+                """
+                Here we assume that the entity is, in fact, a
+                ReposcannerDataEntity. Because we haven't yet
+                decided to enforce a restriction such that only
+                ReposcannerDataEntity objects can be stored by
+                a DataEntityStore, we'll wrap it in a try block.
+                We may revisit this decision later.
+                """
+                try:
+                        creator = entity.getCreator()
+                        if creator == "CommitAuthorIdentificationRoutine" or creator == "FileInteractionRoutine":
+                                return True
+                        else:
+                                return False
+                        
+                except AttributeError as e:
+                        return False
+
+class ContributorFileInteractionAnalysis(DataAnalysis):
+        def getRequestType(self):
+                """
+                Returns the class object for the routine's companion request type.
+                """
+                return ContributorFileInteractionAnalysisRequest
+        def execute(self,request):
+                #TODO: Set up the Contributor File Interaction Analysis
+                pass      
                 
 
 class TeamSizeAndDistributionAnalysisRequest(AnalysisRequestModel):
