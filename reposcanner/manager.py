@@ -1,43 +1,89 @@
-from reposcanner.contrib import ContributorAccountListRoutine
+from reposcanner.contrib import ContributorAccountListRoutine,OfflineCommitCountsRoutine
 from reposcanner.git import CredentialKeychain
+from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
-import datetime, logging, curses
+import datetime, logging, curses, sys
 from tqdm import tqdm #For progress checking in non-GUI mode.
+from abc import ABC, abstractmethod
 
 
-class ManagerTask:
-        """
-        This is a simple wrapper around requests and responses that makes it
-        easier for the frontend to display execution progress.
-        """
-        def __init__(self,projectID,projectName,url,request):
-                self._projectID = projectID
-                self._projectName = projectName
-                self._url = url
+class TaskFactory:
+        def createManagerRoutineTask(self,projectID,projectName,url,request):
+                return ManagerRoutineTask(projectID,projectName,url,request)
+        def createManagerAnalysisTask(self,request):
+                return ManagerAnalysisTask(request)
+        
+
+        
+class ManagerTask(ABC):
+        """Abstract base class for Task objects. Task objects are simple wrappers around
+        requests and responses that makes it easier for the frontend to display execution
+        progress."""
+        
+        def __init__(self,request):
                 self._request = request
                 self._response = None
         
-        def process(self,routines):
-                """
-                Scan through a set of available routines and see if any can execute
-                the request held by this task. If no routines can handle this request,
-                this method will create a failure response and store it.
+        def getRequestClassName(self):
+                return self._request.__class__.__name__
                 
-                routines: An iterable of RepositoryAnalysisRoutine objects.
+        def getRequest(self):
+                return self._request
+                
+        def hasResponse(self):
+                return self._response is not None
+                
+        def getResponse(self):
+                return self._response
+                
+        def process(self,agents,store,notebook):
+                """
+                Scan through a set of available routines or analyses and see if any can
+                execute the request held by this task. If no routines or analyses can handle
+                this request, this method will create a failure response and store it.
+                
+                agents: An iterable of RepositoryRoutine and/or DataAnalysis objects.
+                store: A DataEntityStore instance, provided by the manager.
+                notebook: A ReposcannerNotebook object, used for logging results.
                 """
                 selectedRoutine = None
-                for routine in routines:
-                        if routine.canHandleRequest(self._request):
-                                selectedRoutine = routine
+                for agent in agents:
+                        if agent.canHandleRequest(self._request):
+                                selectedAgent = agent
                                 break
-                if selectedRoutine is not None:      
-                        self._response = selectedRoutine.run(self._request)
+                if selectedAgent is not None:
+                        if notebook is not None:
+                                notebook.onTaskStart(self,store,selectedAgent)
+                        if self._request.isAnalysisRequestType():
+                                self._request.fetchDataFromStore(store)
+                        self._response = selectedAgent.run(self._request)
+                        if notebook is not None:
+                                notebook.onTaskCompletion(self,selectedAgent)
                 else:
                         responseFactory = ResponseFactory()
                         self._response = responseFactory.createFailureResponse(
-                                message= "No routine was found that could \
+                                message= "No routine/analysis was found that could \
                                 execute the request ({requestType}).".format(
                                 requestType=type(request)))
+        
+        @abstractmethod
+        def getResponseDescription(self):
+                """
+                Generate a string that describes the response to the request in a human-readable
+                way.
+                """
+                pass
+        
+
+class ManagerRoutineTask(ManagerTask):
+        """
+        This Task class wraps requests and responses for RepositoryRoutines.
+        """
+        def __init__(self,projectID,projectName,url,request):
+                super().__init__(request)
+                self._projectID = projectID
+                self._projectName = projectName
+                self._url = url
                                 
         def getDescription(self):
                 """
@@ -59,64 +105,149 @@ class ManagerTask:
                         repoNameOrURL = canonicalRepoNameOrUrl,
                         requestType = self._request.__class__.__name__
                 )
+                
+        def getProjectID(self):
+                return self._projectID
+                
+        def getProjectName(self):
+                return self._projectName
+                
+        def getURL(self):
+                return self._url
                                 
         def getResponseDescription(self):
-                repositoryLocation = self._request.getRepositoryLocation()
+                repositoryLocation = self.getRequest().getRepositoryLocation()
                 if repositoryLocation.isRecognizable():
                         canonicalRepoNameOrUrl = repositoryLocation.getCanonicalName()
                 else:
                         canonicalRepoNameOrUrl = self._url
                 
                 if self._response.wasSuccessful():
-                        return "✅ ({repoNameOrURL} --> {requestType}) was successful!".format(
+                        return "✅ Routine ({repoNameOrURL} --> {requestType}) was successful!".format(
                                 repoNameOrURL = canonicalRepoNameOrUrl,
-                                requestType = self._request.__class__.__name__
+                                requestType = self.getRequest().__class__.__name__
                         )
                 else:
-                        return "❌ ({repoNameOrURL} --> {requestType}) failed. Reason: {reason}".format(
+                        return "❌ Routine ({repoNameOrURL} --> {requestType}) failed. Reason: {reason}".format(
                                 repoNameOrURL = canonicalRepoNameOrUrl,
-                                requestType = self._request.__class__.__name__,
-                                reason=self._response.getMessage()
+                                requestType = self.getRequest().__class__.__name__,
+                                reason=self.getResponse().getMessage()
+                        )
+                        
+class ManagerAnalysisTask(ManagerTask):
+        """
+        This Task class wraps requests and responses for DataAnalyses.
+        """
+        def __init__(self,request):
+                super().__init__(request)
+        
+        def getResponseDescription(self):
+                if self._response.wasSuccessful():
+                        return "✅ Analysis ({requestType}) was successful!".format(
+                                requestType = self.getRequest().__class__.__name__
+                        )
+                else:
+                        return "❌ Analysis ({requestType}) failed. Reason: {reason}".format(
+                                requestType = self.getRequest().__class__.__name__,
+                                reason=self.getResponse().getMessage()
                         )
                         
 
-class ReposcannerRoutineManager:
+class ReposcannerManager:
         """
         The ReposcannerRoutineManager is responsible for launching and tracking executions
-        of RepositoryAnalysisRoutines. The frontend creates an instance of this manager and
+        of RepositoryRoutines and DataAnalyses. The frontend creates an instance of this manager and
         passes the necessary repository and credential data to it.
         """
-        def __init__(self,outputDirectory="./",workspaceDirectory="./",gui=False):
+        def __init__(self,notebook=None,outputDirectory="./",workspaceDirectory="./",gui=False):
+                self._notebook = notebook
                 self._routines = []
-                self._initializeRoutines()
-                self._startTime = None
+                self._analyses = []
                 self._tasks = []
                 self._keychain = None
                 self._outputDirectory = outputDirectory
                 self._workspaceDirectory = workspaceDirectory
                 self._guiModeEnabled = gui
+                self._store = DataEntityStore()
                 
-        def _initializeRoutines(self):
-                """Constructs RepositoryAnalysisRoutine objects that belong to the manager."""
-                contributorAccountListRoutine = ContributorAccountListRoutine()
-                self._routines.append(contributorAccountListRoutine)
+        def initializeRoutinesAndAnalyses(self,configData):
+                """Constructs RepositoryRoutine and DataAnalysis objects that belong to the manager."""
                 
-        def _buildTask(self,projectID,projectName,url,routine):
+                if 'routines' in configData:
+                        for routineName in configData['routines']:
+                                try:
+                                        routineClazz = getattr(sys.modules[__name__], routineName)
+                                        routineInstance = routineClazz()
+                                        self._routines.append(routineInstance)
+                                except:
+                                        raise ValueError("Can't find routine matching name {name}".format(name=routineName))
+                                        
+                if 'analyses' in configData:
+                        for analysisName in configData['analyses']:
+                                try:
+                                        analysisClazz = getattr(sys.modules[__name__], analysisName)
+                                        analysisInstance = analysisClazz()
+                                        self._analyses.append(analysisInstance)
+                                except:
+                                        raise ValueError("Can't find analysis matching name {name}".format(name=analysisName))     
+                
+                for routine in self._routines:
+                        if self._notebook is not None:
+                                self._notebook.onRoutineCreation(routine)
+                for analysis in self._analyses:
+                        if self._notebook is not None:
+                                self._notebook.onAnalysisCreation(analysis)
+        
+        
+        def addDataEntityToStore(self,entity):
+                """
+                Allows the user to add additional data to the DataEntityStore
+                prior to execution (e.g. from reposcanner-data)
+                """
+                self._store.insert(entity)
+        
+                               
+        def getRoutines(self):
+                """
+                Provides a list of routines available for the manager
+                to delgate tasks to. Used for testing purposes.
+                """
+                return self._routines
+                
+        def getAnalyses(self):
+                """
+                Provides a list of analyses available for the manager
+                to delgate tasks to. Used for testing purposes.
+                """
+                return self._analyses
+                
+        def isGUIModeEnabled(self):
+                return self._guiModeEnabled
+                
+        def buildTask(self,projectID,projectName,url,routineOrAnalysis):
                 """Constructs a task to hold a request/response pair."""
-                requestType = routine.getRequestType()
-                if requestType.requiresOnlineAPIAccess():
-                        request = requestType(repositoryURL=url,
+                requestType = routineOrAnalysis.getRequestType()
+                
+                if requestType.isRoutineRequestType():
+                        if requestType.requiresOnlineAPIAccess():
+                                request = requestType(repositoryURL=url,
                                 outputDirectory=self._outputDirectory,
                                 keychain=self._keychain)
-                else:
-                        request = requestType(repositoryURL=url,
+                        else:
+                                request = requestType(repositoryURL=url,
                                 outputDirectory=self._outputDirectory,
                                 workspaceDirectory=self._workspaceDirectory)
-                
-                task = ManagerTask(projectID=projectID,projectName=projectName,url=url,request=request)
-                return task
+                        task = ManagerRoutineTask(projectID=projectID,projectName=projectName,url=url,request=request)
+                        return task
+                elif requestType.isAnalysisRequestType():
+                        request = requestType()
+                        task = ManagerAnalysisTask(request)
+                        return task
+                else:
+                        raise TypeError("Encountered unrecognized request type when building task: {requestType}.".format(
+                        requestType=requestType))
         
-        def _prepareTasks(self,repositoryDictionary,credentialsDictionary):
+        def prepareTasks(self,repositoryDictionary,credentialsDictionary):
                 """Interpret the user's inputs so we know what repositories we need to
                 collect data on and how we can access them."""
                 self._keychain = CredentialKeychain(credentialsDictionary)
@@ -129,27 +260,44 @@ class ReposcannerRoutineManager:
                            
                            for url in projectEntry["urls"]:
                                    for routine in self._routines:
-                                           task = self._buildTask(projectID,projectName,url,routine)
+                                           task = self.buildTask(projectID,projectName,url,routine)
+                                           if self._notebook is not None:
+                                                   self._notebook.onTaskCreation(task)
                                            self._tasks.append(task)
-                                           
+                for analysis in self._analyses:
+                        task = self.buildTask(projectID,projectName,url,analysis)
+                        if self._notebook is not None:
+                                self._notebook.onTaskCreation(task)
+                        self._tasks.append(task)
                 
-        def run(self,repositoryDictionary,credentialsDictionary):
-                self._startTime = datetime.datetime.today()
-                self._prepareTasks(repositoryDictionary,credentialsDictionary)
+        def run(self,repositoriesDataFile,credentialsDataFile,configDataFile):
+                """
+                run() is the primary method that is called by the main function.
+                This method starts Reposcanner's execution.
+                """
+                self.initializeRoutinesAndAnalyses(configDataFile.getData())
+                self.prepareTasks(repositoriesDataFile.getData(),credentialsDataFile.getData())
                 
-                if not self._guiModeEnabled:
+                if not self.isGUIModeEnabled():
                         self.executeWithNoGUI()
                 else:
                         self.executeWithGUI()
-                        
-                        
+           
         def executeWithNoGUI(self):
+                """
+                Plain-text execution mode.
+                """
                 for task in tqdm(self._tasks):
-                        task.process(self._routines)
-                        response = task.getResponseDescription()
-                        print(response)
+                        task.process(self._routines+self._analyses,self._store,self._notebook)
+                        response = task.getResponse()
+                        print(task.getResponseDescription())
+                        for attachment in response.getAttachments():
+                                self._store.insert(attachment)
                                 
         def executeWithGUI(self):
+                """
+                Fancy Curses-based GUI execution mode.
+                """
                 def centerTextPosition(text,windowWidth):
                         half_length_of_text = int(len(text) / 2)
                         middle_column = int(windowWidth / 2)
@@ -230,7 +378,10 @@ class ReposcannerRoutineManager:
                                 footer.addstr(1,4,taskDescription,curses.A_BOLD)
                                 footer.border(2)
                                 footer.refresh()
-                                currentTask.process(self._routines)
+                                currentTask.process(self._routines+self._analyses,self._store,self._notebook)
+                                for attachment in currentTask.getResponse().getAttachments():
+                                        self._store.insert(attachment)
+                                
                                 messages.insert(0,currentTask.getResponseDescription())
                                 screen.refresh()
                                 

@@ -1,12 +1,106 @@
 import datetime
 import reposcanner.git as gitEntities
-import os.path
+import os
 from abc import ABC, abstractmethod
-
 
 class BaseRequestModel:
         """
         The base class for all request models. The frontend is responsible for phrasing their requests in the
+        form of a request model which routines/analyses understand.
+        """
+        def __init__(self):
+                self._errors = []
+        
+        def addError(self, message):
+                self._errors.append(message)
+
+        def hasErrors(self):
+                return len(self._errors) > 0
+
+        def getErrors(self):
+                return self._errors
+                
+        @classmethod
+        def isRoutineRequestType(cls):
+                return False
+        
+        @classmethod      
+        def isAnalysisRequestType(cls):
+                return False     
+
+
+class AnalysisRequestModel(BaseRequestModel):
+        
+        @classmethod      
+        def isAnalysisRequestType(cls):
+                return True
+                
+        def __init__(self,outputDirectory="./"):
+                super().__init__()
+                self._data = []
+                try:
+                        self._outputDirectory = outputDirectory
+                        if not os.path.isdir(self._outputDirectory) or not os.path.exists(self._outputDirectory):
+                                self.addError("The output directory {outputDirectory} either does not exist or \
+                                is not a valid directory.".format(outputDirectory=self._outputDirectory))
+                        if not os.access(self._outputDirectory, os.W_OK):
+                                self.addError("Reposcanner does not have permissions to write to the output directory \
+                                {outputDirectory}.".format(outputDirectory=self._outputDirectory))
+                                
+                except Exception as exception:
+                        self.addError("Encountered an unexpected exception \
+                        while parsing output directory \
+                        {outputDirectory}: {exception}".format(outputDirectory=self._outputDirectory,
+                        exception=exception))
+                        
+        def getOutputDirectory(self):
+                return self._outputDirectory
+                
+        def criteriaFunction(self,entity):
+                """
+                Classes that inherit from AnalysisRequestModel must
+                override the criteriaFunction to describe the data
+                objects that the analysis expects to work with. By
+                default, this function returns True, which means
+                that the analysis will get all of the data held in
+                ReposcannerManager's DataEntityStore.
+                 
+                
+                entity: A ReposcannerDataEntity object. This function 
+                should return True if the entity will be used in the
+                analysis and False otherwise.
+                """
+                return True
+                
+        def getDataCriteria(self):
+                """
+                This is called to get the criteria function, which is passed
+                to DataEntityStore.getByCriteria() to retrieve the data which
+                is needed by the analysis.
+                """
+                return self.criteriaFunction
+                
+        def fetchDataFromStore(self,store):
+                """
+                This is called by ManagerTask.process() prior to running an analysis request.
+                It loads any data that fits the request's criteria into the request.
+                
+                store: A DataEntityStore instance.
+                """
+                for entity in store.getByCriteria(self.getDataCriteria()):
+                        self._data.append(entity)
+                
+        def getData(self):
+                """
+                Get any stored data associated with this request.
+                Called by the DataAnalysis instance responsible for handling the request.
+                """
+                return self._data
+                
+
+class RoutineRequestModel(BaseRequestModel):
+        """
+        The base class for all routine request models. The frontend is responsible for phrasing their requests in the
         form of a request model which routines understand.
         """
 
@@ -20,7 +114,7 @@ class BaseRequestModel:
                                 by the routine should be stored.
                 
                 """
-                self._errors = []
+                super().__init__()
                 factory = gitEntities.GitEntityFactory()
                 self._repositoryLocation = None
                 try:
@@ -39,6 +133,10 @@ class BaseRequestModel:
                         if not os.path.isdir(self._outputDirectory) or not os.path.exists(self._outputDirectory):
                                 self.addError("The output directory {outputDirectory} either does not exist or \
                                 is not a valid directory.".format(outputDirectory=self._outputDirectory))
+                        if not os.access(self._outputDirectory, os.W_OK):
+                                self.addError("Reposcanner does not have permissions to write to the output directory \
+                                {outputDirectory}.".format(outputDirectory=self._outputDirectory))
+                                
                 except Exception as exception:
                         self.addError("Encountered an unexpected exception \
                         while parsing output directory \
@@ -52,20 +150,15 @@ class BaseRequestModel:
         def getOutputDirectory(self):
                 return self._outputDirectory
 
-        def addError(self, message):
-                self._errors.append(message)
-
-        def hasErrors(self):
-                return len(self._errors) > 0
-
-        def getErrors(self):
-                return self._errors
+        @classmethod
+        def isRoutineRequestType(cls):
+                return True
                 
 
-class OnlineRoutineRequest(BaseRequestModel):
+class OnlineRoutineRequest(RoutineRequestModel):
         """
         The base class for requests to routines that use an online API to compute results. 
-        Request classes for OnlineRepositoryAnalysisRoutine should inherit from this class.
+        Request classes for OnlineRepositoryRoutine should inherit from this class.
         """
         
         @classmethod      
@@ -112,10 +205,10 @@ class OnlineRoutineRequest(BaseRequestModel):
         def getCredentials(self):
                 return self._credentials
                 
-class OfflineRoutineRequest(BaseRequestModel):
+class OfflineRoutineRequest(RoutineRequestModel):
         """
         The base class for requests to routines that operate on an offline clone to compute results. 
-        Request classes for OfflineRepositoryAnalysisRoutine should inherit from this class.
+        Request classes for OfflineRepositoryRoutine should inherit from this class.
         """
         
         @classmethod      
