@@ -1,6 +1,7 @@
 import pytest
 import reposcanner.requests as requests
 from reposcanner.git import CredentialKeychain
+import platform
 
 
 def test_AnalysisRequestModel_isDirectlyConstructible():
@@ -24,6 +25,10 @@ def test_AnalysisRequestModel_passingNonexistentOutputDirectoryIsAnError():
         assert(analysisRequest.hasErrors())
         
 def test_AnalysisRequestModel_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
+        #This test is specific to Mac and Linux environments, so we'll skip it when running
+		#this test in a Windows environment.
+        if platform.system() == 'Windows':
+            return True
         analysisRequest = requests.AnalysisRequestModel(outputDirectory="/")
         assert(analysisRequest.hasErrors())
 
@@ -47,6 +52,10 @@ def test_RoutineRequestModel_hasNoErrorsForValidInput():
         assert(not request.hasErrors())
         
 def test_RoutineRequestModel_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
+        #This test is specific to Mac and Linux environments, so we'll skip it when running
+		#this test in a Windows environment.
+        if platform.system() == 'Windows':
+            return True
         request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="/")
         assert(request.hasErrors())
         
