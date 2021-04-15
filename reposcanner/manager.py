@@ -46,7 +46,7 @@ class ManagerTask(ABC):
                 store: A DataEntityStore instance, provided by the manager.
                 notebook: A ReposcannerNotebook object, used for logging results.
                 """
-                selectedRoutine = None
+                selectedAgent = None
                 for agent in agents:
                         if agent.canHandleRequest(self._request):
                                 selectedAgent = agent

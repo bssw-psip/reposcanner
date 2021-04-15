@@ -26,7 +26,7 @@ def test_ContributorAccountListRoutine_willRejectInAppropriateRequest():
         routine = contributionRoutines.ContributorAccountListRoutine()
         
         assert(not isinstance(request, routine.getRequestType()))
-        #assert(not routine.canHandleRequest(request))
+        assert(not routine.canHandleRequest(request))
         
 
 

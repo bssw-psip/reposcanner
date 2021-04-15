@@ -45,6 +45,7 @@ def test_OfflineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespon
         mocker.patch.multiple(routines.OfflineRepositoryRoutine,__abstractmethods__=set())
         def canNeverHandleRequest(self, request):
             return False
+        originalCanHandleRequest = routines.OfflineRepositoryRoutine.canHandleRequest
         routines.OfflineRepositoryRoutine.canHandleRequest = canNeverHandleRequest
         genericRoutine = routines.OfflineRepositoryRoutine()
         
@@ -53,12 +54,14 @@ def test_OfflineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespon
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
         assert(response.getMessage() == "The routine was passed a request of the wrong type.")
+        routines.OfflineRepositoryRoutine.canHandleRequest = originalCanHandleRequest
         
-        
+     
 def test_OfflineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker):
         mocker.patch.multiple(routines.OfflineRepositoryRoutine,__abstractmethods__=set())
         def canAlwaysHandleRequest(self, request):
             return True
+        originalCanHandleRequest = routines.OfflineRepositoryRoutine.canHandleRequest
         routines.OfflineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
         genericRoutine = routines.OfflineRepositoryRoutine()
         
@@ -68,7 +71,7 @@ def test_OfflineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
         assert(response.getMessage() == "The request had errors in it and cannot be processed.")
-        
+        routines.OfflineRepositoryRoutine.canHandleRequest = originalCanHandleRequest
         
 
 def test_OnlineRepositoryRoutine_isConstructibleWithMockImplementation(mocker):
@@ -79,6 +82,7 @@ def test_OnlineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespons
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
         def canNeverHandleRequest(self, request):
             return False
+        originalCanHandleRequest = routines.OnlineRepositoryRoutine.canHandleRequest
         routines.OnlineRepositoryRoutine.canHandleRequest = canNeverHandleRequest
         genericRoutine = routines.OnlineRepositoryRoutine()
         
@@ -87,11 +91,13 @@ def test_OnlineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespons
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
         assert(response.getMessage() == "The routine was passed a request of the wrong type.")
+        routines.OnlineRepositoryRoutine.canHandleRequest = originalCanHandleRequest
         
 def test_OnlineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
         def canAlwaysHandleRequest(self, request):
             return True
+        originalCanHandleRequest = routines.OnlineRepositoryRoutine.canHandleRequest
         routines.OnlineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
         genericRoutine = routines.OnlineRepositoryRoutine()
         
@@ -101,11 +107,13 @@ def test_OnlineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker)
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
         assert(response.getMessage() == "The request had errors in it and cannot be processed.")
-        
+        routines.OnlineRepositoryRoutine.canHandleRequest = originalCanHandleRequest
+       
 def test_OnlineRepositoryRoutine_inabilityOfSessionCreatorToHandleRepositoryResultsInFailureResponse(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
         def canAlwaysHandleRequest(self, request):
             return True
+        originalCanHandleRequest = routines.OnlineRepositoryRoutine.canHandleRequest
         routines.OnlineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
         genericRoutine = routines.OnlineRepositoryRoutine()
         
@@ -118,7 +126,7 @@ def test_OnlineRepositoryRoutine_inabilityOfSessionCreatorToHandleRepositoryResu
         assert(not response.wasSuccessful())
         assert(response.hasMessage())
         assert("to handle the platform of the repository" in response.getMessage())
-        
+        routines.OnlineRepositoryRoutine.canHandleRequest = originalCanHandleRequest
         
 def test_OnlineRepositoryRoutine_sessionCreatorSupportsGitHub(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
