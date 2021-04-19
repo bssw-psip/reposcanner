@@ -1,0 +1,4 @@
+OctocatProject:
+  name: Target for Dummy Workflow
+  urls:
+    - https://github.com/octocat/Hello-World
