@@ -2,6 +2,7 @@ import reposcanner.dummy as dummy
 import reposcanner.provenance as provenance
 import reposcanner.requests
 import reposcanner.data as data
+from reposcanner.manager import ReposcannerManager
 
 def test_DummyOfflineRoutineRequest_isDirectlyConstructible():
         request = dummy.DummyOfflineRoutineRequest(repositoryURL="https://github.com/owner/repo",
@@ -103,30 +104,31 @@ def test_DummyAnalysis_canHandleAppropriateRequest():
 		assert(analysis.canHandleRequest(request))
 
 def test_canCompleteDummyWorkflow():
-		dataEntityFactory = data.DataEntityFactory()
-		
-		#Imitate passing command-line arguments.
-		args = type('', (), {})()
-		args.repositories = "tests/dummyWorkflowFiles/repositories.yml"
-		args.credentials = "tests/dummyWorkflowFiles/credentials.yml"
-		args.config = "tests/dummyWorkflowFiles/config.yml"
-		args.notebookOutputPath = "tests/dummyWorkflowFiles/notebook.log"
-        
-        repositoriesDataFile = dataEntityFactory.createYAMLData(args.repositories)
-        credentialsDataFile = dataEntityFactory.createYAMLData(args.credentials)
-        configDataFile = dataEntityFactory.createYAMLData(args.config)
-		
-        repositoriesDataFile.readFromFile()
-        credentialsDataFile.readFromFile()
-        configDataFile.readFromFile()
-		
-		notebook = provenance.ReposcannerLabNotebook(args.notebookOutputPath)
-
-        notebook.onStartup(args)
-        
-        manager = ReposcannerManager(notebook=notebook,outputDirectory="./",workspaceDirectory="./",gui=False)
-        
-        manager.run(repositoriesDataFile,credentialsDataFile,configDataFile)
-        
-        notebook.onExit()
-        notebook.publishNotebook()
+	dataEntityFactory = data.DataEntityFactory()
+	#Imitate passing command-line arguments.
+	args = type('', (), {})()
+	args.repositories = "tests/dummyWorkflowFiles/repositories.yml"
+	args.credentials = "tests/dummyWorkflowFiles/credentials.yml"
+	args.config = "tests/dummyWorkflowFiles/config.yml"
+	args.notebookOutputPath = "tests/dummyWorkflowFiles/"
+	args.outputDirectory = "./"
+	args.workspaceDirectory = "./"
+	
+	repositoriesDataFile = dataEntityFactory.createYAMLData(args.repositories)
+	credentialsDataFile = dataEntityFactory.createYAMLData(args.credentials)
+	configDataFile = dataEntityFactory.createYAMLData(args.config)
+	
+	repositoriesDataFile.readFromFile()
+	credentialsDataFile.readFromFile()
+	configDataFile.readFromFile()
+	
+	notebook = provenance.ReposcannerLabNotebook(args.notebookOutputPath)
+	
+	notebook.onStartup(args)
+	
+	manager = ReposcannerManager(notebook=notebook,outputDirectory=args.outputDirectory,workspaceDirectory=args.workspaceDirectory,gui=False)
+	
+	manager.run(repositoriesDataFile,credentialsDataFile,configDataFile)
+	
+	notebook.onExit()
+	notebook.publishNotebook()
