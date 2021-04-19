@@ -253,14 +253,20 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 
                 task: The ManagerTask object.
                 """
-                
-                task = self._document.activity("rs:task{taskid}".format(taskid=id(task)),other_attributes=(
-                                    ('rs:requestType', task.getRequestClassName()),
-                                    ('rs:projectID', task.getProjectID()),
-                                    ('rs:projectName', task.getProjectName()),
-                                    ('rs:URL', task.getURL())
-                        )
-                )
+                request = task.getRequest()
+                if request.isRoutineRequestType():
+                    task = self._document.activity("rs:task{taskid}".format(taskid=id(task)),other_attributes=(
+                                        ('rs:requestType', task.getRequestClassName()),
+                                        ('rs:projectID', task.getProjectID()),
+                                        ('rs:projectName', task.getProjectName()),
+                                        ('rs:URL', task.getURL())
+                            )
+                    )
+                else:
+                    task = self._document.activity("rs:task{taskid}".format(taskid=id(task)),other_attributes=(
+                                        ('rs:requestType', task.getRequestClassName()),
+                            )
+                    )
                 
                 self._document.wasGeneratedBy("rs:ReposcannerManager",task)
                 
@@ -286,7 +292,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                         filesToBeUsedInAnalysis = store.getByCriteria(request.getDataCriteria())
                         for entity in filesToBeUsedInAnalysis:
                                 entityID = None
-                                if isinstance(attachment,dataEntities.ReposcannerDataEntity):
+                                if isinstance(entity,dataEntities.ReposcannerDataEntity):
                                         entityID = 'rs:dataentity:{objID}'.format(objID=id(entity)) 
                                 else:
                                         entityID = 'rs:dataentity:nonstandard:{objID}'.format(objID=id(entity))

@@ -7,9 +7,7 @@ from reposcanner.requests import OfflineRoutineRequest,OnlineRoutineRequest,Anal
 from reposcanner.response import ResponseFactory
 from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory
-
-
-
+import datetime
 
 class DummyOfflineRoutineRequest(OfflineRoutineRequest):
 	def __init__(self,repositoryURL,outputDirectory,workspaceDirectory):
@@ -95,4 +93,5 @@ class DummyAnalysis(DataAnalysis):
 	def getRequestType(self):
 		return DummyAnalysisRequest
 	def execute(self,request):
-		pass
+		responseFactory = ResponseFactory()
+		return responseFactory.createSuccessResponse(message="DummyAnalysis completed!")
