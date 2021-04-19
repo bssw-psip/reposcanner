@@ -41,4 +41,5 @@ jobs:
       env:
         DUMMY_GITHUBAPI_TOKEN: ${{ secrets.DUMMY_WORKFLOW_GITHUB_TOKEN }}
       run: |
+        sed -i -e "s/SECRET/$DUMMY_GITHUBAPI_TOKEN/g" tests/dummyWorkflowFiles/credentials.yml #inject secret API token
         python -m pytest
