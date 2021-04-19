@@ -1,0 +1,6 @@
+routines:
+  - DummyOfflineRoutine
+  - DummyOnlineRoutine
+
+analyses:
+  - DummyAnalysis
