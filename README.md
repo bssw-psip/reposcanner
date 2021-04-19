@@ -2,6 +2,8 @@
 
 <img src="./images/logo.png" width="500">
 
+[![Build Passing](https://github.com/bssw-psip/reposcanner/actions/workflows/python-package.yml/badge.svg)](https://github.com/bssw-psip/reposcanner/actions/workflows/python-package.yml)
+
 Reposcanner provides a highly modular, extensible framework for defining routines for mining data from software repositories and performing analyses on that data to yield valuable insights on team behaviors. Reposcanner provides a number of attractive features not normally seen in repository mining research codes, such as seamless support for different version control platforms like GitHub, Gitlab, and Bitbucket, smart parsing of URLs, intelligent credential management capabilities, and a comprehensive test suite. 
 
 
