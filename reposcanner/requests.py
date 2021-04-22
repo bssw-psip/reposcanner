@@ -200,7 +200,7 @@ class OnlineRoutineRequest(RoutineRequestModel):
                         self._credentials = keychain.lookup(self.getRepositoryLocation())
                         if self._credentials is None:
                                  self.addError("Failed to find a matching set of credentials \
-                                 on the keychain corresponding to the URL of the repository.")
+                                 on the keychain (out of {numberOfCredentials} credentials) corresponding to the URL of the repository ({URL}).".format(numberOfCredentials=len(keychain),URL=repositoryURL))
                         
         def getCredentials(self):
                 return self._credentials
