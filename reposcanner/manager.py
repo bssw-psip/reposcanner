@@ -292,6 +292,9 @@ class ReposcannerManager:
                         task.process(self._routines+self._analyses,self._store,self._notebook)
                         response = task.getResponse()
                         print(task.getResponseDescription())
+                        if not task.getResponse().wasSuccessful():
+                            for attachment in response.getAttachments():
+                                print(attachment)
                         for attachment in response.getAttachments():
                                 self._store.insert(attachment)
                                 
