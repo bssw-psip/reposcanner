@@ -1,0 +1,6 @@
+MathLibraryCollection:
+  name: A collection of math libraries that we will analyze.
+  urls:
+    - https://github.com/trilinos/Trilinos
+    - https://github.com/petsc/petsc
+    - https://github.com/hypre-space/hypre
