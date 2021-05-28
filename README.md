@@ -18,6 +18,16 @@ First, clone the repository from GitHub:
 ```
 git clone https://github.com/bssw-psip/reposcanner.git
 ```
+Next, make sure your environment satisfies all necessary dependencies:
+
+- A C++ compiler
+- Python 3.7 or better (including devel package)
+- pip3 packages
+  - setuptools
+  - setuptools scm
+  - wheel
+  - numpy
+  - Cython
 
 Then install Reposcanner and run the test suite:
 
