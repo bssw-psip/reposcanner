@@ -69,10 +69,11 @@ def scannerMain(args):
         notebook.onExit()
         notebook.publishNotebook()
         
-        
-        
+def run():
+        """Calls :func:`scannerMain` passing the CLI arguments extracted from :obj:`sys.argv`
 
-if __name__ == "__main__":
+        This function can be used as entry point to create console scripts with setuptools.
+        """
         parser = argparse.ArgumentParser(description='The IDEAS-ECP PSIP Team Repository Scanner.')
         parser.add_argument('--repositories', action='store', type=str, help='A list of repositories to collect data on, a YAML file (see example).')
         parser.add_argument('--credentials', action='store', type=str, help='A list of credentials needed to access the repositories, a YAML file (see example).')
@@ -90,3 +91,5 @@ if __name__ == "__main__":
         args = parser.parse_args()
         scannerMain(args)
         
+if __name__ == "__main__":
+    run()

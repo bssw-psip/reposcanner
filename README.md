@@ -23,8 +23,10 @@ Then install Reposcanner and run the test suite:
 
 ```
 cd reposcanner
-python setup.py install
-python -m pytest
+python3 -m venv ../repo-env # create a new virtual environment
+. ../repo-env/bin/activate  # activate the new virtual env
+pip install -e .            # create editable install
+tox                         # run tests
 ```
 
 If all tests pass, the installation was successful, and you are ready to go!
@@ -32,6 +34,28 @@ If all tests pass, the installation was successful, and you are ready to go!
 
 # How to Run
 
-TBD! 
+## Setup input files
 
+We'll run the example scan specified inside `tutorial/inputs` directory.
+
+1. First, add your github token to the `token:` line in `tutorial/inputs/credentials.yml`
+
+2. Run the reposcanner tool using:
+
+```
+reposcanner --credentials tutorial/inputs/credentials.yml --config tutorial/inputs/config.yml --repositories tutorial/inputs/repositories.yml --workspaceDirectory tutorial/workspace --outputDirectory tutorial/outputs --notebookOutputPath tutorial/outputs
+```
+
+3. examine the output files written to `tutorial/outputs`
+
+
+# How to extend functionality
+
+1. Create a new source file, `src/reposcanner/<routine.py>`, including a class
+   based on the `ContributorAccountListRoutine`.  See `stars.py` as an
+   example of the kind of modifications required.
+
+2. Add the new class name (for example `- StarGazersRoutine`) to the end of `config.yml`.
+
+3. Run the test scan and inspect output to ensure your scan worked as intended.
 
