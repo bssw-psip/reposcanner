@@ -55,7 +55,9 @@ reposcanner --credentials tutorial/inputs/credentials.yml --config tutorial/inpu
    based on the `ContributorAccountListRoutine`.  See `stars.py` as an
    example of the kind of modifications required.
 
-2. Add the new class name (for example `- StarGazersRoutine`) to the end of `config.yml`.
+2. Import the new module (aka python source file) at the top of `src/reposcanner/manager.py`.
 
-3. Run the test scan and inspect output to ensure your scan worked as intended.
+3. Add the new class name (for example `- StarGazersRoutine`) to the end of `config.yml`.
+
+4. Run the test scan and inspect output to ensure your scan worked as intended.
 
