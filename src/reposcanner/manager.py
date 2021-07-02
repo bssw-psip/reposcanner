@@ -1,4 +1,5 @@
 from reposcanner.contrib import ContributorAccountListRoutine,OfflineCommitCountsRoutine
+from reposcanner.commitAuthors import AuthorAccountListRoutine
 from reposcanner.dummy import DummyOfflineRoutine,DummyOnlineRoutine,DummyAnalysis
 from reposcanner.git import CredentialKeychain
 from reposcanner.data import DataEntityStore
