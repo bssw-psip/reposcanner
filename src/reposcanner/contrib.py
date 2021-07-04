@@ -113,7 +113,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             output.writeToFile()
             responseFactory = ResponseFactory()
             return responseFactory.createSuccessResponse(
-                    message="Commit-info-mining-routine completed!",attachments=output)
+                    message="CommitInfoMiningRoutine completed!",attachments=output)
 
 
 
@@ -131,7 +131,47 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
 
         def githubImplementation(self,request,session):
             #TODO: Implement Commit Author Identification Routine implementation for GitHub.
-            pass
+
+            def _replaceNoneWithEmptyString(value):
+                if value is None:
+                    return ""
+                else:
+                    return value
+
+            factory = DataEntityFactory()
+            output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_OnlineCommitAuthorship.csv".format(
+                    outputDirectory=request.getOutputDirectory(),
+                    repoName=request.getRepositoryLocation().getRepositoryName()))
+
+            output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+            output.setCreator(self.__class__.__name__)
+            output.setDateCreated(datetime.date.today())
+            output.setURL(request.getRepositoryLocation().getURL())
+            output.setColumnNames(["commitHash","authorLogin","committerLogin"])
+            output.setColumnDatatypes(["str","str","str"])
+
+            commits = session.get_commits()
+            for commit in commits:
+                commitHash = commit.sha
+                if commit.author is not None:
+                    authorLogin = commit.author.login
+                else:
+                    authorLogin = None
+                
+                if commit.committer is not None:
+                    committerLogin = commit.committer.login
+                else:
+                    committerLogin = None
+
+                output.addRecord([_replaceNoneWithEmptyString(commitHash),
+                    _replaceNoneWithEmptyString(authorLogin),
+                    _replaceNoneWithEmptyString(committerLogin)])
+
+            output.writeToFile()
+            responseFactory = ResponseFactory()
+            return responseFactory.createSuccessResponse(
+                message="OnlineCommitAuthorshipRoutine completed!",attachments=output)
+
 
         def gitlabImplementation(self,request,session):
             #TODO: Implement Commit Author Identification Routine implementation for Gitlab.
