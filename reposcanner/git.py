@@ -6,6 +6,7 @@ import github as pygithub
 import gitlab as pygitlab
 import bitbucket as pybitbucket
 import pygit2
+from atlassian.bitbucket.cloud import Cloud
         
 class GitEntityFactory:
         def createRepositoryLocation(self,url,expectedPlatform=None,expectedHostType=None,expectedOwner=None,expectedRepositoryName=None):
@@ -138,8 +139,15 @@ class BitbucketAPISessionCreator(VCSAPISessionCreator):
                 return repositoryLocation.getVersionControlPlatform() == RepositoryLocation.VersionControlPlatform.BITBUCKET
                 
         def connect(self,repositoryLocation,credentials):
-                #TODO: Need to figure out how to connect to the Bitbucket API.
-                pass
+                if credentials.hasTokenAvailable():
+											raise RuntimeError("bitbucket cloud api does not have token login")
+								else: credentials.hasUsernameAndPasswordAvailable():
+											try: bb = Cloud(url = 'https://api.bitbucket.org', username = credentials.getUsername(),\
+											password = credentials.getPassword(), cloud = True)
+											execpt: raise RuntimeError("Bitbucket cloud api needs username and password")
+#this is going to assume the workspace name is the same as username. Will change this if needed
+								repository = bb.workspace.get(credentials.getUsername()).repositories.get(repositoryLocation.getCanonicalName())
+								return repository
 
 class RepositoryLocation:
         """
