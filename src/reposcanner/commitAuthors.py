@@ -18,80 +18,108 @@ def get_time(dt):
         return None
     return int( dt.timestamp() )
 
-#def createReq(routine_name):
-# return type(routine_name, (OnlineRoutineRequest,), {
-#    '__init__': OnlineRoutineRequest.__init__} )
+def toStr(x):
+    if x is None:
+        return ""
+    return x
 
-class AuthorAccountListRoutineRequest(OnlineRoutineRequest):
-        def __init__(self,repositoryURL,outputDirectory,username=None,password=None,token=None,keychain=None):
-                super().__init__(repositoryURL,outputDirectory,username=username,password=password,token=token,keychain=keychain)
+#routines = {}
+def declareRoutine(routine, github=None, gitlab=None, offline=None):
+    """
+    Declare a scanning routine with the given name and
+    implementation set.
 
-class AuthorAccountListRoutine(OnlineRepositoryRoutine):
-        """
-        Contact the version control platform API, and get the account information of everyone who has ever contributed to the repository.
-        """
-        #TODO: StarGazersRoutine lacks a bitbucketImplementation(self,request,session) method.
+    TODO: maintain routines in reposcanner global
+          (rather than import from manager.py)
+    """
+    #global routines
 
-        def getRequestType(self):
-                return AuthorAccountListRoutineRequest
+    def routineInit(self,*args,**kws):
+        OnlineRoutineRequest.__init__(self,*args,**kws)
 
-        def _replaceNoneWithEmptyString(self,value):
-                if value is None:
-                        return ""
-                else:
-                        return value
+    RoutineRequest = type(f"{routine}RoutineRequest", (OnlineRoutineRequest,), {
+                            '__init__': routineInit })
+                          # 'name': routine } )
+    
+    operations = dict(
+              getRequestType = lambda self: RoutineRequest,
+              githubImplementation = github,
+              gitlabImplementation = gitlab,
+              offlineImplementation = offline
+            )
 
-        def githubImplementation(self,request,session):
-                factory = DataEntityFactory()
-                # self.getRequestType().name
-                output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_AuthorAccountListRoutine.csv".format(
-                        outputDirectory=request.getOutputDirectory(),
-                        repoName=request.getRepositoryLocation().getRepositoryName()))
+    Routine = type(f"{routine}Routine", (OnlineRepositoryRoutine,), operations)
+    #routines[routine] = Routine
+    return Routine
 
-                output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
-                output.setCreator(self.__class__.__name__)
-                output.setDateCreated(datetime.date.today())
-                output.setURL(request.getRepositoryLocation().getURL())
-                output.setColumnNames(["Author Name","Author Email(s)","Committer Name"," Committer Email(s)", "Created at"])
-                output.setColumnDatatypes(["str","str","str","str", "int"])
+def respondCSV(scanFunction):
+    """
+    Decorator to open a CSV file and wrap the results into a ResponseFactory.
+    It metamorphoses a scanFunction into a classFunction.
+    The classFunction has a bunch of boiler-plate code
+    for logging, etc.  The scanFunction doesn't have to deal
+    with all of that.  Instead, it queries its session object
+    and puts data directly into the output csv-writer.
+    """
+    def classFunction(self, request, session):
+        # Setup an output CSV file to hold the scan results
+        #routine = self.getRequestType().name # my scan routine name
 
+        routine = self.__class__.__name__ # my scan routine name
+        output = DataEntityFactory().createAnnotatedCSVData(
+            "{outputDirectory}/{repoOwner}_{repoName}_{routine}.csv".format(
+                        outputDirectory = request.getOutputDirectory(),
+                        repoOwner = request.getRepositoryLocation().getOwner(),
+                        repoName = request.getRepositoryLocation().getRepositoryName(),
+                        routine=routine))
 
-                for pr in session.get_pulls(): # For API call efficiency specify the state of pull requests.
-                    for c in pr.get_commits():
+        output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+        output.setCreator(routine)
+        output.setDateCreated(datetime.date.today())
+        output.setURL(request.getRepositoryLocation().getURL())
+
+        ok, ret = scanFunction(output, session)
+        responseFactory = ResponseFactory()
+        if ok:
+            output.writeToFile()
+            return responseFactory.createSuccessResponse(
+                            message="Completed!", attachments=ret)
+        return responseFactory.createFailureResponse(
+                        message="Error!", attachments=ret)
+
+    return classFunction
+
+@respondCSV
+def githubImplementation(output, session):
+    output.setColumnNames(["Author Name","Author Email(s)","Committer Name"," Committer Email(s)","Created at"])
+    output.setColumnDatatypes(["str"]*4 + ["int"])
+
+    for pr in session.get_pulls(): # For API call efficiency specify the state of pull requests.
+        for c in pr.get_commits():
+            output.addRecord([
+                toStr(c.commit.author.name),
+                toStr(c.commit.author.email),
+                toStr(c.commit.committer.name),
+                toStr(c.commit.committer.email),
+                toStr(str(get_time(c.commit.author.date)))
+                ])
+    return True, output
+
+@respondCSV
+def gitlabImplementation(output, session):
+    #contributors = [contributor for contributor in session.users.list()]
+    output.setColumnNames(["Login Name","Actual Name","Email(s)"])
+    output.setColumnDatatypes(["str","str","str"])
+
+    contributors = [contributor for contributor in session.get_contributors()]
+    for contributor in contributors:
                         output.addRecord([
-                            self._replaceNoneWithEmptyString(c.commit.author.name),
-                            self._replaceNoneWithEmptyString(c.commit.author.email),
-                            self._replaceNoneWithEmptyString(c.commit.committer.name),
-                            self._replaceNoneWithEmptyString(c.commit.committer.email),
-                            self._replaceNoneWithEmptyString(str(get_time(c.commit.author.date)))
-                            ])
-
-                output.writeToFile()
-                responseFactory = ResponseFactory()
-                return responseFactory.createSuccessResponse(
-                        message="Completed!",attachments=output)
-
-        def gitlabImplementation(self,request,session):
-                contributors = [contributor for contributor in session.users.list()]
-                output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_contributorAccounts.csv".format(
-                        outputDirectory=request.getOutputDirectory(),
-                        repoName=request.getRepositoryLocation().getRepositoryName()))
-
-                output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
-                output.setCreator(self.__class__.__name__)
-                output.setDateCreated(datetime.date.today())
-                output.setURL(request.getRepositoryLocation().getURL())
-                output.setColumnNames(["Login Name","Actual Name","Email(s)"])
-                output.setColumnDatatypes(["str","str","str"])
-
-                contributors = [contributor for contributor in session.get_contributors()]
-                for contributor in contributors:
-                        output.addRecord([
-                                self._replaceNoneWithEmptyString(contributor.username),
-                                self._replaceNoneWithEmptyString(contributor.name),
+                                toStr(contributor.username),
+                                toStr(contributor.name),
                                 ';'.join(contributor.emails.list())
                         ])
-                output.writeToFile()
-                responseFactory = ResponseFactory()
-                return responseFactory.createSuccessResponse(
-                        message="Completed!",attachments=output)
+    return True, output
+
+AuthorAccountListRoutine = declareRoutine( "AuthorAccountList",
+                                           githubImplementation,
+                                           gitlabImplementation )
