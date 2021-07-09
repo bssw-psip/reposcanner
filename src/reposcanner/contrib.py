@@ -39,10 +39,10 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             output.setURL(request.getRepositoryLocation().getURL())
             output.setColumnNames(["commitHash","commitTime","authorEmail","authorName","authorTime"
                 "committerEmail","committerName","committerTime","coAuthors",
-                "insertions", "deletions", "files changed"])
+                "insertions", "deletions", "filesChanged","namesOfFilesChanged","commitMessage"])
                 # "filesTouched"])
             #output.setColumnDatatypes(["str"]*8 + ["list","list"])
-            output.setColumnDatatypes(["str"]*8 + ["list"] + ["int"]*3)
+            output.setColumnDatatypes(["str"]*8 + ["list"] + ["int"]*3 + ["list"] + ["str"])
 
             def _getFilesTouched(commit):
                 #TODO: Go back and check this method. Are we correctly interpreting the semantics of
@@ -65,6 +65,12 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                             if delta.new_file.path not in changes and delta.new_file.path is not None:
                                 changes.append(delta.new_file.path)
                 return changes
+
+            def _cleanCommitMessage(s):
+                #This replaces all sequences of whitespace characters
+                #with a single space, eliminating tabs, newlines, etc.
+                #Also get rid of commas, as commas are our default delimiter.
+                return re.sub('\s+',' ',s).replace(',',' ')
 
             def _getStats(commit):
                 changes = {'ins': 0, 'del': 0, 'files': 0}
@@ -127,6 +133,8 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                 #filesTouched = _getFilesTouched(commit)
                 changes = _getStats(commit)
 
+                filesTouched = _getFilesTouched(commit)
+
                 output.addRecord([_replaceNoneWithEmptyString(commitHash),
                     _replaceNoneWithEmptyString(commitTime),
                     _replaceNoneWithEmptyString(authorEmail),
@@ -136,9 +144,9 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                     _replaceNoneWithEmptyString(committerName),
                     _replaceNoneWithEmptyString(committerTime),
                     ";".join(coAuthors),
-                    changes['ins'], changes['del'], changes['files']
-                    #_removeNewLinesFromString(_replaceNoneWithEmptyString(commitMessage)),
-                    # ';'.join(filesTouched)])
+                    changes['ins'], changes['del'], changes['files'],
+                    ';'.join(filesTouched),
+                    _cleanCommitMessage(_replaceNoneWithEmptyString(commitMessage))
                     ])
 
             output.writeToFile()
@@ -161,8 +169,6 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
             return OnlineCommitAuthorshipRoutineRequest
 
         def githubImplementation(self,request,session):
-            #TODO: Implement Commit Author Identification Routine implementation for GitHub.
-
             def _replaceNoneWithEmptyString(value):
                 if value is None:
                     return ""
@@ -188,7 +194,7 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
                     authorLogin = commit.author.login
                 else:
                     authorLogin = None
-                
+
                 if commit.committer is not None:
                     committerLogin = commit.committer.login
                 else:
@@ -205,8 +211,56 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
 
 
         def gitlabImplementation(self,request,session):
-            #TODO: Implement Commit Author Identification Routine implementation for Gitlab.
-            pass
+            def _replaceNoneWithEmptyString(value):
+                if value is None:
+                    return ""
+                else:
+                    return value
+
+            factory = DataEntityFactory()
+            output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_OnlineCommitAuthorship.csv".format(
+                    outputDirectory=request.getOutputDirectory(),
+                    repoName=request.getRepositoryLocation().getRepositoryName()))
+
+            output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+            output.setCreator(self.__class__.__name__)
+            output.setDateCreated(datetime.date.today())
+            output.setURL(request.getRepositoryLocation().getURL())
+            output.setColumnNames(["commitHash","authorLogin","committerLogin"])
+            output.setColumnDatatypes(["str","str","str"])
+
+            #Note from Reed: As of July 2021 looks like there's no way to directly the username associated with a commit
+            #via the Gitlab API, though this feature may be added in the future (see https://gitlab.com/gitlab-org/gitlab/-/issues/20924)
+            #Instead, we can get the list of users and their associated emails, and map author/committer identities to Gitlab user accounts.
+            users = [users for users in session.users.list()]
+            mapOfEmailsToGitlabLogins = {}
+            for user in users:
+                #Gitlab users can have multiple email addresses, but no two users
+                # can have the exact same email addresses.
+                for email in user.emails.list():
+                    mapOfEmailsToGitlabLogins[email] = user.username
+
+            commits = session.commits.list()
+            for commit in commits:
+                commitHash = commit.id
+                if commit.author_name is not None and commit.author_name in mapOfEmailsToGitlabLogins:
+                    authorLogin = mapOfEmailsToGitlabLogins[commit.author_name]
+                else:
+                    authorLogin = None
+
+                if commit.committer_name is not None and commit.committer_name in mapOfEmailsToGitlabLogins:
+                    committerLogin = mapOfEmailsToGitlabLogins[commit.committer_name]
+                else:
+                    committerLogin = None
+
+                output.addRecord([_replaceNoneWithEmptyString(commitHash),
+                    _replaceNoneWithEmptyString(authorLogin),
+                    _replaceNoneWithEmptyString(committerLogin)])
+
+            output.writeToFile()
+            responseFactory = ResponseFactory()
+            return responseFactory.createSuccessResponse(
+                message="OnlineCommitAuthorshipRoutine completed!",attachments=output)
 
         def bitbucketImplementation(self,request,session):
             #TODO: Implement Commit Author Identification Routine implementation for Gitlab.
