@@ -6,8 +6,7 @@ from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory
 import pygit2
 
-import time, datetime
-import csv
+import time, datetime, re, csv
 import numpy as np
 
 #import matplotlib.pyplot as plt
@@ -38,10 +37,12 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             output.setCreator(self.__class__.__name__)
             output.setDateCreated(datetime.date.today())
             output.setURL(request.getRepositoryLocation().getURL())
-            output.setColumnNames(["commitHash","commitTime","authorEmail","authorName","authorTime,"
-                "committerEmail","committerName","committerTime","filesTouched"])
-            output.setColumnDatatypes(["str","str","str","str",
-                "str","str","str","str","list"])
+            output.setColumnNames(["commitHash","commitTime","authorEmail","authorName","authorTime"
+                "committerEmail","committerName","committerTime","coAuthors",
+                "insertions", "deletions", "files changed"])
+                # "filesTouched"])
+            #output.setColumnDatatypes(["str"]*8 + ["list","list"])
+            output.setColumnDatatypes(["str"]*8 + ["list"] + ["int"]*3)
 
             def _getFilesTouched(commit):
                 #TODO: Go back and check this method. Are we correctly interpreting the semantics of
@@ -49,6 +50,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                 changes = []
                 if len(commit.parents) == 0:
                     diff = commit.tree.diff_to_tree()
+                    # consider using "for fname in list(diff): (fname.delta.new_file.path, fname.line_stats)"
                     for delta in diff.deltas:
                         if delta.old_file.path not in changes and delta.old_file.path is not None:
                             changes.append(delta.old_file.path)
@@ -62,6 +64,23 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                                 changes.append(delta.old_file.path)
                             if delta.new_file.path not in changes and delta.new_file.path is not None:
                                 changes.append(delta.new_file.path)
+                return changes
+
+            def _getStats(commit):
+                changes = {'ins': 0, 'del': 0, 'files': 0}
+                if len(commit.parents) == 0:
+                    diff = commit.tree.diff_to_tree()
+                    diff.find_similar() # handle renamed files
+                    changes['ins'] += diff.stats.insertions
+                    changes['del'] += diff.stats.deletions
+                    changes['files'] += diff.stats.files_changed
+                else:
+                    for parent in commit.parents:
+                        diff = parent.tree.diff_to_tree(commit.tree)
+                        diff.find_similar()
+                        changes['ins'] += diff.stats.insertions
+                        changes['del'] += diff.stats.deletions
+                        changes['files'] += diff.stats.files_changed
                 return changes
 
             def _replaceNoneWithEmptyString(value):
@@ -94,10 +113,19 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                 commitTime = commit.commit_time
 
                 #A message describing what changes were made to the repo by the commit, a string.
+                # parse lines like:
+                # Co-authored-by: Mystery Committer <mystery@predictivestatmech.org>
                 commitMessage = commit.message
 
+                coAuthors = []
+                for line in commit.message.split('\n'):
+                    m = re.match("\s*Co-authored-by: (.*)", line)
+                    if m is not None:
+                        coAuthors.append(m[1].strip())
+
                 #All the files interacted with according to the tree associated with the commit.
-                filesTouched = _getFilesTouched(commit)
+                #filesTouched = _getFilesTouched(commit)
+                changes = _getStats(commit)
 
                 output.addRecord([_replaceNoneWithEmptyString(commitHash),
                     _replaceNoneWithEmptyString(commitTime),
@@ -107,8 +135,11 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                     _replaceNoneWithEmptyString(committerEmail),
                     _replaceNoneWithEmptyString(committerName),
                     _replaceNoneWithEmptyString(committerTime),
+                    ";".join(coAuthors),
+                    changes['ins'], changes['del'], changes['files']
                     #_removeNewLinesFromString(_replaceNoneWithEmptyString(commitMessage)),
-                    ';'.join(filesTouched)])
+                    # ';'.join(filesTouched)])
+                    ])
 
             output.writeToFile()
             responseFactory = ResponseFactory()

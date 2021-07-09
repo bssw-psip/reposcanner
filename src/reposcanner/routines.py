@@ -72,9 +72,20 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                 else:
                         try:
                                 if not os.path.exists(request.getCloneDirectory()):
-                                        session = pygit2.clone_repository(request.getRepositoryLocation().getURL(), request.getCloneDirectory())
+                                    def init_remote(repo, name, url):
+                                        # Create the remote with a mirroring url
+                                        remote = repo.remotes.create(name, url, "+refs/heads/*:refs/heads/*")
+                                        # And set the configuration option to true for the push command
+                                        #mirror_var = "remote.{}.mirror".format(name)
+                                        #repo.config[mirror_var] = True
+                                        # Return the remote, which pygit2 will use to perform the clone
+                                        return remote
+                                    session = pygit2.clone_repository(request.getRepositoryLocation().getURL(),
+                                                                      request.getCloneDirectory(),
+                                                                      bare=True,
+                                                                      remote=init_remote)
                                 else:
-                                        session = pygit2.Repository(request.getCloneDirectory())
+                                    session = pygit2.Repository(request.getCloneDirectory())
                                 
                                 return self.offlineImplementation(request=request,session=session)
                                 

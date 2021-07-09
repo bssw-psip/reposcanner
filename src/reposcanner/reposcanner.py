@@ -45,6 +45,8 @@ def scannerMain(args):
         The master routine for Reposcanner.
         """
         
+        Path(args.notebookOutputPath).mkdir(parents=True, exist_ok=True)
+        Path(args.outputDirectory).mkdir(parents=True, exist_ok=True)
         notebook = provenance.ReposcannerLabNotebook(args.notebookOutputPath)
         
         dataEntityFactory = data.DataEntityFactory()
@@ -56,7 +58,6 @@ def scannerMain(args):
         repositoriesDataFile.readFromFile()
         credentialsDataFile.readFromFile()
         configDataFile.readFromFile()
-        Path(args.outputDirectory).mkdir(parents=True, exist_ok=True)
         
         notebook.onStartup(args)
         
@@ -86,10 +87,10 @@ outputDirectory:
         The path where Reposcanner should output files.
         By default this is done in the directory from which this script is run.
 notebookOutputPath:
-    default: "notebook.log"
+    default: notebook
     help: |
-        The path where Reposcanner should output a file containing
-        a log that describes this run.
+        The path where Reposcanner should output files containing
+        the logs describing this run.
 workspaceDirectory:
     default: "./"
     help: |
