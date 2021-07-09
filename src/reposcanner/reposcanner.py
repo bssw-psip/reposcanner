@@ -1,6 +1,7 @@
 from reposcanner.manager import ReposcannerManager
 import reposcanner.provenance as provenance
-import argparse, os, logging
+import argparse, os, logging, yaml
+from pathlib import Path
 import reposcanner.data as data
 
 logging.basicConfig(filename='reposcanner.log',level=logging.DEBUG)
@@ -39,7 +40,6 @@ def loadReposcannerData(reposcannerDataDirectory,notebook,manager):
                         notebook.logAdditionalDataEntity(dataEntity)
         
 
-
 def scannerMain(args):
         """
         The master routine for Reposcanner.
@@ -56,6 +56,7 @@ def scannerMain(args):
         repositoriesDataFile.readFromFile()
         credentialsDataFile.readFromFile()
         configDataFile.readFromFile()
+        Path(args.outputDirectory).mkdir(parents=True, exist_ok=True)
         
         notebook.onStartup(args)
         
@@ -68,26 +69,67 @@ def scannerMain(args):
         
         notebook.onExit()
         notebook.publishNotebook()
-        
+
+argumentList = """
+repositories:
+    default: inputs/repositories.yml
+    help: A list of repositories to collect data on, a YAML file (see example).
+credentials:
+    default: inputs/credentials.yml
+    help: A list of credentials needed to access the repositories, a YAML file (see example).
+config:
+    default: inputs/config.yml
+    help: A YAML file specifying what routines and analyses Reposcanner should run (see example).
+outputDirectory:
+    default: outputs
+    help: |
+        The path where Reposcanner should output files.
+        By default this is done in the directory from which this script is run.
+notebookOutputPath:
+    default: "notebook.log"
+    help: |
+        The path where Reposcanner should output a file containing
+        a log that describes this run.
+workspaceDirectory:
+    default: "./"
+    help: |
+        The path where Reposcanner should make clones of repositories.
+        By default this is done in the directory from which this script is run.
+reposcannerDataDirectory:
+    default: null
+    help: |
+        (Optional) the path where bssw-psip/reposcanner-data is held. At startup,
+        Reposcanner will try to pull in additional data files from this directory.
+gui:
+    type: bool
+    help: Enables GUI mode, which provides a dynamically refreshed console view of Reposcanner's progress.
+"""
+
 def run():
         """Calls :func:`scannerMain` passing the CLI arguments extracted from :obj:`sys.argv`
 
         This function can be used as entry point to create console scripts with setuptools.
         """
         parser = argparse.ArgumentParser(description='The IDEAS-ECP PSIP Team Repository Scanner.')
-        parser.add_argument('--repositories', action='store', type=str, help='A list of repositories to collect data on, a YAML file (see example).')
-        parser.add_argument('--credentials', action='store', type=str, help='A list of credentials needed to access the repositories, a YAML file (see example).')
-        parser.add_argument('--config', action='store', type=str, help='A YAML file specifying what routines and analyses Reposcanner should run (see example).')
-        parser.add_argument('--outputDirectory',action='store',type=str,default='./',help='The path where Reposcanner should output files. \
-                By default this is done in the directory from which this script is run.')
-        parser.add_argument('--notebookOutputPath',action='store',type=str,default="./notebook.log",help='The path where Reposcanner should output a file containing a log that \
-                describes this run.')
-        parser.add_argument('--workspaceDirectory',action='store',type=str,default='./',help='The path where Reposcanner should make clones of repositories. \
-                By default this is done in the directory from which this script is run.')
-        parser.add_argument('--reposcannerDataDirectory',action='store',type=str,default=None,help='(Optional) the path where bssw-psip/reposcanner-data is held. At startup, \
-        Reposcanner will try to pull in additional data files from this directory.')
-        parser.add_argument('--gui',action='store_true',help="Enables GUI mode, which provides a dynamically refreshed console view of \
-        Reposcanner's progress.")
+        for arg, props in yaml.safe_load(argumentList).items():
+            # The properties of each argument are passed as keyword
+            # arguments to parser.add_argument.
+            #
+            # This code sets the default action to "store"
+            # and the default type to "string".
+            # **Unless** "type" is set to "bool", in which
+            # case the default action is "store_true".
+            try:
+                if props["type"] == "bool":
+                    del props["type"]
+                    if "action" not in props:
+                        props["action"] = "store_true"
+            except KeyError: # default to string type
+                props["type"] = str
+            if "action" not in props:
+               props["action"] = "store"
+            parser.add_argument(f"--{arg}", **props)
+
         args = parser.parse_args()
         scannerMain(args)
         
