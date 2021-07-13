@@ -90,7 +90,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                                 return self.offlineImplementation(request=request,session=session)
                                 
                         except Exception as e:
-                                raise e
+                                #raise e
                                 return responseFactory.createFailureResponse(
                                     message="OfflineRepositoryRoutine Encountered an unexpected exception ({etype}).".format(etype=type(e)),
                                     attachments=[e])

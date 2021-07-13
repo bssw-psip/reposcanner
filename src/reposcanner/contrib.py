@@ -8,6 +8,7 @@ import pygit2
 
 import time, datetime, re, csv
 import numpy as np
+from pathlib import Path
 
 #import matplotlib.pyplot as plt
 #import seaborn as sns
@@ -29,9 +30,16 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
 
         def offlineImplementation(self,request,session):
             factory = DataEntityFactory()
-            output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_CommitInfoMining.csv".format(
-                    outputDirectory=request.getOutputDirectory(),
-                    repoName=request.getRepositoryLocation().getRepositoryName()))
+            fout = Path(request.getOutputDirectory()) \
+                    / "{repoOwner}_{repoName}_CommitInfoMining.csv".format(
+                      repoOwner=request.getRepositoryLocation().getOwner(),
+                      repoName=request.getRepositoryLocation().getRepositoryName())
+
+            if fout.exists():
+                return ResponseFactory().createSuccessResponse(
+                    message="CommitInfoMiningRoutine already completed!",attachments=None)
+
+            output = factory.createAnnotatedCSVData(str(fout))
 
             output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
             output.setCreator(self.__class__.__name__)
@@ -89,7 +97,15 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                 else:
                     return value
 
-            for commit in session.walk(session.head.target, pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL):
+            seen = set()
+            for b in session.raw_listall_branches():
+            #for b in list(session.raw_listall_branches())[0]:
+              tgt = session.lookup_branch(b).target
+              for commit in session.walk(tgt, pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL):
+                if commit.hex in seen:
+                    break
+                seen.add( commit.hex )
+
                 extractedCommitData = {}
 
                 #The person who originally made the change and when they made it, a pygit2.Signature.
