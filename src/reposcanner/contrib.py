@@ -7,6 +7,7 @@ from reposcanner.data import DataEntityFactory
 import pygit2
 
 import time, datetime, re, csv
+import pandas as pd
 import numpy as np
 
 #import matplotlib.pyplot as plt
@@ -28,20 +29,28 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             return CommitInfoMiningRoutineRequest
 
         def offlineImplementation(self,request,session):
+
             factory = DataEntityFactory()
             output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_CommitInfoMining.csv".format(
                     outputDirectory=request.getOutputDirectory(),
                     repoName=request.getRepositoryLocation().getRepositoryName()))
 
+            responseFactory = ResponseFactory()
+            if output.fileExists():
+                output.readFromFile()
+                return responseFactory.createSuccessResponse(message="[CommitInfoMiningRoutine] File already exists, \
+                skipping...",attachments=output)
+
+
             output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
             output.setCreator(self.__class__.__name__)
             output.setDateCreated(datetime.date.today())
             output.setURL(request.getRepositoryLocation().getURL())
-            output.setColumnNames(["commitHash","commitTime","authorEmail","authorName","authorTime"
-                "committerEmail","committerName","committerTime","coAuthors",
+
+
+            output.setColumnNames(["commitHash","commitTime","authorEmail","authorName","authorTime",
+                "committerEmail","committerName","committerTime","coauthors",
                 "insertions", "deletions", "filesChanged","namesOfFilesChanged","commitMessage"])
-                # "filesTouched"])
-            #output.setColumnDatatypes(["str"]*8 + ["list","list"])
             output.setColumnDatatypes(["str"]*8 + ["list"] + ["int"]*3 + ["list"] + ["str"])
 
             def _getFilesTouched(commit):
@@ -150,7 +159,6 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                     ])
 
             output.writeToFile()
-            responseFactory = ResponseFactory()
             return responseFactory.createSuccessResponse(
                     message="CommitInfoMiningRoutine completed!",attachments=output)
 
@@ -266,16 +274,120 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
             #TODO: Implement Commit Author Identification Routine implementation for Gitlab.
             pass
 
+
+class GambitCommitAuthorshipInferenceAnalysisRequest(AnalysisRequestModel):
+        def criteriaFunction(self,entity):
+                try:
+                        creator = entity.getCreator()
+                        if creator == "CommitInfoMiningRoutine":
+                                return True
+                        else:
+                                return False
+
+                except AttributeError as e:
+                        return False
+
+class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
+    """
+    This routine provides an alternative way of assigning unique identities
+    to authors in commit logs that does not require interacting with online platform APIs.
+    Gambit (gambit-disambig) is an open-source name disambiguation tool for version control
+    systems that became available following ICSE 2021 and was developed by Christoph Gote and
+    Christian Zingg. It uses a rule-based approach to resolve author identities based
+    on names and emails in commit logs.
+
+    GambitCommitAuthorshipInferenceAnalysis will produce a CSV file mapping all unique
+    name and email pairs among OnlineCommitAuthorshipRoutine outputs to unique author IDs.
+
+    For details, see...
+        https://github.com/gotec/gambit
+        https://arxiv.org/pdf/2103.05666.pdf
+
+    """
+
+    def __init__(self):
+        """
+        We check for the presence of the (optional) gambit package. This analysis
+        cannot run unless gambit-disambig is installed.
+        """
+        super(GambitCommitAuthorshipInferenceAnalysis, self).__init__()
+        try:
+            import gambit
+        except ImportError:
+            self.gambitIsAvailable = False
+            self.gambitImportRef = None
+        else:
+            self.gambitIsAvailable = True
+            self.gambitImportRef = gambit
+
+    def getRequestType(self):
+        """
+        Returns the class object for the routine's companion request type.
+        """
+        return GambitCommitAuthorshipInferenceAnalysisRequest
+
+    def execute(self,request):
+
+        responseFactory = ResponseFactory()
+        if not self.gambitIsAvailable:
+            return responseFactory.createFailureResponse(message="Gambit is not \
+            installed, halting execution.")
+
+        data = request.getData()
+        commitLogEntities = [entity for entity in data if entity.getCreator() == "CommitInfoMiningRoutine"]
+
+        factory = DataEntityFactory()
+        output = factory.createAnnotatedCSVData("{outputDirectory}/gambitAuthorIdentities.csv".format(
+            outputDirectory=request.getOutputDirectory()))
+
+        output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+        output.setCreator(self.__class__.__name__)
+        output.setDateCreated(datetime.date.today())
+        output.setColumnNames(["alias_name","alias_email","name","email","first_name",
+            "last_name","penultimate_name","email_base","author_id"])
+        output.setColumnDatatypes(["str"]*8+["int"])
+
+        contributorNamesAndEmails = set()
+
+        for commitLogEntity in commitLogEntities:
+            commitLogFrame = commitLogEntity.getDataFrame()
+            #TODO: Add support for co-authors listed in commit messages. We now collect this data
+            #when running CommitInfoMiningRoutine, but we aren't yet checking it here.
+            for index, row in commitLogFrame.iterrows():
+                author = (row["authorName"],row["authorEmail"])
+                committer = (row["committerName"],row["committerEmail"])
+                if author not in contributorNamesAndEmails:
+                    contributorNamesAndEmails.add(author)
+                if committer not in contributorNamesAndEmails:
+                    contributorNamesAndEmails.add(committer)
+
+        # Create the pandas DataFrame to pass to gambit.
+        contributorFrame = pd.DataFrame(contributorNamesAndEmails,columns = ['alias_name', 'alias_email'])
+
+
+        gambitResult = self.gambitImportRef.disambiguate_aliases(contributorFrame)
+        for index, row in gambitResult.iterrows():
+            output.addRecord([
+                row["alias_name"],
+                row["alias_email"],
+                row["name"],
+                row["email"],
+                row["first_name"],
+                row["last_name"],
+                row["penultimate_name"],
+                row["email_base"],
+                row["author_id"]])
+
+        output.writeToFile()
+        return responseFactory.createSuccessResponse(message="GambitCommitAuthorshipInferenceAnalysis \
+        completed!",attachments=output)
+
+
+
+
+
 class VerifiedCommitAuthorshipAnalysisRequest(AnalysisRequestModel):
         def criteriaFunction(self,entity):
-                """
-                Here we assume that the entity is, in fact, a
-                ReposcannerDataEntity. Because we haven't yet
-                decided to enforce a restriction such that only
-                ReposcannerDataEntity objects can be stored by
-                a DataEntityStore, we'll wrap it in a try block.
-                We may revisit this decision later.
-                """
                 try:
                         creator = entity.getCreator()
                         if creator == "OnlineCommitAuthorshipRoutine" or creator == "CommitInfoMiningRoutine":

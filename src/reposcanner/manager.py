@@ -1,4 +1,4 @@
-from reposcanner.contrib import ContributorAccountListRoutine,OfflineCommitCountsRoutine
+from reposcanner.contrib import ContributorAccountListRoutine,OfflineCommitCountsRoutine,GambitCommitAuthorshipInferenceAnalysis
 from reposcanner.contrib import CommitInfoMiningRoutine,OnlineCommitAuthorshipRoutine
 from reposcanner.dummy import DummyOfflineRoutine,DummyOnlineRoutine,DummyAnalysis
 from reposcanner.git import CredentialKeychain

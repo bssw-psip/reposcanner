@@ -8,7 +8,7 @@ from reposcanner.response import ResponseFactory
 class RepositoryRoutine(ABC):
         """The abstract base class for all repository analysis routines. Methods cover
         the execution of mining routines and exporting of data."""
-        
+
         def canHandleRequest(self,request):
                 """
                 Returns True if the routine is capable of handling the request (i.e. the
@@ -18,43 +18,43 @@ class RepositoryRoutine(ABC):
                         return True
                 else:
                         return False
-        
-        @abstractmethod      
+
+        @abstractmethod
         def getRequestType(self):
                 """
                 Returns the class object for the routine's companion request type.
                 """
                 pass
-        
+
         @abstractmethod
         def execute(self,request):
                 """
-                Contains the code for interacting with the GitHub repository via PyGitHub. 
+                Contains the code for interacting with the GitHub repository via PyGitHub.
                 Whatever data this method returns will be passed to export methods.
-                
+
                 Parameters:
                         request (@input): A RequestModel object that encapsulates all the information needed
                         to run the routine.
                 """
                 pass
-                
+
         def run(self,request):
                 """
                 Encodes the workflow of a RepositoryRoutine object. The client only needs
-                to run this method in order to get results. 
+                to run this method in order to get results.
                 """
                 response = self.execute(request)
-                return response    
+                return response
 
- 
+
 class OfflineRepositoryRoutine(RepositoryRoutine):
         """
         Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
         """
         def __init__(self):
                 pass
-                
-                
+
+
         def execute(self,request):
                 """
                 The Offline routine execute() method delegates responsibility for performing the routine to
@@ -86,35 +86,34 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                                                                       remote=init_remote)
                                 else:
                                     session = pygit2.Repository(request.getCloneDirectory())
-                                
+
                                 return self.offlineImplementation(request=request,session=session)
-                                
+
                         except Exception as e:
-                                raise e
                                 return responseFactory.createFailureResponse(
                                     message="OfflineRepositoryRoutine Encountered an unexpected exception ({etype}).".format(etype=type(e)),
                                     attachments=[e])
-                
+
         def offlineImplementation(self,request,session):
                 """
                 This method should contain the GitHub API implementation of the routine.
                 By default, it'll return a failure response. Subclasses are responsible for
                 overriding this method.
-                
+
                 request: An OfflineRoutineRequest object.
                 session: A pygit2 Repository object.
                 """
                 responseFactory = ResponseFactory()
                 return responseFactory.createFailureResponse(
                         message="This routine has no implementation available"
-                        "to handle an offline clone of a repository.") 
-        
-                      
+                        "to handle an offline clone of a repository.")
+
+
 class OnlineRepositoryRoutine(RepositoryRoutine):
         """
         Class that encapsulates the stages of an PyGitHub-based analysis procedure operating on the GitHub API.
         """
-        
+
         def __init__(self):
                 factory = GitEntityFactory()
                 compositeCreator = factory.createVCSAPISessionCompositeCreator()
@@ -123,7 +122,7 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                 compositeCreator.addChild(githubCreator)
                 compositeCreator.addChild(gitlabCreator)
                 self._sessionCreator = compositeCreator
-                
+
         def execute(self,request):
                 """
                 The Online routine execute() method delegates responsibility for performing the routine to
@@ -166,26 +165,26 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                                 return responseFactory.createFailureResponse(
                                     message="OnlineRepositoryRoutine Encountered an unexpected exception.",
                                     attachments=[e])
-                                    
+
         @property
         def sessionCreator(self):
                 """We expose this attribute for testing/validation purposes. Normally
                 the session creator isn't touched after construction."""
                 return self._sessionCreator
-                
+
         @sessionCreator.setter
         def sessionCreator(self, sessionCreator):
                 """We expose this attribute for testing/validation purposes. Normally
                 the session creator isn't touched after construction."""
                 self._sessionCreator = sessionCreator
-                        
-        
+
+
         def githubImplementation(self,request,session):
                 """
                 This method should contain the GitHub API implementation of the routine.
                 By default, it'll return a failure response. Subclasses are responsible for
                 overriding this method.
-                
+
                 request: An OnlineRoutineRequest object.
                 session: An API session provided by a VCSAPISessionCompositeCreator.
                 """
@@ -193,13 +192,13 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                 return responseFactory.createFailureResponse(
                         message="This routine has no implementation available \
                         to handle a GitHub repository.")
-                        
+
         def gitlabImplementation(self,request,session):
                 """
                 This method should contain the GitHub API implementation of the routine.
                 By default, it'll return a failure response. Subclasses are responsible for
                 overriding this method.
-                
+
                 request: An OnlineRoutineRequest object.
                 session: An API session provided by a VCSAPISessionCompositeCreator.
                 """
@@ -207,14 +206,14 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                 return responseFactory.createFailureResponse(
                         message="This routine has no implementation available \
                         to handle a Gitlab repository.")
-                        
-                        
+
+
         def bitbucketImplementation(self,request,session):
                 """
                 This method should contain the GitHub API implementation of the routine.
                 By default, it'll return a failure response. Subclasses are responsible for
                 overriding this method.
-                
+
                 request: An OnlineRoutineRequest object.
                 session: An API session provided by a VCSAPISessionCompositeCreator.
                 """
