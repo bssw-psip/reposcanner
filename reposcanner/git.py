@@ -28,6 +28,9 @@ class GitEntityFactory:
         def createGitlabAPISessionCreator(self):
                 return GitlabAPISessionCreator()
 
+        def createBitbucketAPISessionCreator(self):
+                return BitbucketAPISessionCreator()
+
 class VCSAPISessionCreator(ABC):
         """
         Abstract base class for a family of classes that talk 

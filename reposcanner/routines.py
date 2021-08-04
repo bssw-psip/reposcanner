@@ -109,8 +109,10 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                 compositeCreator = factory.createVCSAPISessionCompositeCreator()
                 githubCreator = factory.createGitHubAPISessionCreator()
                 gitlabCreator = factory.createGitlabAPISessionCreator()
+                bitbucketCreator = factory.createBitbucketAPISessionCreator() 
                 compositeCreator.addChild(githubCreator)
                 compositeCreator.addChild(gitlabCreator)
+                compositeCreator.addChild(bitbucketCreator)
                 self._sessionCreator = compositeCreator
                 
         def execute(self,request):

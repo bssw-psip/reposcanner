@@ -73,6 +73,8 @@ class DummyOnlineRoutine(OnlineRepositoryRoutine):
 		output.writeToFile()
 		responseFactory = ResponseFactory()
 		return responseFactory.createSuccessResponse(message="DummyOnlineRoutine completed!",attachments=output)
+
+#TODO Add bitbucket implementation here
 		
 class DummyAnalysisRequest(AnalysisRequestModel):
 	def criteriaFunction(self,entity):
