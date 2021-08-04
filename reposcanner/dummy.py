@@ -74,7 +74,18 @@ class DummyOnlineRoutine(OnlineRepositoryRoutine):
 		responseFactory = ResponseFactory()
 		return responseFactory.createSuccessResponse(message="DummyOnlineRoutine completed!",attachments=output)
 
-#TODO Add bitbucket implementation here
+  def bitbucketImplementation(self,request,session):
+		factory = DataEntityFactory()
+		output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_dummyOnlineData.csv".format(
+			outputDirectory=request.getOutputDirectory(),
+			repoName=request.getRepositoryLocation().getRepositoryName()))
+		output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+		output.setCreator(self.__class__.__name__)
+		output.setDateCreated(datetime.date.today())
+		output.setURL(request.getRepositoryLocation().getURL())
+		output.writeToFile()
+		responseFactory = ResponseFactory()
+		return responseFactory.createSuccessResponse(message="DummyOnlineRoutine completed!",attachments=output)
 		
 class DummyAnalysisRequest(AnalysisRequestModel):
 	def criteriaFunction(self,entity):

@@ -329,10 +329,27 @@ def test_GitlabAPISessionCreator_usernameAndPasswordComboWillTriggerRuntimeError
         with pytest.raises(RuntimeError):
                 gitlabCreator.connect(repositoryLocation,credentials)
 
+def test_bitbucketAPISessionCreator_isConstructibleByFactory():
+				factory = gitEntities.GitEntityFactory()
+				bitbucketCreator = factory.createBitbucketAPISessionCreator()
 
+def test_BitbucketAPISessionCreator_isDirectlyConstructible():
+        bitbucketCreator = gitEntities.BitbucketAPISessionCreator()
         
-        
-        
+#TODO add test_GitlabAPISessionCreator_canHandleAppropriateRepository and test_GitlabAPISessionCreator_rejectsInappropriateRepositories
+#NEED: create bitbucket account and empty repo to test on
+
+def test_BitbucketAPISessionCreator_tokenWillTriggerRuntimeError():
+				bitbucketCreator = gitEntities.BitbucketAPISessionCreator()
+#TODO add repo location below
+        #repositoryLocation = gitEntities.RepositoryLocation(url = '')
+				credentials = gitEntitiesVersionControlPlatformCredentials(username = None, password = 'password', token = 'abcdef')
+				with pytest.raises(RuntimeError):
+								bitbucketCreator.connect(repositoryLocation, credentials)
+
+				credentials = gitEntitiesVersionControlPlatformCredentials(username = 'name', password = None, token = 'abcdef')  
+				with pytest.raises(RuntimeError):
+								bitbucketCreator.connect(repositoryLocation, credentials)        
         
         
         
