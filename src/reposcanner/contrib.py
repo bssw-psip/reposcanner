@@ -6,6 +6,7 @@ from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory
 import pygit2
 
+from pathlib import Path
 import time, datetime, re, csv
 import pandas as pd
 import numpy as np
@@ -31,9 +32,12 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
         def offlineImplementation(self,request,session):
 
             factory = DataEntityFactory()
-            output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_CommitInfoMining.csv".format(
-                    outputDirectory=request.getOutputDirectory(),
-                    repoName=request.getRepositoryLocation().getRepositoryName()))
+            fout = Path(request.getOutputDirectory()) \
+                     / "{repoOwner}_{repoName}_CommitInfoMining.csv".format(
+                         repoOwner=request.getRepositoryLocation().getOwner(),
+                         repoName=request.getRepositoryLocation().getRepositoryName())
+
+            output = factory.createAnnotatedCSVData(fout)
 
             responseFactory = ResponseFactory()
             if output.fileExists():

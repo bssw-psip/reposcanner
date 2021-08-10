@@ -1,6 +1,7 @@
 import datetime
 import reposcanner.git as gitEntities
 import os
+from pathlib import Path
 from abc import ABC, abstractmethod
 
 class BaseRequestModel:
@@ -239,9 +240,11 @@ class OfflineRoutineRequest(RoutineRequestModel):
                         exception=exception))
                         
         def getCloneDirectory(self):
-                return "{workspace}/{repoName}".format(workspace=self._workspaceDirectory,repoName=self.getRepositoryLocation().getRepositoryName())
+            return Path(self._workspaceDirectory) \
+                      / "{repoOwner}_{repoName}".format(
+                          repoOwner=self.getRepositoryLocation().getOwner(),
+                          repoName=self.getRepositoryLocation().getRepositoryName())
                 
         def getWorkspaceDirectory(self):
                 return self._workspaceDirectory
-                         
-                        
+
