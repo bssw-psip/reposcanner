@@ -7,7 +7,7 @@ from reposcanner.response import ResponseFactory
 import datetime, logging, curses, sys
 from tqdm import tqdm #For progress checking in non-GUI mode.
 from abc import ABC, abstractmethod
-
+import asyncio
 
 class TaskFactory:
         def createManagerRoutineTask(self,projectID,projectName,url,request):
@@ -289,15 +289,24 @@ class ReposcannerManager:
                 """
                 Plain-text execution mode.
                 """
-                for task in tqdm(self._tasks):
-                        task.process(self._routines+self._analyses,self._store,self._notebook)
-                        response = task.getResponse()
-                        print(task.getResponseDescription())
-                        if not task.getResponse().wasSuccessful():
-                            for attachment in response.getAttachments():
-                                print(attachment)
+                async def do_task(task):
+                    task.process(self._routines+self._analyses,self._store,self._notebook)
+                    response = task.getResponse()
+                    print(task.getResponseDescription())
+                    if not task.getResponse().wasSuccessful():
                         for attachment in response.getAttachments():
+                            print(attachment)
+                    for attachment in response.getAttachments():
                                 self._store.insert(attachment)
+
+                async def exec_loop():
+                    tasks = []
+                    for task in tqdm(self._tasks):
+                        tasks.append(asyncio.create_task( do_task(task) ))
+                    for task in asyncio.as_completed(tasks):
+                        await task
+
+                asyncio.run(exec_loop())
 
         def executeWithGUI(self):
                 """
