@@ -5,10 +5,10 @@ import pygit2
 from reposcanner.git import GitEntityFactory,RepositoryLocation
 from reposcanner.response import ResponseFactory
 
-class RepositoryRoutine(ABC):
-        """The abstract base class for all repository analysis routines. Methods cover
-        the execution of mining routines and exporting of data."""
-
+class DataMiningRoutine(ABC):
+        """
+        The abstract base class for all data mining routines.
+        """
         def canHandleRequest(self,request):
                 """
                 Returns True if the routine is capable of handling the request (i.e. the
@@ -29,22 +29,39 @@ class RepositoryRoutine(ABC):
         @abstractmethod
         def execute(self,request):
                 """
-                Contains the code for interacting with the GitHub repository via PyGitHub.
-                Whatever data this method returns will be passed to export methods.
+                Contains the code for executing the data mining operations.
 
                 Parameters:
                         request (@input): A RequestModel object that encapsulates all the information needed
                         to run the routine.
                 """
                 pass
-
+        
         def run(self,request):
                 """
-                Encodes the workflow of a RepositoryRoutine object. The client only needs
+                Encodes the workflow of a DataMiningRoutine object. The client only needs
                 to run this method in order to get results.
                 """
                 response = self.execute(request)
                 return response
+
+class RepositoryRoutine(DataMiningRoutine):
+        """The abstract base class for all software repository analysis routines."""
+        pass
+                
+class ExternalCommandLineToolRoutine(DataMiningRoutine):
+        """
+        Abstract base class for routines that call other command-line tools to mine data.
+        Having calls to external tools handled within Reposcanner allows us to provide consistent
+        provenance for their use.
+        """
+        @abstractmethod
+        def isExternalToolAvailable(self):
+            """
+            Checks to see whether the tool can be called on the command-line.
+            This method should return True if so, False if not.
+            """
+            pass
 
 
 class OfflineRepositoryRoutine(RepositoryRoutine):
@@ -221,3 +238,6 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                 return responseFactory.createFailureResponse(
                         message="This routine has no implementation available \
                         to handle a Bitbucket repository.")
+                        
+
+

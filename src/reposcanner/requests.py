@@ -99,7 +99,7 @@ class AnalysisRequestModel(BaseRequestModel):
                 return self._data
                 
 
-class RoutineRequestModel(BaseRequestModel):
+class RepositoryRoutineRequestModel(BaseRequestModel):
         """
         The base class for all routine request models. The frontend is responsible for phrasing their requests in the
         form of a request model which routines understand.
@@ -156,7 +156,7 @@ class RoutineRequestModel(BaseRequestModel):
                 return True
                 
 
-class OnlineRoutineRequest(RoutineRequestModel):
+class OnlineRoutineRequest(RepositoryRoutineRequestModel):
         """
         The base class for requests to routines that use an online API to compute results. 
         Request classes for OnlineRepositoryRoutine should inherit from this class.
@@ -206,7 +206,7 @@ class OnlineRoutineRequest(RoutineRequestModel):
         def getCredentials(self):
                 return self._credentials
                 
-class OfflineRoutineRequest(RoutineRequestModel):
+class OfflineRoutineRequest(RepositoryRoutineRequestModel):
         """
         The base class for requests to routines that operate on an offline clone to compute results. 
         Request classes for OfflineRepositoryRoutine should inherit from this class.

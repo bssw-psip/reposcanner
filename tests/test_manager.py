@@ -7,14 +7,14 @@ def test_ManagerRoutineTask_isDirectlyConstructible():
         task = management.ManagerRoutineTask(projectID="PROJID",
                 projectName="SciKit",
                 url="https://github.com/scikit/scikit/",
-                request=requests.RoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
+                request=requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
 
 def test_ManagerRoutineTask_isConstructibleByFactory():
         factory = management.TaskFactory()
         task = factory.createManagerRoutineTask(projectID="PROJID",
                 projectName="SciKit",
                 url="https://github.com/scikit/scikit/",
-                request=requests.RoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
+                request=requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
 
 def test_ManagerAnalysisTask_isDirectlyConstructible():
         task = management.ManagerAnalysisTask(request=requests.AnalysisRequestModel())
