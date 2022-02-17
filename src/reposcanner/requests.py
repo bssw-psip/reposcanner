@@ -97,12 +97,18 @@ class AnalysisRequestModel(BaseRequestModel):
                 Called by the DataAnalysis instance responsible for handling the request.
                 """
                 return self._data
-                
+
+class ExternalCommandLineToolRoutineRequestModel(BaseRequestModel):
+        """
+        The base class for external command-line tool routine request models. The frontend is responsible for phrasing their requests in the
+        form of a request model which repository-mining routines understand.
+        """
+        pass
 
 class RepositoryRoutineRequestModel(BaseRequestModel):
         """
-        The base class for all routine request models. The frontend is responsible for phrasing their requests in the
-        form of a request model which routines understand.
+        The base class for all repository-mining routine request models. The frontend is responsible for phrasing their requests in the
+        form of a request model which repository-mining routines understand.
         """
 
         def __init__(self,repositoryURL,outputDirectory):
