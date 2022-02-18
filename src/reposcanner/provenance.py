@@ -230,7 +230,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         
         def onRoutineCreation(self,routine):
                 """
-                Called when a RepositoryRoutine object is created during initialization.
+                Called when a RepositoryRoutine or ExternalCommandLineToolRoutine object is created during initialization.
                 
                 routine: The RepositoryRoutine object.
                 """

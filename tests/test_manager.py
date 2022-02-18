@@ -3,15 +3,15 @@ import reposcanner.requests as requests
 import reposcanner.data as data
 import pytest
 
-def test_ManagerRoutineTask_isDirectlyConstructible():
-        task = management.ManagerRoutineTask(projectID="PROJID",
+def test_ManagerRepositoryRoutineTask_isDirectlyConstructible():
+        task = management.ManagerRepositoryRoutineTask(projectID="PROJID",
                 projectName="SciKit",
                 url="https://github.com/scikit/scikit/",
                 request=requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
 
-def test_ManagerRoutineTask_isConstructibleByFactory():
+def test_ManagerRepositoryRoutineTask_isConstructibleByFactory():
         factory = management.TaskFactory()
-        task = factory.createManagerRoutineTask(projectID="PROJID",
+        task = factory.createManagerRepositoryRoutineTask(projectID="PROJID",
                 projectName="SciKit",
                 url="https://github.com/scikit/scikit/",
                 request=requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/scikit/scikit/",outputDirectory="./"))
@@ -19,7 +19,7 @@ def test_ManagerRoutineTask_isConstructibleByFactory():
 def test_ManagerAnalysisTask_isDirectlyConstructible():
         task = management.ManagerAnalysisTask(request=requests.AnalysisRequestModel())
 
-def test_ManagerRoutineTask_isConstructibleByFactory():
+def test_ManagerRepositoryRoutineTask_isConstructibleByFactory():
         factory = management.TaskFactory()
         task = factory.createManagerAnalysisTask(request=requests.AnalysisRequestModel())
                 

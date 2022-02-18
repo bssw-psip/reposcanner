@@ -10,8 +10,8 @@ from abc import ABC, abstractmethod
 
 
 class TaskFactory:
-        def createManagerRoutineTask(self,projectID,projectName,url,request):
-                return ManagerRoutineTask(projectID,projectName,url,request)
+        def createManagerRepositoryRoutineTask(self,projectID,projectName,url,request):
+                return ManagerRepositoryRoutineTask(projectID,projectName,url,request)
         def createManagerAnalysisTask(self,request):
                 return ManagerAnalysisTask(request)
 
@@ -77,7 +77,7 @@ class ManagerTask(ABC):
                 pass
 
 
-class ManagerRoutineTask(ManagerTask):
+class ManagerRepositoryRoutineTask(ManagerTask):
         """
         This Task class wraps requests and responses for RepositoryRoutines.
         """
@@ -239,7 +239,7 @@ class ReposcannerManager:
                                 request = requestType(repositoryURL=url,
                                 outputDirectory=self._outputDirectory,
                                 workspaceDirectory=self._workspaceDirectory)
-                        task = ManagerRoutineTask(projectID=projectID,projectName=projectName,url=url,request=request)
+                        task = ManagerRepositoryRoutineTask(projectID=projectID,projectName=projectName,url=url,request=request)
                         return task
                 elif requestType.isAnalysisRequestType():
                         request = requestType()
