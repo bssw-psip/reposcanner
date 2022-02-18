@@ -36,6 +36,31 @@ def test_RepositoryRoutine_exportCanAddAttachments(mocker):
         assert(response.hasAttachments())
         assert(len(response.getAttachments()) == 1)
         
+def test_ExternalCommandLineToolRoutine_isConstructibleWithMockImplementation(mocker):
+        mocker.patch.multiple(routines.ExternalCommandLineToolRoutine,__abstractmethods__=set())
+        genericExternalCommandLineToolRoutine = routines.ExternalCommandLineToolRoutine()
+        
+def test_ExternalCommandLineToolRoutine_runCanReturnResponses(mocker):
+        mocker.patch.multiple(routines.ExternalCommandLineToolRoutine,__abstractmethods__=set())
+        def externalToolIsAvailable(self):
+            return True
+        def supportsGenericRequestType(self):
+            return requests.ExternalCommandLineToolRoutineRequest
+        def implementationGeneratesResponse(self,request):
+            factory = responses.ResponseFactory()
+            response = factory.createSuccessResponse(attachments=[])
+            response.addAttachment("data")
+            return response
+        routines.ExternalCommandLineToolRoutine.isExternalToolAvailable = externalToolIsAvailable
+        routines.ExternalCommandLineToolRoutine.getRequestType = supportsGenericRequestType
+        routines.ExternalCommandLineToolRoutine.commandLineToolImplementation = implementationGeneratesResponse
+        genericExternalCommandLineToolRoutine = routines.ExternalCommandLineToolRoutine()
+        genericRequest = requests.ExternalCommandLineToolRoutineRequest(commandLineArguments=["arg1","arg2","arg3"],outputDirectory="./")
+        response = genericExternalCommandLineToolRoutine.run(genericRequest)
+        assert(response.wasSuccessful())
+        assert(response.hasAttachments())
+        assert(len(response.getAttachments()) == 1)
+        
 
 def test_OnlineRepositoryRoutine_isConstructibleWithMockImplementation(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())

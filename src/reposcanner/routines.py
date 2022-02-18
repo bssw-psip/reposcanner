@@ -57,12 +57,49 @@ class ExternalCommandLineToolRoutine(DataMiningRoutine):
         """
         @abstractmethod
         def isExternalToolAvailable(self):
-            """
-            Checks to see whether the tool can be called on the command-line.
-            This method should return True if so, False if not.
-            """
-            pass
+                """
+                Checks to see whether the tool can be called on the command-line.
+                This method should return True if so, False if not.
+                """
+                pass
+                
+        def commandLineToolImplementation(self,request):
+                """
+                This method should contain an implementation that calls the command-line tool
+                and handles any information it gets back from that tool.
+                By default, it'll return a failure response. Subclasses are responsible for
+                overriding this method.
 
+                request: An ExternalCommandLineToolRoutineRequest object.
+                """
+                responseFactory = ResponseFactory()
+                return responseFactory.createFailureResponse(
+                        message="This routine has no implementation available\
+                        to call the command-line tool.")
+                    
+        def execute(self,request):
+                responseFactory = ResponseFactory()
+                if not self.canHandleRequest(request):
+                        return responseFactory.createFailureResponse(
+                        message="The routine was passed a request of the wrong type.")
+                elif request.hasErrors():
+                        return responseFactory.createFailureResponse(
+                        message="The request had errors in it and cannot be processed.",
+                        attachments=request.getErrors())
+                elif not self.isExternalToolAvailable():
+                        return responseFactory.createFailureResponse(
+                        message="The command-line tool required by this routine is not available or\
+                        is otherwise unable to be called.")
+                else:
+                        try:
+                            return self.commandLineToolImplementation(request)
+                        except Exception as e:
+                            return responseFactory.createFailureResponse(
+                                message="ExternalCommandLineToolRoutine Encountered an unexpected exception ({etype}).".format(etype=type(e)),
+                                attachments=[e])
+                        
+                                  
+        
 
 class OfflineRepositoryRoutine(RepositoryRoutine):
         """
@@ -113,7 +150,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
 
         def offlineImplementation(self,request,session):
                 """
-                This method should contain the GitHub API implementation of the routine.
+                This method should contain the PyGit2-based implementation of the routine.
                 By default, it'll return a failure response. Subclasses are responsible for
                 overriding this method.
 
