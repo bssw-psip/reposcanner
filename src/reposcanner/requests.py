@@ -103,7 +103,57 @@ class ExternalCommandLineToolRoutineRequestModel(BaseRequestModel):
         The base class for external command-line tool routine request models. The frontend is responsible for phrasing their requests in the
         form of a request model which repository-mining routines understand.
         """
-        pass
+        def __init__(self,commandLineArguments,outputDirectory):
+            """
+            parameters:
+                    commandLineArguments (@input): An iterable of arguments to be passed to
+                    the command-line tool called by a ExternalCommandLineToolRoutine.
+            
+                    outputDirectory (@input): The directory where files generated
+                            by the routine should be stored.
+            
+            """
+            super().__init__()
+            try:
+                if isinstance(commandLineArguments, str):
+                    self.addError("commandLineArguments (\"{commandLineArguments}\") is a String rather than a non-String iterable.".format(
+                        commandLineArguments=commandLineArguments
+                    ))
+                self._commandLineArguments = iter(commandLineArguments)
+            except TypeError:
+                self.addError("commandLineArguments is of type {commandLineArgumentsType} and is not iterable.".format(
+                    commandLineArgumentsType=type(commandLineArguments)
+                ))
+            except Exception as exception:
+                    self.addError("Encountered an unexpected exception \
+                    while parsing command line arguments. \
+                    {commandLineArguments}: {exception}".format(commandLineArguments=commandLineArguments,
+                    exception=exception))
+            try:
+                    self._outputDirectory = outputDirectory
+                    if not os.path.isdir(self._outputDirectory) or not os.path.exists(self._outputDirectory):
+                            self.addError("The output directory {outputDirectory} either does not exist or \
+                            is not a valid directory.".format(outputDirectory=self._outputDirectory))
+                    if not os.access(self._outputDirectory, os.W_OK):
+                            self.addError("Reposcanner does not have permissions to write to the output directory \
+                            {outputDirectory}.".format(outputDirectory=self._outputDirectory))
+                            
+            except Exception as exception:
+                    self.addError("Encountered an unexpected exception \
+                    while parsing output directory \
+                    {outputDirectory}: {exception}".format(outputDirectory=self._outputDirectory,
+                    exception=exception))
+                    
+        def getOutputDirectory(self):
+                return self._outputDirectory
+        
+        def getCommandLineArguments(self):
+                return self._commandLineArguments
+
+        @classmethod
+        def isRoutineRequestType(cls):
+                return True
+            
 
 class RepositoryRoutineRequestModel(BaseRequestModel):
         """

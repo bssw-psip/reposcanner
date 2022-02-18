@@ -39,6 +39,38 @@ def test_AnalysisRequestModel_defaultDataCriteriaAcceptsLiterallyEverything():
         assert(analysisRequest.criteriaFunction("garbage") is True)
         assert(analysisRequest.criteriaFunction(42) is True)
         assert(analysisRequest.criteriaFunction(analysisRequest) is True)
+        
+def test_ExternalCommandLineToolRoutineRequestModel_isDirectlyConstructible():
+        requests.ExternalCommandLineToolRoutineRequestModel(commandLineArguments=["arg1","arg2","arg3"],outputDirectory="./")
+
+def test_ExternalCommandLineToolRoutineRequestModel_isARoutineRequestType():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequestModel(commandLineArguments=["arg1","arg2","arg3"],outputDirectory="./")
+        assert(not commandLineToolRequest.isAnalysisRequestType())
+        assert(commandLineToolRequest.isRoutineRequestType())
+
+def test_ExternalCommandLineToolRoutineRequestModel_hasNoErrorsForValidInput():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequestModel(commandLineArguments=["arg1","arg2","arg3"],outputDirectory="./")
+        assert(not commandLineToolRequest.hasErrors())
+        
+def test_ExternalCommandLineToolRoutineRequestModel_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
+        #This test is specific to Mac and Linux environments, so we'll skip it when running
+		#this test in a Windows environment.
+        if platform.system() == 'Windows':
+            return True
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequestModel(commandLineArguments=["arg1","arg2","arg3"],outputDirectory="/")
+        assert(commandLineToolRequest.hasErrors())
+        
+def test_ExternalCommandLineToolRoutineRequestModel_passingANonIterableToCommandLineArgumentsIsAnError():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequestModel(commandLineArguments=42,outputDirectory="./")
+        assert(commandLineToolRequest.hasErrors())
+        
+def test_ExternalCommandLineToolRoutineRequestModel_passingAStringToCommandLineArgumentsIsAnError():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequestModel(commandLineArguments="arg1",outputDirectory="./")
+        assert(commandLineToolRequest.hasErrors())
+        
+def test_ExternalCommandLineToolRoutineRequestModel_canStoreOutputDirectory():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequestModel(commandLineArguments=["arg1","arg2","arg3"],outputDirectory="./")
+        assert(commandLineToolRequest.getOutputDirectory() == "./")
 
 def test_RepositoryRoutineRequestModel_isDirectlyConstructible():
         requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
