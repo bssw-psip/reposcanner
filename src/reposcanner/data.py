@@ -207,18 +207,18 @@ class YAMLData(ReposcannerDataEntity):
         def readFromFile(self):
                 if not os.path.exists(self.getFilePath()):
                         raise OSError("Reposcanner couldn't find the YAML file ({path})\
-                        Shutting down as a precaution.".format(path=filePath))
+                        Shutting down as a precaution.".format(path=self.getFilePath()))
                 with open(self.getFilePath()) as f:
                         try:
                                 contents = yaml.safe_load(f)
                         except yaml.YAMLError as exception:
                                 print("While loading a YAML file ({path}), Reposcanner encountered \
-                                an exception via PyYAML.".format(path=filePath))
+                                an exception via PyYAML.".format(path=self.getFilePath()))
                                 raise exception
                         if contents == None:
                                 raise OSError("PyYAML tried parsing a file ({path}), but that \
                                 result was None, which means it failed to read the contents of \
-                                the file.".format(path=filePath))
+                                the file.".format(path=self.getFilePath()))
                 self._data = contents
                 
         def writeToFile(self):
