@@ -71,6 +71,16 @@ def test_ExternalCommandLineToolRoutine_runCanReturnResponses(mocker):
         assert(response.hasAttachments())
         assert(len(response.getAttachments()) == 1)
         
+def test_ExternalCommandLineToolRoutine_canSetConfigurationParameters(mocker):
+        mocker.patch.multiple(routines.ExternalCommandLineToolRoutine,__abstractmethods__=set())
+        genericRoutine = routines.ExternalCommandLineToolRoutine()
+        configurationParameters = {"verbose" : True, "debug" : False}
+        assert(not genericRoutine.hasConfigurationParameters())
+        assert(genericRoutine.getConfigurationParameters() == None)
+        genericRoutine.setConfigurationParameters(configurationParameters)
+        assert(genericRoutine.hasConfigurationParameters())
+        assert(genericRoutine.getConfigurationParameters() == configurationParameters)
+        
 
 def test_OnlineRepositoryRoutine_isConstructibleWithMockImplementation(mocker):
         mocker.patch.multiple(routines.OnlineRepositoryRoutine,__abstractmethods__=set())
