@@ -76,6 +76,7 @@ class ManagerTask(ABC):
                 """
                 pass
 
+#class ManagerExternalCommandLineToolTask(ManagerTask):
 
 class ManagerRepositoryRoutineTask(ManagerTask):
         """
@@ -176,22 +177,42 @@ class ReposcannerManager:
                 """Constructs RepositoryRoutine and DataAnalysis objects that belong to the manager."""
 
                 if 'routines' in configData:
-                        for routineName in configData['routines']:
+                        for routineEntry in configData['routines']:
+                                if type(routineEntry) == dict:
+                                        #The routineEntry is a dictionary, implying it 
+                                        #has parameters we need to pass to the
+                                        #constructor. Otherwise it'll just be a plain string.
+                                        routineName = list(routineEntry.keys())[0]
+                                        configParameters = routineEntry[routineName]
+                                else:
+                                        routineName = routineEntry
+                                        configParameters = None
                                 try:
                                         routineClazz = getattr(sys.modules[__name__], routineName)
                                         routineInstance = routineClazz()
+                                        routineInstance.setConfigurationParameters(configParameters)
                                         self._routines.append(routineInstance)
                                 except:
-                                        raise ValueError("Can't find routine matching name {name}".format(name=routineName))
+                                        raise ValueError("Failed to instantiate routine matching name {name}".format(name=routineName))
 
                 if 'analyses' in configData:
-                        for analysisName in configData['analyses']:
+                        for analysisEntry in configData['analyses']:
+                                if type(routineEntry) == dict:
+                                        #The analysisEntry is a dictionary, implying it 
+                                        #has parameters we need to pass to the
+                                        #constructor. Otherwise it'll just be a plain string.
+                                        analysisName = list(analysisEntry.keys())[0]
+                                        configParameters = analysisEntry[analysisName]
+                                else:
+                                        analysisName = analysisEntry
+                                        configParameters = None
                                 try:
                                         analysisClazz = getattr(sys.modules[__name__], analysisName)
                                         analysisInstance = analysisClazz()
+                                        analysisInstance.setConfigurationParameters(configParameters)
                                         self._analyses.append(analysisInstance)
                                 except:
-                                        raise ValueError("Can't find analysis matching name {name}".format(name=analysisName))
+                                        raise ValueError("Failed to instantiate analysis matching name {name}".format(name=analysisName))
 
                 for routine in self._routines:
                         if self._notebook is not None:

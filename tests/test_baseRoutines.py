@@ -36,6 +36,16 @@ def test_RepositoryRoutine_exportCanAddAttachments(mocker):
         assert(response.hasAttachments())
         assert(len(response.getAttachments()) == 1)
         
+def test_RepositoryRoutine_canSetConfigurationParameters(mocker):
+        mocker.patch.multiple(routines.RepositoryRoutine,__abstractmethods__=set())
+        genericRoutine = routines.RepositoryRoutine()
+        configurationParameters = {"verbose" : True, "debug" : False}
+        assert(not genericRoutine.hasConfigurationParameters())
+        assert(genericRoutine.getConfigurationParameters() == None)
+        genericRoutine.setConfigurationParameters(configurationParameters)
+        assert(genericRoutine.hasConfigurationParameters())
+        assert(genericRoutine.getConfigurationParameters() == configurationParameters)
+        
 def test_ExternalCommandLineToolRoutine_isConstructibleWithMockImplementation(mocker):
         mocker.patch.multiple(routines.ExternalCommandLineToolRoutine,__abstractmethods__=set())
         genericExternalCommandLineToolRoutine = routines.ExternalCommandLineToolRoutine()

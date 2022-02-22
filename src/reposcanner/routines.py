@@ -9,6 +9,7 @@ class DataMiningRoutine(ABC):
         """
         The abstract base class for all data mining routines.
         """
+        
         def canHandleRequest(self,request):
                 """
                 Returns True if the routine is capable of handling the request (i.e. the
@@ -44,6 +45,35 @@ class DataMiningRoutine(ABC):
                 """
                 response = self.execute(request)
                 return response
+                
+        def hasConfigurationParameters(self):
+            """
+            Checks whether the routine object was passed configuration parameters,
+            whether valid or not. Routines are not required to do anything with parameters
+            that are passed to them via the config file.
+            """
+            try:
+                parameters = self.configParameters
+                return parameters is not None
+            except:
+                return False
+            
+        def getConfigurationParameters(self):
+            """
+            Returns the configuration parameters assigned to the routine.
+            """
+            try:
+                parameters = self.configParameters
+                return parameters
+            except:
+                return None
+        
+        
+        def setConfigurationParameters(self,configParameters):
+            """
+            Assigns configuration parameters to a newly created routine.
+            """
+            self.configParameters = configParameters
 
 class RepositoryRoutine(DataMiningRoutine):
         """The abstract base class for all software repository analysis routines."""
@@ -55,6 +85,7 @@ class ExternalCommandLineToolRoutine(DataMiningRoutine):
         Having calls to external tools handled within Reposcanner allows us to provide consistent
         provenance for their use.
         """
+            
         @abstractmethod
         def isExternalToolAvailable(self):
                 """
@@ -105,9 +136,6 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
         """
         Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
         """
-        def __init__(self):
-                pass
-
 
         def execute(self,request):
                 """
