@@ -65,7 +65,7 @@ def test_ExternalCommandLineToolRoutine_runCanReturnResponses(mocker):
         routines.ExternalCommandLineToolRoutine.getRequestType = supportsGenericRequestType
         routines.ExternalCommandLineToolRoutine.commandLineToolImplementation = implementationGeneratesResponse
         genericExternalCommandLineToolRoutine = routines.ExternalCommandLineToolRoutine()
-        genericRequest = requests.ExternalCommandLineToolRoutineRequest(commandLineArguments=["arg1","arg2","arg3"],outputDirectory="./")
+        genericRequest = requests.ExternalCommandLineToolRoutineRequest(outputDirectory="./")
         response = genericExternalCommandLineToolRoutine.run(genericRequest)
         assert(response.wasSuccessful())
         assert(response.hasAttachments())

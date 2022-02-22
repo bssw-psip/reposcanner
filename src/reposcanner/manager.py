@@ -4,6 +4,7 @@ from reposcanner.dummy import DummyOfflineRoutine,DummyOnlineRoutine,DummyAnalys
 from reposcanner.git import CredentialKeychain
 from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
+from reposcanner.routines import RepositoryRoutine,ExternalCommandLineToolRoutine
 import datetime, logging, curses, sys
 from tqdm import tqdm #For progress checking in non-GUI mode.
 from abc import ABC, abstractmethod
@@ -12,9 +13,10 @@ from abc import ABC, abstractmethod
 class TaskFactory:
         def createManagerRepositoryRoutineTask(self,projectID,projectName,url,request):
                 return ManagerRepositoryRoutineTask(projectID,projectName,url,request)
+        def createManagerExternalCommandLineToolTask(self,request):
+                return ManagerExternalCommandLineToolTask(request)
         def createManagerAnalysisTask(self,request):
                 return ManagerAnalysisTask(request)
-
 
 
 class ManagerTask(ABC):
@@ -76,8 +78,6 @@ class ManagerTask(ABC):
                 """
                 pass
 
-#class ManagerExternalCommandLineToolTask(ManagerTask):
-
 class ManagerRepositoryRoutineTask(ManagerTask):
         """
         This Task class wraps requests and responses for RepositoryRoutines.
@@ -137,6 +137,29 @@ class ManagerRepositoryRoutineTask(ManagerTask):
                                 reason=self.getResponse().getMessage()
                         )
 
+class ManagerExternalCommandLineToolTask(ManagerTask):
+        """
+        This Task class wraps requests and responses for ExternalCommandLineToolRoutines.
+        """
+        def __init__(self,request):
+                super().__init__(request)
+        
+        def getResponseDescription(self):
+            """
+            Generate a string that describes the response to the request in a human-readable
+            way.
+            """
+            if self._response.wasSuccessful():
+                    return "✅ External Command Line Tool Request ({requestType}) was successful!".format(
+                            requestType = self.getRequest().__class__.__name__
+                    )
+            else:
+                    return "❌ External Command Line Tool Request ({requestType}) failed. Reason: {reason}".format(
+                            requestType = self.getRequest().__class__.__name__,
+                            reason=self.getResponse().getMessage()
+                    ) 
+
+
 class ManagerAnalysisTask(ManagerTask):
         """
         This Task class wraps requests and responses for DataAnalyses.
@@ -164,7 +187,8 @@ class ReposcannerManager:
         """
         def __init__(self,notebook=None,outputDirectory="./",workspaceDirectory="./",gui=False):
                 self._notebook = notebook
-                self._routines = []
+                self._repositoryRoutines = []
+                self._externalCommandLineToolRoutines = []
                 self._analyses = []
                 self._tasks = []
                 self._keychain = None
@@ -191,7 +215,14 @@ class ReposcannerManager:
                                         routineClazz = getattr(sys.modules[__name__], routineName)
                                         routineInstance = routineClazz()
                                         routineInstance.setConfigurationParameters(configParameters)
-                                        self._routines.append(routineInstance)
+                                        
+                                        if isinstance(routineInstance,RepositoryRoutine):
+                                                self._repositoryRoutines.append(routineInstance)
+                                        elif isinstance(routineInstance,ExternalCommandLineToolRoutine):
+                                                self._externalCommandLineToolRoutines.append(routineInstance)
+                                        else:
+                                                raise TypeError("ReposcannerManager does not know how to \
+                                                handle this routine type: {routineType}".format(type(routineInstance)))
                                 except:
                                         raise ValueError("Failed to instantiate routine matching name {name}".format(name=routineName))
 
@@ -214,7 +245,10 @@ class ReposcannerManager:
                                 except:
                                         raise ValueError("Failed to instantiate analysis matching name {name}".format(name=analysisName))
 
-                for routine in self._routines:
+                for routine in self._repositoryRoutines:
+                        if self._notebook is not None:
+                                self._notebook.onRoutineCreation(routine)
+                for routine in self._externalCommandLineToolRoutines:
                         if self._notebook is not None:
                                 self._notebook.onRoutineCreation(routine)
                 for analysis in self._analyses:
@@ -228,14 +262,32 @@ class ReposcannerManager:
                 prior to execution (e.g. from reposcanner-data)
                 """
                 self._store.insert(entity)
-
+                
 
         def getRoutines(self):
                 """
-                Provides a list of routines available for the manager
-                to delgate tasks to. Used for testing purposes.
+                Provides a list of all routines 
+                available for the manager to delgate tasks to. 
+                Used for testing purposes.
                 """
-                return self._routines
+                return self._repositoryRoutines+self._externalCommandLineToolRoutines
+
+
+        def getRepositoryRoutines(self):
+                """
+                Provides a list of repository-mining routines 
+                available for the manager to delgate tasks to. 
+                Used for testing purposes.
+                """
+                return self._repositoryRoutines
+                
+        def getExternalCommandLineToolRoutines(self):
+                """
+                Provides a list of external command-line tool routines 
+                available for the manager to delgate tasks to. 
+                Used for testing purposes.
+                """
+                return self._externalCommandLineToolRoutines
 
         def getAnalyses(self):
                 """
@@ -250,18 +302,23 @@ class ReposcannerManager:
         def buildTask(self,projectID,projectName,url,routineOrAnalysis):
                 """Constructs a task to hold a request/response pair."""
                 requestType = routineOrAnalysis.getRequestType()
-
                 if requestType.isRoutineRequestType():
-                        if requestType.requiresOnlineAPIAccess():
-                                request = requestType(repositoryURL=url,
-                                outputDirectory=self._outputDirectory,
-                                keychain=self._keychain)
+                        if requestType.isExternalCommandLineToolRequestType():
+                            request = requestType(outputDirectory=self._outputDirectory)
+                            task = ManagerExternalCommandLineToolTask(request)
+                            return task
                         else:
-                                request = requestType(repositoryURL=url,
-                                outputDirectory=self._outputDirectory,
-                                workspaceDirectory=self._workspaceDirectory)
-                        task = ManagerRepositoryRoutineTask(projectID=projectID,projectName=projectName,url=url,request=request)
-                        return task
+                            if requestType.requiresOnlineAPIAccess():
+                                    request = requestType(repositoryURL=url,
+                                    outputDirectory=self._outputDirectory,
+                                    keychain=self._keychain)
+                            else:
+                                    request = requestType(repositoryURL=url,
+                                    outputDirectory=self._outputDirectory,
+                                    workspaceDirectory=self._workspaceDirectory)
+                            task = ManagerRepositoryRoutineTask(projectID=projectID,
+                            projectName=projectName,url=url,request=request)
+                            return task
                 elif requestType.isAnalysisRequestType():
                         request = requestType()
                         task = ManagerAnalysisTask(request)
@@ -282,7 +339,7 @@ class ReposcannerManager:
                                    projectName = ""
 
                            for url in projectEntry["urls"]:
-                                   for routine in self._routines:
+                                   for routine in self._repositoryRoutines:
                                            task = self.buildTask(projectID,projectName,url,routine)
                                            if self._notebook is not None:
                                                    self._notebook.onTaskCreation(task)
@@ -311,7 +368,7 @@ class ReposcannerManager:
                 Plain-text execution mode.
                 """
                 for task in tqdm(self._tasks):
-                        task.process(self._routines+self._analyses,self._store,self._notebook)
+                        task.process(self._repositoryRoutines+self._externalCommandLineToolRoutines+self._analyses,self._store,self._notebook)
                         response = task.getResponse()
                         print(task.getResponseDescription())
                         if not task.getResponse().wasSuccessful():
@@ -404,7 +461,7 @@ class ReposcannerManager:
                                 footer.addstr(1,4,taskDescription,curses.A_BOLD)
                                 footer.border(2)
                                 footer.refresh()
-                                currentTask.process(self._routines+self._analyses,self._store,self._notebook)
+                                currentTask.process(self._repositoryRoutines+self._analyses,self._store,self._notebook)
                                 for attachment in currentTask.getResponse().getAttachments():
                                         self._store.insert(attachment)
 
