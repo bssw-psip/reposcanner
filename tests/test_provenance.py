@@ -67,7 +67,7 @@ def test_ReposcannerLabNotebook_canLogCreatedTasks():
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRepositoryRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
         notebook.onTaskCreation(task)
@@ -94,7 +94,7 @@ def test_ReposcannerLabNotebook_canLogStartOfTask():
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRepositoryRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         notebook.onTaskCreation(task)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
@@ -158,7 +158,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRepositoryRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
         
@@ -209,7 +209,7 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRepositoryRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
         
@@ -280,7 +280,7 @@ def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
         request = contributionRoutines.ContributorAccountListRoutineRequest(repositoryURL="https://github.com/scikit/scikit",
         outputDirectory="./",
         token = "ab5571mc1")
-        task = manager.ManagerRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
+        task = manager.ManagerRepositoryRoutineTask(projectID="PROJID",projectName="SciKit",url="https://github.com/scikit/scikit",request=request)
         
         routine = contributionRoutines.ContributorAccountListRoutine()
 

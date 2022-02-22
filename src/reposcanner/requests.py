@@ -97,12 +97,51 @@ class AnalysisRequestModel(BaseRequestModel):
                 Called by the DataAnalysis instance responsible for handling the request.
                 """
                 return self._data
-                
 
-class RoutineRequestModel(BaseRequestModel):
+class ExternalCommandLineToolRoutineRequest(BaseRequestModel):
         """
-        The base class for all routine request models. The frontend is responsible for phrasing their requests in the
-        form of a request model which routines understand.
+        The base class for external command-line tool routine request models. The frontend is responsible for phrasing their requests in the
+        form of a request model which repository-mining routines understand.
+        """
+        def __init__(self,outputDirectory):
+            """
+            parameters:
+                    outputDirectory (@input): The directory where files generated
+                            by the routine should be stored.
+            
+            """
+            super().__init__()
+            try:
+                    self._outputDirectory = outputDirectory
+                    if not os.path.isdir(self._outputDirectory) or not os.path.exists(self._outputDirectory):
+                            self.addError("The output directory {outputDirectory} either does not exist or \
+                            is not a valid directory.".format(outputDirectory=self._outputDirectory))
+                    if not os.access(self._outputDirectory, os.W_OK):
+                            self.addError("Reposcanner does not have permissions to write to the output directory \
+                            {outputDirectory}.".format(outputDirectory=self._outputDirectory))
+                            
+            except Exception as exception:
+                    self.addError("Encountered an unexpected exception \
+                    while parsing output directory \
+                    {outputDirectory}: {exception}".format(outputDirectory=self._outputDirectory,
+                    exception=exception))
+                    
+        def getOutputDirectory(self):
+                return self._outputDirectory
+
+        @classmethod
+        def isRoutineRequestType(cls):
+                return True
+
+        @classmethod
+        def isExternalCommandLineToolRequestType(cls):
+                return True
+            
+
+class RepositoryRoutineRequestModel(BaseRequestModel):
+        """
+        The base class for all repository-mining routine request models. The frontend is responsible for phrasing their requests in the
+        form of a request model which repository-mining routines understand.
         """
 
         def __init__(self,repositoryURL,outputDirectory):
@@ -155,8 +194,12 @@ class RoutineRequestModel(BaseRequestModel):
         def isRoutineRequestType(cls):
                 return True
                 
+        @classmethod
+        def isExternalCommandLineToolRequestType(cls):
+                return False
+                
 
-class OnlineRoutineRequest(RoutineRequestModel):
+class OnlineRoutineRequest(RepositoryRoutineRequestModel):
         """
         The base class for requests to routines that use an online API to compute results. 
         Request classes for OnlineRepositoryRoutine should inherit from this class.
@@ -206,7 +249,7 @@ class OnlineRoutineRequest(RoutineRequestModel):
         def getCredentials(self):
                 return self._credentials
                 
-class OfflineRoutineRequest(RoutineRequestModel):
+class OfflineRoutineRequest(RepositoryRoutineRequestModel):
         """
         The base class for requests to routines that operate on an offline clone to compute results. 
         Request classes for OfflineRepositoryRoutine should inherit from this class.

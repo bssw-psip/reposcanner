@@ -39,29 +39,53 @@ def test_AnalysisRequestModel_defaultDataCriteriaAcceptsLiterallyEverything():
         assert(analysisRequest.criteriaFunction("garbage") is True)
         assert(analysisRequest.criteriaFunction(42) is True)
         assert(analysisRequest.criteriaFunction(analysisRequest) is True)
+        
+def test_ExternalCommandLineToolRoutineRequest_isDirectlyConstructible():
+        requests.ExternalCommandLineToolRoutineRequest(outputDirectory="./")
 
-def test_RoutineRequestModel_isDirectlyConstructible():
-        requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+def test_ExternalCommandLineToolRoutineRequest_isARoutineRequestType():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequest(outputDirectory="./")
+        assert(not commandLineToolRequest.isAnalysisRequestType())
+        assert(commandLineToolRequest.isRoutineRequestType())
 
-def test_AnalysisRequestModel_isARoutineRequestType():
-        routineRequest = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
-        assert(not routineRequest.isAnalysisRequestType())
-        assert(routineRequest.isRoutineRequestType())
-
-def test_RoutineRequestModel_hasNoErrorsForValidInput():
-        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
-        assert(not request.hasErrors())
-
-def test_RoutineRequestModel_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
+def test_ExternalCommandLineToolRoutineRequest_hasNoErrorsForValidInput():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequest(outputDirectory="./")
+        assert(not commandLineToolRequest.hasErrors())
+        
+def test_ExternalCommandLineToolRoutineRequest_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
         #This test is specific to Mac and Linux environments, so we'll skip it when running
 		#this test in a Windows environment.
         if platform.system() == 'Windows':
             return True
-        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="/")
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequest(outputDirectory="/")
+        assert(commandLineToolRequest.hasErrors())
+        
+def test_ExternalCommandLineToolRoutineRequest_canStoreOutputDirectory():
+        commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequest(outputDirectory="./")
+        assert(commandLineToolRequest.getOutputDirectory() == "./")
+
+def test_RepositoryRoutineRequestModel_isDirectlyConstructible():
+        requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+
+def test_AnalysisRequestModel_isARoutineRequestType():
+        routineRequest = requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        assert(not routineRequest.isAnalysisRequestType())
+        assert(routineRequest.isRoutineRequestType())
+
+def test_RepositoryRoutineRequestModel_hasNoErrorsForValidInput():
+        request = requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+        assert(not request.hasErrors())
+
+def test_RepositoryRoutineRequestModel_passingOutputDirectoryThatCannotBeWrittenToIsAnError():
+        #This test is specific to Mac and Linux environments, so we'll skip it when running
+		#this test in a Windows environment.
+        if platform.system() == 'Windows':
+            return True
+        request = requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="/")
         assert(request.hasErrors())
 
-def test_RoutineRequestModel_canGenerateAndStoreRepositoryLocation():
-        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+def test_RepositoryRoutineRequestModel_canGenerateAndStoreRepositoryLocation():
+        request = requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         location = request.getRepositoryLocation()
         assert(location != None)
         assert(location.isRecognizable())
@@ -69,25 +93,25 @@ def test_RoutineRequestModel_canGenerateAndStoreRepositoryLocation():
         assert(location.getRepositoryName() == "repo")
 
 
-def test_RoutineRequestModel_badURLMeansError():
-        requestA = requests.RoutineRequestModel(repositoryURL="garbage",outputDirectory="./")
+def test_RepositoryRoutineRequestModel_badURLMeansError():
+        requestA = requests.RepositoryRoutineRequestModel(repositoryURL="garbage",outputDirectory="./")
         assert(requestA.hasErrors())
 
-        requestB = requests.RoutineRequestModel(repositoryURL="https://unrecognizedhost.org/owner/repo",outputDirectory="./")
+        requestB = requests.RepositoryRoutineRequestModel(repositoryURL="https://unrecognizedhost.org/owner/repo",outputDirectory="./")
         assert(requestB.hasErrors())
 
-        requestC = requests.RoutineRequestModel(repositoryURL=None,outputDirectory="./")
+        requestC = requests.RepositoryRoutineRequestModel(repositoryURL=None,outputDirectory="./")
         assert(requestC.hasErrors())
 
-def test_RoutineRequestModel_canStoreOutputDirectory():
-        request = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
+def test_RepositoryRoutineRequestModel_canStoreOutputDirectory():
+        request = requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./")
         assert(request.getOutputDirectory() == "./")
 
-def test_RoutineRequestModel_badOutputDirectoryMeansError():
-        requestA = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory=None)
+def test_RepositoryRoutineRequestModel_badOutputDirectoryMeansError():
+        requestA = requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory=None)
         assert(requestA.hasErrors())
 
-        requestB = requests.RoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./nonexistent/directory/")
+        requestB = requests.RepositoryRoutineRequestModel(repositoryURL="https://github.com/owner/repo",outputDirectory="./nonexistent/directory/")
         assert(requestB.hasErrors())
 
 def test_OnlineRoutineRequest_isDirectlyConstructible():

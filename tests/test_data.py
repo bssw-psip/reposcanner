@@ -193,7 +193,33 @@ def test_YAMLData_canStoreDataToDisk(tmpdir):
         dataDictB = dataEntityB.getData()
         assert('ADTR02' in dataDictB)
         assert('name' in dataDictB['ADTR02'] and dataDictB['ADTR02']['name'] == 'IDEAS Productivity')
-        assert('urls' in dataDictB['ADTR02'] and len(dataDictB['ADTR02']['urls']) == 3)       
+        assert('urls' in dataDictB['ADTR02'] and len(dataDictB['ADTR02']['urls']) == 3)
+        
+
+def test_YAMLData_canSupportNestedParametersForMiningRoutineConfigurations(tmpdir):
+        sub = tmpdir.mkdir("datatest")
+        filePath = str(sub.join("config.yaml"))
+        
+        with open(filePath, 'w') as outfile:
+                contents = """
+                routines:
+                    - ContributorAccountListRoutine
+                    - ExternalToolRoutine:
+                        toolConfig: toolConfigFile.config
+                        readonly: True
+                        verbose: False
+                    - AnotherRepositoryMiningRoutine
+                """
+                outfile.write(contents)
+        dataEntity = data.YAMLData(filePath)
+        dataEntity.readFromFile()
+        dataDict = dataEntity.getData()
+        assert('routines' in dataDict)
+        assert('ContributorAccountListRoutine' in dataDict['routines'])
+        assert('ExternalToolRoutine' in dataDict['routines'][1])
+        assert(dataDict['routines'][1]['ExternalToolRoutine']['toolConfig'] == 'toolConfigFile.config')
+        assert(dataDict['routines'][1]['ExternalToolRoutine']['readonly'] == True)
+        assert(dataDict['routines'][1]['ExternalToolRoutine']['verbose'] == False)
         
         
 def test_DataEntityStore_isDirectlyConstructible():

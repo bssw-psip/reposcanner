@@ -5,10 +5,11 @@ import pygit2
 from reposcanner.git import GitEntityFactory,RepositoryLocation
 from reposcanner.response import ResponseFactory
 
-class RepositoryRoutine(ABC):
-        """The abstract base class for all repository analysis routines. Methods cover
-        the execution of mining routines and exporting of data."""
-
+class DataMiningRoutine(ABC):
+        """
+        The abstract base class for all data mining routines.
+        """
+        
         def canHandleRequest(self,request):
                 """
                 Returns True if the routine is capable of handling the request (i.e. the
@@ -29,31 +30,112 @@ class RepositoryRoutine(ABC):
         @abstractmethod
         def execute(self,request):
                 """
-                Contains the code for interacting with the GitHub repository via PyGitHub.
-                Whatever data this method returns will be passed to export methods.
+                Contains the code for executing the data mining operations.
 
                 Parameters:
                         request (@input): A RequestModel object that encapsulates all the information needed
                         to run the routine.
                 """
                 pass
-
+        
         def run(self,request):
                 """
-                Encodes the workflow of a RepositoryRoutine object. The client only needs
+                Encodes the workflow of a DataMiningRoutine object. The client only needs
                 to run this method in order to get results.
                 """
                 response = self.execute(request)
                 return response
+                
+        def hasConfigurationParameters(self):
+            """
+            Checks whether the routine object was passed configuration parameters,
+            whether valid or not. Routines are not required to do anything with parameters
+            that are passed to them via the config file.
+            """
+            try:
+                parameters = self.configParameters
+                return parameters is not None
+            except:
+                return False
+            
+        def getConfigurationParameters(self):
+            """
+            Returns the configuration parameters assigned to the routine.
+            """
+            try:
+                parameters = self.configParameters
+                return parameters
+            except:
+                return None
+        
+        
+        def setConfigurationParameters(self,configParameters):
+            """
+            Assigns configuration parameters to a newly created routine.
+            """
+            self.configParameters = configParameters
 
+class RepositoryRoutine(DataMiningRoutine):
+        """The abstract base class for all software repository analysis routines."""
+        pass
+                
+class ExternalCommandLineToolRoutine(DataMiningRoutine):
+        """
+        Abstract base class for routines that call other command-line tools to mine data.
+        Having calls to external tools handled within Reposcanner allows us to provide consistent
+        provenance for their use.
+        """
+            
+        @abstractmethod
+        def isExternalToolAvailable(self):
+                """
+                Checks to see whether the tool can be called on the command-line.
+                This method should return True if so, False if not.
+                """
+                pass
+                
+        def commandLineToolImplementation(self,request):
+                """
+                This method should contain an implementation that calls the command-line tool
+                and handles any information it gets back from that tool.
+                By default, it'll return a failure response. Subclasses are responsible for
+                overriding this method.
+
+                request: An ExternalCommandLineToolRoutineRequest object.
+                """
+                responseFactory = ResponseFactory()
+                return responseFactory.createFailureResponse(
+                        message="This routine has no implementation available\
+                        to call the command-line tool.")
+                    
+        def execute(self,request):
+                responseFactory = ResponseFactory()
+                if not self.canHandleRequest(request):
+                        return responseFactory.createFailureResponse(
+                        message="The routine was passed a request of the wrong type.")
+                elif request.hasErrors():
+                        return responseFactory.createFailureResponse(
+                        message="The request had errors in it and cannot be processed.",
+                        attachments=request.getErrors())
+                elif not self.isExternalToolAvailable():
+                        return responseFactory.createFailureResponse(
+                        message="The command-line tool required by this routine is not available or\
+                        is otherwise unable to be called.")
+                else:
+                        try:
+                            return self.commandLineToolImplementation(request)
+                        except Exception as e:
+                            return responseFactory.createFailureResponse(
+                                message="ExternalCommandLineToolRoutine Encountered an unexpected exception ({etype}).".format(etype=type(e)),
+                                attachments=[e])
+                        
+                                  
+        
 
 class OfflineRepositoryRoutine(RepositoryRoutine):
         """
         Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
         """
-        def __init__(self):
-                pass
-
 
         def execute(self,request):
                 """
@@ -96,7 +178,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
 
         def offlineImplementation(self,request,session):
                 """
-                This method should contain the GitHub API implementation of the routine.
+                This method should contain the PyGit2-based implementation of the routine.
                 By default, it'll return a failure response. Subclasses are responsible for
                 overriding this method.
 
@@ -221,3 +303,6 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                 return responseFactory.createFailureResponse(
                         message="This routine has no implementation available \
                         to handle a Bitbucket repository.")
+                        
+
+

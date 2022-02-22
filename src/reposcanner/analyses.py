@@ -4,7 +4,6 @@ class DataAnalysis(ABC):
         """The abstract base class for all data analyses. Methods cover
         the execution of analyses, rendering, and exporting of data."""
 
-
         def canHandleRequest(self,request):
                 """
                 Returns True if the routine is capable of handling the request (i.e. the
@@ -42,3 +41,32 @@ class DataAnalysis(ABC):
                 """
                 response = self.execute(request)
                 return response
+                
+        def hasConfigurationParameters(self):
+            """
+            Checks whether the analysis object was passed configuration parameters,
+            whether valid or not. Routines are not required to do anything with parameters
+            that are passed to them via the config file.
+            """
+            try:
+                parameters = self.configParameters
+                return parameters is not None
+            except:
+                return False
+            
+        def getConfigurationParameters(self):
+            """
+            Returns the configuration parameters assigned to the analysis.
+            """
+            try:
+                parameters = self.configParameters
+                return parameters
+            except:
+                return None
+        
+        
+        def setConfigurationParameters(self,configParameters):
+            """
+            Assigns configuration parameters to a newly created analysis.
+            """
+            self.configParameters = configParameters
