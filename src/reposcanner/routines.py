@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import urllib3
 import os
 import pygit2
 from reposcanner.git import GitEntityFactory, RepositoryLocation

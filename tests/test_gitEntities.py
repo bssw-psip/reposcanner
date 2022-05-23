@@ -455,7 +455,7 @@ def test_bitbucketAPISessionCreator_isConstructibleByFactory():
 def test_BitbucketAPISessionCreator_isDirectlyConstructible():
     bitbucketCreator = gitEntities.BitbucketAPISessionCreator()
 
-# TODO add test_GitlabAPISessionCreator_canHandleAppropriateRepository and
+# TODO: add test_GitlabAPISessionCreator_canHandleAppropriateRepository and
 # test_GitlabAPISessionCreator_rejectsInappropriateRepositories
 # NEED: create bitbucket account and empty repo to test on
 
