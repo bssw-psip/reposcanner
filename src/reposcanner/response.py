@@ -15,6 +15,7 @@ class ResponseFactory:
     """
     A factory for churning out response model objects. Classes should use this factory to construct responses.
     """
+
     def createSuccessResponse(self, message=None, attachments=None):
         return ResponseModel(status=ResponseStatus.SUCCESS,
                              message=message,
@@ -32,6 +33,7 @@ class ResponseModel:
     opposed to providing entities directly. This allows the internal representation of our data to vary independently
     of how that data is presented to a client.
     """
+
     def __init__(self, status, message=None, attachments=None):
         """
         Parameters
@@ -49,18 +51,19 @@ class ResponseModel:
         self._status = status
         self._message = message
         self._attachments = []
+
         def isIterable(obj):
-                try:
-                        iter(obj)
-                        return True
-                except TypeError as e:
-                        return False
+            try:
+                iter(obj)
+                return True
+            except TypeError as e:
+                return False
         if attachments is not None:
-                if isIterable(attachments) and not isinstance(attachments,str):
-                        for attachment in attachments:
-                                self._attachments.append(attachment)
-                else:
-                        self._attachments.append(attachments)
+            if isIterable(attachments) and not isinstance(attachments, str):
+                for attachment in attachments:
+                    self._attachments.append(attachment)
+            else:
+                self._attachments.append(attachments)
 
     def hasMessage(self):
         return self._message is not None
@@ -73,10 +76,10 @@ class ResponseModel:
 
     def getAttachments(self):
         return self._attachments
-        
-    def addAttachment(self,attachment):
+
+    def addAttachment(self, attachment):
         self._attachments.append(attachment)
-        
+
     def wasSuccessful(self):
         if self._status == ResponseStatus.SUCCESS:
             return True
