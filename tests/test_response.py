@@ -31,7 +31,7 @@ def test_ResponseModel_HasNoAttachmentsByDefault():
     status = None
     response = responseapi.ResponseModel(status)
     assert (response.hasAttachments() is False)
-    assert (len(response.getAttachments()) == 0 )
+    assert (len(response.getAttachments()) == 0)
 
 
 def test_ResponseModel_CanStoreAttachments():
