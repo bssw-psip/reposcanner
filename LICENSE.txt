@@ -1,7 +1,9 @@
 Acknowledgement
 ===============
 
-The development of Reposcanner was supported by the Exascale Computing Project (17-SC-20-SC), a collaborative effort of the U.S. Department of Energy Office of Science and the National Nuclear Security Administration.
+The development of Reposcanner was supported by the Exascale Computing Project (17-SC-20-SC),
+a collaborative effort of the U.S. Department of Energy Office of Science and the National
+Nuclear Security Administration.
 
 License Notice
 ===============
