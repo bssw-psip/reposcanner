@@ -1,0 +1,7 @@
+WorkflowCollection:
+  name: A collection of scientific workflows that we will analyze.
+  urls:
+    - https://github.com/nf-core/rnaseq
+    - https://github.com/nf-core/sarek
+    - https://github.com/nf-core/chipseq
+    - https://github.com/nf-core/mag

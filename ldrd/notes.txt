@@ -1,0 +1,7 @@
+reposcanner \
+--credentials ldrd/inputs/credentials.yml \
+--config ldrd/inputs/config.yml \
+--repositories ldrd/inputs/repositories.yml \
+--workspaceDirectory ldrd/workspace \
+--outputDirectory ldrd/outputs \
+--notebookOutputPath ldrd/outputs

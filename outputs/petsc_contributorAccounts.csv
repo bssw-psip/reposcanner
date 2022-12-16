@@ -1,0 +1,212 @@
+#executionid 34dadcca763e11ed955391c5889290a6
+#creator ContributorAccountListRoutine
+#datecreated 2022-12-07
+#projectid None
+#projectname None
+#url https://github.com/petsc/petsc
+#names Login Name;Actual Name;Email(s)
+#datatypes str;str;str
+BarrySmith,Barry Smith,
+balay,Satish Balay,
+knepley,Matthew Knepley,knepley@gmail.com
+jedbrown,Jed Brown,jed@jedbrown.org
+hzhang,Hong Zhang,hzhang@mcs.anl.gov
+curfman,Lois Curfman McInnes,curfman@mcs.anl.gov
+stefanozampini,Stefano Zampini,
+dalcinl,Lisandro Dalcin,dalcinl@gmail.com
+psanan,Patrick Sanan,
+karlrupp,Karl Rupp,
+haplav,Vaclav Hapla,vaclav.hapla@erdw.ethz.ch
+prbrune,Peter Brune,prbrune@gmail.com
+sarich,Jason Sarich,sarich@mcs.anl.gov
+jczhang07,Junchao Zhang,junchao.zhang@gmail.com
+caidao22,Hong Zhang,hongzhang@anl.gov
+prj-,Pierre Jolivet,
+karpeev,Dmitry Karpeyev,
+rtmills,Richard Tran Mills,rtmills@anl.gov
+Jacobfaib,Jacob Faibussowitsch,jacob.fai@gmail.com
+vijaysm,Vijay M,vijay.m@gmail.com
+joseeroman,Jose E. Roman,
+dmay23,,
+fdkong,Fande Kong,fdkong.jd@gmail.com
+victorminden,Victor Minden,victorminden@gmail.com
+VictorEijkhout,Victor Eijkhout,eijkhout@tacc.utexas.edu
+tisaac,,
+denera,Alp Dener,alpd@graphcore.ai
+kruger,Scott Kruger,kruger@txcorp.com
+wence-,Lawrence Mitchell,wence@gmx.li
+mlange05,Michael Lange,michael.lange@ecmwf.int
+jwallwork23,Joe Wallwork,
+SurtaiHan,,
+tmunson,,
+emconsta,,emconsta@mcs.anl.gov
+jkruzik,Jakub Kruzik,jakub.kruzik@vsb.cz
+MarDiehl,Martin Diehl,martin.diehl@kuleuven.be
+DynamicSSSP,,
+bourdin,Blaise Bourdin,bourdin@mcmaster.ca
+florianwechsung,Florian Wechsung,
+xuanjzhou,Xuan Zhou,
+SanderA,Sander Arens,sanderarens@gmail.com
+baagaard-usgs,Brad Aagaard,
+ksagiyam,,
+x-4321,x-4321,
+pghysels,Pieter Ghysels,pghysels@lbl.gov
+arcowie,Albert Cowie,
+ghammond86,Glenn Hammond,
+jpusztay,,
+dmaldona,Adrian Maldonado,
+DrXiangHuang,,
+alexfikl,Alex Fikl,alexfikl@gmail.com
+sozmen,Semih Özmen,semihozmen@gmail.com
+ecoon,Ethan Coon,
+rbeucher,Romain Beucher,romain.beucher@anu.edu.au
+kaushikcfd,Kaushik Kulkarni,
+tkonolige,Tristan Konolige,
+hmmorgan,,
+girving,Geoffrey Irving,irving@naml.us
+gouarin,Loic Gouarin,loic.gouarin@gmail.com
+aterrel,Andy R. Terrel,andy.terrel@gmail.com
+acolinisi,,
+AlexisMarb,,
+bueler,Ed Bueler,elbueler@alaska.edu
+seanfarley,Sean Farley,sean@farley.io
+vlc1,Vincent Le Chenadec,vincent.le-chenadec@univ-eiffel.fr
+s-sajid-ali,Sajid Ali,sajidsyed2021@u.northwestern.edu
+abhyshr,Shri,shri@pnnl.gov
+ranocha,Hendrik Ranocha,
+drwells,David Wells,
+eaulisa,Eugenio Aulisa,eugenio.aulisa@ttu.edu
+luzhanghpp,,
+aidanhamilton,Aidan Hamilton,
+eikehmueller,Eike Hermann Mueller,
+IvanYashchuk,Ivan Yashchuk,
+dham,David A. Ham,david.ham@imperial.ac.uk
+celdred,,
+nocollier,,
+tmijieux,Thomas Mijieux,
+liliazk,,
+francesco-ballarin,Francesco Ballarin,
+jeremylt,Jeremy L Thompson,jeremy@jeremylt.org
+mpecha,Marek Pecha,
+taupalosaurus,Nicolas Barral,
+ahmadia,Aron Ahmadia,aron@ahmadia.net
+anriseth,Asbjørn Nilsen Riseth,anriseth@gmail.com
+cmg43,,
+connorjward,Connor Ward,c.ward20@imperial.ac.uk
+QuLogic,Elliott Sales de Andrade,quantum.analyst@gmail.com
+garth-wells,Garth N. Wells,
+irinasok,Irina Sokolova,irina.sokolova@intel.com
+lrtfm,Yang Zongze,yangzongze@gmail.com
+acroucher,Adrian Croucher,
+lindsayad,Alex Lindsay,alexlindsay239@gmail.com
+gbetrie,,
+gdavidoff,,
+JDBetteridge,Jack Betteridge,
+placasse,Patrick Lacasse,
+PierreBdR,Pierre Barbier de Reuille,
+schuang,Shao-Ching Huang,
+mmcgurn,Matt McGurn,
+David-Wobrock,David Wobrock,
+pbrubeck,Pablo Brubeck,
+funsim,Simon Wolfgang Funke,simon.funke@gmail.com
+tadeu,Tadeu Manoel,
+adenchfi,,
+hansolsuh,,
+nemethedr,,
+alejandrootero,,
+adamqc,Ce Qin,qince168@gmail.com
+guyer,Jonathan Guyer,guyer@nist.gov
+oanaoana,,
+ReubenHill,Reuben W. Nixon-Hill,
+tbridel,,
+danofinn,,
+suyashtn,Suyash Tandon,
+valeriabarra,Valeria Barra,
+Kooky089,Volker Jacht,
+arthursoprana,Arthur Soprana,
+mesgarnejad,Ata Mesgarnejad,
+bmwiedemann,Bernhard M. Wiedemann,githubbmw2020@lsmod.de
+bwhitchurch,,
+cnkin,,
+cianwilson,Cian Wilson,
+derekmikesell,,
+deleeke,Elijah,
+LocutusOfBorg,Gianfranco Costamagna,
+GregDMeyer,Greg Meyer,
+ianwilliamson,Ian Williamson,iwill@google.com
+poulson,Jack Poulson,jack@hodgestar.com
+blechta,Jan Blechta,
+jmlarson1,Jeffrey Larson,jmlarson@anl.gov
+johnfettig,John Fettig,
+juhaj,Juha Jäykkä,
+jychang48,Justin Chang,
+manasi-t24,,
+negf,Marius,
+mwoehlke-kitware,Matthew Woehlke,matthew.woehlke@kitware.com
+miklos1,Miklós Homolya,
+minrk,Min RK,
+mirzadeh,Mohammad Mirzadeh,mirzadeh@mit.edu
+giordano,Mosè Giordano,
+tj-sun,Tianjiao Sun,
+UZerbinati,Umberto Zerbinati,umberto.zerbinati@maths.ox.ac.uk
+wenjundeng,Wenjun Deng,
+wgropp,William Gropp,
+AdelekeBankole,Adeleke O. Bankole,
+khazali,Ali Reza Khaz'ali,arkhazali@iut.ac.ir
+spott,Andrew Spott,
+basvanthof,,
+cwsmith,Cameron Smith,
+uphoffc,Carsten Uphoff,
+cjhurani,,
+marekdam,Damian Marek,
+danshapero,Daniel Shapero,shapero.daniel@gmail.com
+nathawani,Darsh,
+eschnett,Erik Schnetter,
+fspacheco,Fernando S. Pacheco,
+fsimonis,Frédéric Simonis,
+goxberry,Geoffrey Oxberry,goxberry@gmail.com
+grzegorzmazur,Grzegorz Mazur,
+hy144328,Hans Yu,
+Hofer-Julian,,
+jrwrigh,James Wright,james@jameswright.xyz
+jrt54,Jeremy Tillay,jrt5493@gmail.com
+johannrudi,Johann Rudi,
+jonathanlambrechts,Jonathan Lambrechts,jonathan.lambrechts@uclouvain.be
+Jorge-C,Jorge Cañardo Alastuey,
+jorgensd,Jørgen Schartum Dokken,dokken92@gmail.com
+kerrykey,Kerry Key,
+Kgawar,,
+felker,Kyle Gerard Felker,
+LeilaGhaffari,Leila Ghaffari,
+mlohry,,
+mliertzer,,
+rietmann,Max Rietmann,
+michakraus,Michael Kraus,michael.kraus@ipp.mpg.de
+Marriaga,,
+salazardetroya,Miguel Salazar de Troya,
+MagunRa,Moritz Huck,
+keceli,Murat Keçeli,keceli@gmail.com
+nabw,Nico Barnafi,
+olivecha,,
+pbartholomew08,Paul Bartholomew,p.bartholomew@epcc.ed.ac.uk
+ZedThree,Peter Hill,peter.hill@york.ac.uk
+pierreXVI,,
+samtaney,,
+reykoki,Rey,
+rj-jesus,Ricardo Jesus,
+roliveira,Rodolfo Oliveira,
+ScottMacLachlan,,
+sebastiangrimberg,Sebastian Grimberg,
+stevengj,Steven G. Johnson,
+thbtppl,Thibaut Appel,t.appel17@imperial.ac.uk
+thisch,Thomas Hisch,
+tom-klotz,Tom Klotz,
+tianyikillua,Tianyi Li,
+tchen01,Tyler Chen,
+bangerth,Wolfgang Bangerth,bangerth@colostate.edu
+XL64,Xavier Lacoste,
+xmjiao,Xiangmin Jiao,
+zhaog6,Gang Zhao,
+AbsCode,Abhishek Subramaniam,
+franklin5,,
+tlanyan,tlanyan,tlanyan@hotmail.com

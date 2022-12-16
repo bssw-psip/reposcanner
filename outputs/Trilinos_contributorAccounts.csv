@@ -1,0 +1,226 @@
+#executionid 34dadcca763e11ed955391c5889290a6
+#creator ContributorAccountListRoutine
+#datecreated 2022-12-07
+#projectid None
+#projectname None
+#url https://github.com/trilinos/Trilinos
+#names Login Name;Actual Name;Email(s)
+#datatypes str;str;str
+bartlettroscoe,Roscoe A. Bartlett,rabartl@sandia.gov
+mhoemmen,Mark Hoemmen,
+kddevin,K Devine,
+jhux2,Jonathan Hu,
+csiefer2,Chris Siefert,
+trilinos-autotester,,
+etphipp,Eric Phipps,
+wfspotz,Bill Spotz,wfspotz@me.com
+gdsjaar,Greg Sjaardema,
+rppawlo,Roger Pawlowski,
+jwillenbring,James Willenbring,
+eric-c-cyr,Eric C. Cyr,
+aprokop,Andrey Prokopenko,
+hkthorn,Heidi Thornquist,hkthorn@sandia.gov
+dpkouri,Drew Kouri,
+alanw0,Alan Williams,
+kyungjoo-kim,,
+egboman,Erik Boman,
+rstumin,Ray S. Tuminaro,rstumin@sandia.gov
+cgcgcg,Christian Glusa,
+tawiesn,Tobias Wiesner,
+maherou,Mike Heroux,maherou@gmail.com
+hcedwar,Carter Edwards,hedwards@nvidia.com
+tscoffe,,
+vjleung,,
+crtrott,Christian Trott,
+skennon10,Stephen Kennon,
+klnusbaum,Kurtis,
+gregvw,Greg von Winckel,
+dridzal,Denis Ridzal,
+tkordenbrock,Todd Kordenbrock,
+rhoope,,
+brian-kelley,,
+tgkolda,Tammy Kolda,tammy.kolda@mathsci.ai
+ndellingwood,Nathan Ellingwood,
+srajama1,Siva Rajamanickam,
+mayrmt,Matthias Mayr,
+lucbv,Luc Berger,
+ccober6,Curtis Ober,
+MicheldeMessieres,Michel de Messieres,
+jgfouca,James Foucar,jgfouca@sandia.gov
+ibaned,Dan Ibanez,
+mndevec,Mehmet Deveci,
+ikalash,Irina K. Tezaur,
+agsalin,Andy Salinger,agsalin@sandia.gov
+nschloe,Nico Schlömer,nico.schloemer@gmail.com
+mperego,,
+lxmota,Alejandro Mota,
+jdbooth,jdbooth,
+e10harvey,Evan Harvey,
+iyamazaki,iyamazaki,
+prwolfe,Paul Wolfenbarger,
+tasmith4,Timothy Smith,
+vqd8a,Vinh Dang,vqdang@sandia.gov
+nate945,,
+bddavid,,
+kmorris3,,
+PGXavier,Patrick G. Xavier,
+ZUUL42,Henry,
+jmgate,Jason M. Gates,
+mmwolf,,
+karapeterson,Kara Peterson,
+kliegeois,Kim Liegeois,kimliegeois@ymail.com
+GeoffDanielson,,
+djglaze,,
+tokusanya,,
+fryeguy52,Joe,
+ambrad,Andrew M. Bradley,
+dmhensi,,
+raoldfi,,
+egphill,Edward Phillips,egphill@sandia.gov
+pohm01,Peter Ohm,
+tjfulle,Tim Fuller,
+CamelliaDPG,Nate Roberts,
+pbboche,,
+crdohrm,,
+roeverf,,
+seheracer,Seher Acer,seheracer@gmail.com
+overfelt,James Overfelt,overfelt@alumni.utexas.net
+vehowle,V. E. Howle,
+jennloe,Jennifer Loe,jloe@sandia.gov
+JacobDomagala,Jacob Domagala,domagala.jacob@gmail.com
+dmdunla,Danny Dunlavy,dmdunla@sandia.gov
+jjellio,James Elliott,
+gahansen,Glen Hansen,hansen@strallc.com
+mlparks,Michael Parks,mlparks@sandia.gov
+dlrdave,David Cole,
+ChrisHochmuth,,
+atoth1,,
+avdelor,,
+ejguill,,
+kuberry,Paul Kuberry,
+ctvaugh,,
+jvo1012,Johnathan Vo,
+GrahamBenHarper,Graham Harper,
+bradking,Brad King,
+seamill,Sean Miller,
+billhoffman,Bill Hoffman,bill.hoffman@kitware.com
+masterleinad,Daniel Arndt,
+restrin,,
+drnobleabq,,
+jdkotul,,
+mbenlioglu,M. Mucahid Benlioglu,m.mucahidbenlioglu@gmail.com
+mwglass,,
+pyt-viper,Pyt Viper,
+vbrunini,Victor Brunini,
+jclause,,
+DrBooom,Chris Luchini,cbluchi@sandia.gov
+DavidMDay,David M. Day,
+jeforster,Jeffrey Forster,jforster2011@gmail.com
+johelli,J. Austin Ellis,
+suzeygao,,
+tshead2,Timothy M. Shead,tshead@sandia.gov
+ibogle,Ian Bogle,
+sdbond,Stephen Bond,
+bricar,,
+dmvigi,,
+jkausha,,
+bartvbw,,
+florianwechsung,Florian Wechsung,
+maxfirmbach,Max Firmbach,
+krcb,Kris Beckwith,
+bartgol,Luca Bertagna,
+tjotaha,,
+bathmatt,,
+briadam,Brian M. Adams,
+nmhamster,Si Hammond,
+lisaclaus,Lisa,
+tcfisher,Travis C. Fisher,
+zachmullen,Zach Mullen,
+mperrinel,,
+reuterb,,
+jtostie,Jake Ostien,jtostie@sandia.gov
+jewatkins,Jerry Watkins,watkins2@alumni.stanford.edu
+mrtupek,,
+msebeida,Mohamed Ebeida,msebeida@gmail.com
+dsjense,,
+acwantu,Andy Wantuch,
+certik,Ondřej Čertík,ondrej@certik.us
+dsunder,Dan Sunderland,
+key6oardWarrior,,
+tcclevenger,Thomas Conrad Clevenger,tccleve@sandia.gov
+DaveBeCoding,,
+ndfabia,,
+searhein,Alexander Heinlein,a.heinlein@tudelft.nl
+jfike,,
+jbcarleton,Jimmy Carleton,
+romintomasetti,Tomasetti Romin,romin.tomasetti@gmail.com
+sebrowne,Samuel Browne,
+kevincopps,Kevin Copps,
+japlews,,
+crockatt,,
+rrdrake,Rich,
+spdomin,Stefan P. Domino,
+keitat,Keita Teranishi,
+PhilMiller,Phil Miller,phil.miller@intensecomputing.com
+sethrj,Seth R. Johnson,johnsonsr@ornl.gov
+sphamil,Steven Hamilton,
+gslota,George M Slota,
+thearusable,Arkadiusz Szczepkowicz,arek.szczepkowicz@gmail.com
+Keno,Keno Fischer,
+maartenarnst,Maarten Arnst,
+Mark-E-Hamilton,Mark E. Hamilton,
+smukher,,
+swbova,,
+Sbte,Sven Baars,svenb.linux@gmail.com
+srbdev,sb,
+edlove,,
+brettSneedSandia,,
+cwsmith,Cameron Smith,
+glhenni,Gary Hennigan,
+rckirby,Robert Kirby,robert.c.kirby@gmail.com
+asteyer,,
+hillyuan,,
+jrobcary,,
+oceandlr,,
+brettclarkgithub,,
+jfsheph,,
+jesusbonilla,Jesús Bonilla,
+jrobbin,Joshua Robbins,jrobbin@sandia.gov
+jmlapre,,
+kruger,Scott Kruger,kruger@txcorp.com
+seanofthemillers,Sean Miller,
+trb413,,
+shkevin,Kevin Cox,shk3vin@yahoo.com
+TimWildey,,
+BarrySmith,Barry Smith,
+cwpearson,Carl Pearson,
+cedricchevalier19,Cédric Chevalier,cedric.chevalier@cea.fr
+techxdave,David Alexander,
+andrsd,David Andrs,
+dc-snl,,
+esaule,Erik Saule,
+mattlstaten,,
+msebeidasandia,,
+ramanan,,
+rblehou,,
+wrquadr,,
+rpshaw,,
+sconde,Sidafa Conde,sconde89@gmail.com
+sskutnik,Steve Skutnik,
+tmdelellis,Tom Evans,tmdelellis@gmail.com
+jwakley,,
+psakievich,,
+sjdeal,Sean Deal,
+chrisrichardson,Chris Richardson,
+chochmuth,Christian Hochmuth,
+DABH,David Hyde,
+dalg24,Damien L-G,
+drwells,David Wells,
+davydden,Denis Davydov,
+ecoon,Ethan Coon,
+agenbyte,John Kaushagen,
+lefebvre,Jordan P. Lefebvre,
+jgedicke,Joscha Gedicke,
+jbakosi,Jozsef Bakosi,
+jschueller,Julien Schueller,schueller@phimeca.com
+hmaarrfk,Mark Harfouche,mark.harfouche@gmail.com

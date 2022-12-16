@@ -4,6 +4,7 @@ import os
 import pygit2
 from reposcanner.git import GitEntityFactory, RepositoryLocation
 from reposcanner.response import ResponseFactory
+import traceback
 
 
 class DataMiningRoutine(ABC):
@@ -174,6 +175,8 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                 return self.offlineImplementation(request=request, session=session)
 
             except Exception as e:
+                print(e)
+                traceback.print_exc()
                 return responseFactory.createFailureResponse(
                     message="OfflineRepositoryRoutine Encountered an unexpected exception ({etype}).".format(
                         etype=type(e)), attachments=[e])
