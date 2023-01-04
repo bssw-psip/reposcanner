@@ -1,0 +1,19 @@
+#executionid 43402c5e8c7111ed9849dadd42cd31ff
+#creator ReproducibilityOfflineRoutine
+#datecreated 2023-01-04
+#projectid None
+#projectname None
+#url https://github.com/nf-core/mag
+#names 
+#datatypes 
+num nf-core modules,19
+nf-core Modules,/modules/maxbin2/main.nf,/modules/prokka/main.nf,/modules/pydamage/analyze/main.nf,/modules/pydamage/filter/main.nf,/modules/bcftools/consensus/main.nf,/modules/bcftools/view/main.nf,/modules/bcftools/index/main.nf,/modules/dastool/dastool/main.nf,/modules/dastool/fastatocontig2bin/main.nf,/modules/metabat2/jgisummarizebamcontigdepths/main.nf,/modules/metabat2/metabat2/main.nf,/modules/fastqc/main.nf,/modules/samtools/faidx/main.nf,/modules/adapterremoval/main.nf,/modules/custom/dumpsoftwareversions/main.nf,/modules/freebayes/main.nf,/modules/fastp/main.nf,/modules/prodigal/main.nf,/modules/gunzip/main.nf
+num local modules,44
+local Modules,kraken2.nf,combine_tsv.nf,busco_plot.nf,megahit.nf,gtdbtk_db_preparation.nf,filtlong.nf,quast.nf,spades.nf,nanolyse.nf,kraken2_db_preparation.nf,cat_db.nf,adjust_maxbin2_ext.nf,pool_single_reads.nf,nanoplot.nf,mag_depths_summary.nf,rename_postdastool.nf,bin_summary.nf,multiqc.nf,split_fasta.nf,busco_db_preparation.nf,busco.nf,mag_depths.nf,cat.nf,pool_paired_reads.nf,centrifuge.nf,cat_db_generate.nf,bowtie2_removal_align.nf,busco_summary.nf,krona_db.nf,mag_depths_plot.nf,quast_bins_summary.nf,centrifuge_db_preparation.nf,bowtie2_removal_build.nf,gtdbtk_classify.nf,busco_save_download.nf,porechop.nf,rename_predastool.nf,gtdbtk_summary.nf,bowtie2_assembly_align.nf,krona.nf,quast_bins.nf,bowtie2_assembly_build.nf,convert_depths.nf,spadeshybrid.nf
+num nf-core subworkflows,0
+nf-core Subworkflows
+num local subworkflows,7
+local Subworkflows,ancient_dna.nf,binning.nf,busco_qc.nf,input_check.nf,binning_preparation.nf,gtdbtk.nf,binning_refinement.nf
+num workflows,1
+Workflows,mag.nf
+mag.nf number of lines,655

@@ -1,0 +1,19 @@
+#executionid 43402c5e8c7111ed9849dadd42cd31ff
+#creator ReproducibilityOfflineRoutine
+#datecreated 2023-01-04
+#projectid None
+#projectname None
+#url https://github.com/nf-core/chipseq
+#names 
+#datatypes 
+num nf-core modules,32
+nf-core Modules,/modules/ucsc/bedgraphtobigwig/main.nf,/modules/picard/collectmultiplemetrics/main.nf,/modules/picard/markduplicates/main.nf,/modules/picard/mergesamfiles/main.nf,/modules/subread/featurecounts/main.nf,/modules/phantompeakqualtools/main.nf,/modules/bowtie2/align/main.nf,/modules/bowtie2/build/main.nf,/modules/untar/main.nf,/modules/homer/annotatepeaks/main.nf,/modules/deeptools/plotprofile/main.nf,/modules/deeptools/computematrix/main.nf,/modules/deeptools/plotheatmap/main.nf,/modules/deeptools/plotfingerprint/main.nf,/modules/trimgalore/main.nf,/modules/bwa/index/main.nf,/modules/bwa/mem/main.nf,/modules/preseq/lcextrap/main.nf,/modules/khmer/uniquekmers/main.nf,/modules/chromap/index/main.nf,/modules/chromap/chromap/main.nf,/modules/fastqc/main.nf,/modules/samtools/sort/main.nf,/modules/samtools/idxstats/main.nf,/modules/samtools/index/main.nf,/modules/samtools/flagstat/main.nf,/modules/samtools/stats/main.nf,/modules/custom/getchromsizes/main.nf,/modules/custom/dumpsoftwareversions/main.nf,/modules/macs2/callpeak/main.nf,/modules/gffread/main.nf,/modules/gunzip/main.nf
+num local modules,18
+local Modules,frip_score.nf,star_genomegenerate.nf,star_align.nf,multiqc_custom_phantompeakqualtools.nf,bedtools_genomecov.nf,multiqc.nf,genome_blacklist_regions.nf,plot_homer_annotatepeaks.nf,deseq2_qc.nf,multiqc_custom_peaks.nf,plot_macs2_qc.nf,annotate_boolean_peaks.nf,bam_filter.nf,macs2_consensus.nf,gtf2bed.nf,samplesheet_check.nf,igv.nf,bam_remove_orphans.nf
+num nf-core subworkflows,8
+nf-core Subworkflows,align_star.nf,align_bwa_mem.nf,align_chromap.nf,align_bowtie2.nf,bam_sort_samtools.nf,bam_stats_samtools.nf,fastqc_trimgalore.nf,mark_duplicates_picard.nf
+num local subworkflows,3
+local Subworkflows,input_check.nf,filter_bam_bamtools.nf,prepare_genome.nf
+num workflows,1
+Workflows,chipseq.nf
+chipseq.nf number of lines,661

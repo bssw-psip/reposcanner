@@ -166,9 +166,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                         return remote
                     session = pygit2.clone_repository(
                         request.getRepositoryLocation().getURL(),
-                        request.getCloneDirectory(),
-                        bare=True,
-                        remote=init_remote)
+                        request.getCloneDirectory())
                 else:
                     session = pygit2.Repository(request.getCloneDirectory())
 

@@ -1,9 +1,0 @@
-[core]
-	bare = true
-	repositoryformatversion = 0
-	filemode = true
-	ignorecase = true
-	precomposeunicode = true
-[remote "origin"]
-	url = https://github.com/nf-core/chipseq
-	fetch = +refs/heads/*:refs/heads/*
