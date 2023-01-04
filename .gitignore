@@ -56,3 +56,4 @@ MANIFEST
 
 # reporducibility ldrd
 ldrd/workspace/*
+ldrd/inputs/credentials.yml
