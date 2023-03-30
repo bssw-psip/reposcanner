@@ -12,6 +12,7 @@ import sys
 from tqdm import tqdm  # For progress checking in non-GUI mode.
 from abc import ABC, abstractmethod
 
+import asyncio
 
 class TaskFactory:
     def createManagerRepositoryRoutineTask(self, projectID, projectName, url, request):
@@ -45,7 +46,7 @@ class ManagerTask(ABC):
     def getResponse(self):
         return self._response
 
-    def process(self, agents, store, notebook):
+    async def process(self, agents, store, notebook):
         """
         Scan through a set of available routines or analyses and see if any can
         execute the request held by this task. If no routines or analyses can handle
@@ -381,20 +382,34 @@ class ReposcannerManager:
         """
         Plain-text execution mode.
         """
-        for task in tqdm(self._tasks):
-            task.process(
-                self._repositoryRoutines +
-                self._externalCommandLineToolRoutines +
-                self._analyses,
-                self._store,
-                self._notebook)
-            response = task.getResponse()
-            print(task.getResponseDescription())
-            if not task.getResponse().wasSuccessful():
+
+        sem = asyncio.Semaphore(6)
+
+        async def do_task(task): # -> List[str]
+            async with sem: # semaphore limits num of simultaneous tasks
+                await task.process(
+                    self._repositoryRoutines +
+                    self._externalCommandLineToolRoutines +
+                    self._analyses,
+                    self._store,
+                    self._notebook)
+                return task
+
+        async def exec_loop():
+            tasks = []
+            for task in self._tasks:
+                tasks.append(asyncio.create_task( do_task(task) ))
+            for c in tqdm(asyncio.as_completed(tasks)):
+                task = await c
+                response = task.getResponse()
+                print( task.getResponseDescription() )
+                if not task.getResponse().wasSuccessful():
+                    for attachment in response.getAttachments():
+                        print(attachment)
                 for attachment in response.getAttachments():
-                    print(attachment)
-            for attachment in response.getAttachments():
-                self._store.insert(attachment)
+                    self._store.insert(attachment)
+
+        asyncio.run(exec_loop())
 
     def executeWithGUI(self):
         """
@@ -510,11 +525,13 @@ class ReposcannerManager:
                 footer.addstr(1, 4, taskDescription, curses.A_BOLD)
                 footer.border(2)
                 footer.refresh()
-                currentTask.process(
-                    self._repositoryRoutines +
-                    self._analyses,
-                    self._store,
-                    self._notebook)
+                asyncio.run(
+                    currentTask.process(
+                        self._repositoryRoutines +
+                        self._analyses,
+                        self._store,
+                        self._notebook)
+                )
                 for attachment in currentTask.getResponse().getAttachments():
                     self._store.insert(attachment)
 
