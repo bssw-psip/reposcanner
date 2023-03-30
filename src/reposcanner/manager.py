@@ -401,7 +401,7 @@ class ReposcannerManager:
                 tasks.append(asyncio.create_task( do_task(task) ))
             for c in tqdm(asyncio.as_completed(tasks)):
                 task = await c
-                response = [task.getResponse()]
+                response = task.getResponse()
                 print( task.getResponseDescription() )
                 if not task.getResponse().wasSuccessful():
                     for attachment in response.getAttachments():
@@ -525,11 +525,13 @@ class ReposcannerManager:
                 footer.addstr(1, 4, taskDescription, curses.A_BOLD)
                 footer.border(2)
                 footer.refresh()
-                currentTask.process(
-                    self._repositoryRoutines +
-                    self._analyses,
-                    self._store,
-                    self._notebook)
+                asyncio.run(
+                    currentTask.process(
+                        self._repositoryRoutines +
+                        self._analyses,
+                        self._store,
+                        self._notebook)
+                )
                 for attachment in currentTask.getResponse().getAttachments():
                     self._store.insert(attachment)
 
