@@ -6,6 +6,7 @@ from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
 from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine
 from reposcanner.issues import IssueTrackerRoutine
+
 import datetime
 import logging
 import curses
