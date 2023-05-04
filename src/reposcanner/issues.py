@@ -22,18 +22,20 @@ def get_time(dt):
 
 
 
-# Routine to scrape data from GitHub Issues
+# Routine to scrape general info about GitHub issues, specifically:
+#  Unique issue ID, date/time of creation, creator login, assignee login(s),
+#  title, label(s), state, date/time of closure, login of user who closed
 
-class IssueTrackerRoutineRequest(OnlineRoutineRequest):
+class IssueOverviewRoutineRequest(OnlineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, \
         username=None, password=None, token=None, keychain=None):
         super().__init__(repositoryURL, outputDirectory, \
-                username=username, password=password, token=token, keychain=keychain)
+            username=username, password=password, token=token, keychain=keychain)
 
-class IssueTrackerRoutine(OnlineRepositoryRoutine):
+class IssueOverviewRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
-        return IssueTrackerRoutineRequest
+        return IssueOverviewRoutineRequest
 
     def githubImplementation(self, request, session):
         def _replaceNoneWithEmptyString(value):
@@ -43,64 +45,74 @@ class IssueTrackerRoutine(OnlineRepositoryRoutine):
                 return value
 
         factory = DataEntityFactory()
-        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueTracker.csv".format(\
-                outputDirectory=request.getOutputDirectory(), \
-                repoName=request.getRepositoryLocation().getRepositoryName()))
+        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueOverview.csv".format(\
+            outputDirectory=request.getOutputDirectory(), \
+            repoName=request.getRepositoryLocation().getRepositoryName()))
 
         output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Date Created", \
-                "Creator Login", \
-                "Assignee Login(s)", \
-                "Title of Issue", \
-                "Body Text of Issue", \
-                "Comment(s)"])
+        output.setColumnNames(["Issue ID", \
+            "Date Created", \
+            "Creator Login", \
+            "Assignee Login(s)", \
+            "Title of Issue", \
+            "Label(s)", \
+            "State of Issue", \
+            "Date of Closure", \
+            "Closer Login"])
         output.setColumnDatatypes(["str", \
-                "str", \
-                "str", \
-                "str", \
-                "str", \
-                "str"])
+            "str", \
+            "str", \
+            "str", \
+            "str", \
+            "str", \
+            "str", \
+            "str", \
+            "str"])
 
         issues = session.get_issues()
         for issue in issues:
-            datetimeCreated = str(get_time(issue.created_at))
-            creatorLogin = issue.user.login
-            assigneeList = issue.assignees
-            title = issue.title
-            bodyText = issue.body
+            issueID = _replaceNoneWithEmptyString(\
+                str(issue.id))
+            datetimeCreated = _replaceNoneWithEmptyString(\
+                str(get_time(issue.created_at)))
+            creatorLogin = _replaceNoneWithEmptyString(\
+                issue.user.login)
+            assigneeList = [_replaceNoneWithEmptyString(user.login) \
+                for user in issue.assignees]
+            title = _replaceNoneWithEmptyString(\
+                issue.title)
+            labelList = [_replaceNoneWithEmptyString(label.name) \
+                for label in issue.labels]
+            issueState = _replaceNoneWithEmptyString(\
+                issue.state)
+            if issue.closed_at is not None:
+                datetimeClosed = _replaceNoneWithEmptyString(\
+                    str(get_time(issue.closed_at)))
+            else:
+                datetimeClosed = ""
+            if issue.closed_by is not None:
+                closerLogin = _replaceNoneWithEmptyString(\
+                    issue.closed_by.login)
+            else:
+                closerLogin = ""
 
-            # TODO:  Find a better way to organize comments in the csv output.
-            #   Right now, this just lists all comments in a single cell, in the format
-            #     [user] commented at time [time]:  [comment]
-            #   with semicolons separating the info for different comments.
-            #   It seems like there should be a better way to organize this, but since each
-            #   issue has a different number of comments, what is it? Maybe make each post,
-            #   including the original post and all subsequent comments, a different csv entry?
-            #   And then label those entries with unique identifiers for each issue and tag as
-            #   either "body text" or "comment text"?
-            numberOfComments = issue.comments
-            comments = issue.get_comments()
-            commentsList = []
-            for comment in comments:
-                commentsList.append(\
-                        comment.user.login + " commented at time " + \
-                        str(get_time(comment.created_at)) + ":  " + \
-                        comment.body)
-
-            output.addRecord([_replaceNoneWithEmptyString(datetimeCreated), \
-                    _replaceNoneWithEmptyString(creatorLogin), \
-                    ";".join([_replaceNoneWithEmptyString(assignee.login) for assignee in assigneeList]), \
-                    _replaceNoneWithEmptyString(title), \
-                    _replaceNoneWithEmptyString(bodyText), \
-                    ";".join([_replaceNoneWithEmptyString(comment) for comment in commentsList])])
+            output.addRecord([issueID, \
+                datetimeCreated, \
+                creatorLogin, \
+                ";".join(assigneeList), \
+                title, \
+                ";".join(labelList), \
+                issueState, \
+                datetimeClosed, \
+                closerLogin])
 
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(\
-                message="IssueTrackerRoutine completed!", attachments=output)
+            message="IssueOverviewRoutine completed!", attachments=output)
 
     def gitlabImplementation(self, request, session):
         # TODO:  Implement IssueTrackerRoutine for GitLab
@@ -110,3 +122,91 @@ class IssueTrackerRoutine(OnlineRepositoryRoutine):
         # TODO:  Implement IssueTrackerRoutine for GitLab
         pass
 
+
+
+# Routine to scrape natural language data from issues
+#  Treats each "post" (i.e. original post and comments) as a separate entry
+#  For each post, gets:
+#   Unique issue ID (based on original post), type of post (original/comment),
+#   date/time of creation, creator login, body text
+
+class IssueCommentsRoutineRequest(OnlineRoutineRequest):
+    def __init__(self, repositoryURL, outputDirectory, \
+        username=None, password=None, token=None, keychain=None):
+        super().__init__(repositoryURL, outputDirectory, \
+            username=username, password=password, token=token, keychain=keychain)
+
+class IssueCommentsRoutine(OnlineRepositoryRoutine):
+
+    def getRequestType(self):
+        return IssueCommentsRoutineRequest
+
+    def githubImplementation(self, request, session):
+        def _replaceNoneWithEmptyString(value):
+            if value is None:
+                return ""
+            else:
+                return value
+
+        factory = DataEntityFactory()
+        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueComments.csv".format(\
+            outputDirectory=request.getOutputDirectory(), \
+            repoName=request.getRepositoryLocation().getRepositoryName()))
+
+        output.setReposcannerExecutionID(ReposcannerRunInformant().getReposcannerExecutionID())
+        output.setCreator(self.__class__.__name__)
+        output.setDateCreated(datetime.date.today())
+        output.setURL(request.getRepositoryLocation().getURL())
+        output.setColumnNames(["Issue ID of Original Post", \
+            "Type of Post", \
+            "Date Created", \
+            "Creator Login", \
+            "Body Text"])
+        output.setColumnDatatypes(["str", \
+            "str", \
+            "str", \
+            "str", \
+            "str"])
+
+        issues = session.get_issues()
+        for issue in issues:
+            issueID = _replaceNoneWithEmptyString(\
+                str(issue.id))
+            datetimeCreated = _replaceNoneWithEmptyString(\
+                str(get_time(issue.created_at)))
+            creatorLogin = _replaceNoneWithEmptyString(\
+                issue.user.login)
+            bodyText = _replaceNoneWithEmptyString(\
+                issue.body)
+            commentList = issue.get_comments()
+
+            output.addRecord([issueID, \
+                "original", \
+                datetimeCreated, \
+                creatorLogin, \
+                bodyText])
+            for comment in commentList:
+                datetimeCreated = _replaceNoneWithEmptyString(\
+                    str(get_time(comment.created_at)))
+                creatorLogin = _replaceNoneWithEmptyString(\
+                    comment.user.login)
+                bodyText = _replaceNoneWithEmptyString(\
+                    comment.body)
+                output.addRecord([issueID, \
+                    "comment", \
+                    datetimeCreated, \
+                    creatorLogin, \
+                    bodyText])
+
+        output.writeToFile()
+        responseFactory = ResponseFactory()
+        return responseFactory.createSuccessResponse(\
+            message="IssueCommentsRoutine completed!", attachments=output)
+
+    def gitlabImplementation(self, request, session):
+        # TODO:  Implement IssueTrackerRoutine for GitLab
+        pass
+
+    def bitbucketImplementation(self, request, session):
+        # TODO:  Implement IssueTrackerRoutine for GitLab
+        pass
