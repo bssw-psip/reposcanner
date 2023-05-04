@@ -72,7 +72,7 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
             "str", \
             "str"])
 
-        issues = session.get_issues()
+        issues = session.get_issues(state="all")
         for issue in issues:
             issueID = _replaceNoneWithEmptyString(\
                 str(issue.id))
@@ -168,7 +168,7 @@ class IssueCommentsRoutine(OnlineRepositoryRoutine):
             "str", \
             "str"])
 
-        issues = session.get_issues()
+        issues = session.get_issues(state="all")
         for issue in issues:
             issueID = _replaceNoneWithEmptyString(\
                 str(issue.id))
