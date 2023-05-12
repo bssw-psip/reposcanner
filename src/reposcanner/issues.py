@@ -20,6 +20,12 @@ def get_time(dt):
         return None
     return int( dt.timestamp() )
 
+def _replaceNoneWithEmptyString(value):
+    if value is None:
+        return ""
+    else:
+        return value
+
 
 
 # Routine to scrape general info about GitHub issues, specifically:
@@ -38,12 +44,6 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
         return IssueOverviewRoutineRequest
 
     def githubImplementation(self, request, session):
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueOverview.csv".format(\
             outputDirectory=request.getOutputDirectory(), \
@@ -142,12 +142,6 @@ class IssueCommentsRoutine(OnlineRepositoryRoutine):
         return IssueCommentsRoutineRequest
 
     def githubImplementation(self, request, session):
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueComments.csv".format(\
             outputDirectory=request.getOutputDirectory(), \
