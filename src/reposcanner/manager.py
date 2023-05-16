@@ -5,7 +5,7 @@ from reposcanner.git import CredentialKeychain
 from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
 from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine
-from reposcanner.issues import IssueOverviewRoutine, IssueCommentsRoutine
+from reposcanner.issues import IssueOverviewRoutine, IssueDetailsRoutine
 
 import datetime
 import logging

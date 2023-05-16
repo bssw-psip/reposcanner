@@ -29,8 +29,11 @@ def _replaceNoneWithEmptyString(value):
 
 
 # Routine to scrape general info about GitHub pull requests, specifically:
-#  Unique issue ID, date/time of creation, creator login, assignee login(s),
-#  title, label(s), state, date/time of closure, login of user who closed
+#  Unique pull ID, date/time of creation,
+#  creator login, assignee login(s), requested reviewer login(s),
+#  title, number of files changed, number of commits, state,
+#  branch to merge to, branch to merge from, date/time of merge,
+#  login of user who merged
 
 class PullReqOverviewRoutineRequest(OnlineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, \
@@ -57,13 +60,19 @@ class PullReqOverviewRoutine(OnlineRepositoryRoutine):
             "Date Created", \
             "Creator Login", \
             "Assignee Login(s)", \
+            "Requested Reviewer Login(s)"
             "Title of Pull Request", \
             "Number of Changed Files", \
             "Number of Commits", \
             "State of Pull Request", \
+            "Branch to Merge To", \
+            "Branch to Merge From", \
             "Date of Merge", \
             "Merger Login"])
-        output.setColumnDatatypes(["str", \
+        output.setColumnDatatypes(["int", \
+            "int", \
+            "str", \
+            "str", \
             "str", \
             "str", \
             "str", \
@@ -76,22 +85,30 @@ class PullReqOverviewRoutine(OnlineRepositoryRoutine):
 
         pulls = session.get_pulls(state="all")
         for pull in pulls:
-            pullID = _replaceNoneWithEmptyString(\
-                str(pull.id))
-            datetimeCreated = _replaceNoneWithEmptyString(\
-                str(get_time(pull.created_at)))
+            pullID = pull.id
+            datetimeCreated = get_time(pull.created_at)
             creatorLogin = _replaceNoneWithEmptyString(\
                 pull.user.login)
             assigneeList = [_replaceNoneWithEmptyString(user.login) \
                 for user in pull.assignees]
+            reviewers = session.get_review_requests()
+            reviewerList = [_replaceNoneWithEmptyString(user.login) \
+                for user in reviewers[0]]
             title = _replaceNoneWithEmptyString(\
                 pull.title)
+            # Can number of files changed and commits ever be "None"?
+            # If not (i.e. returns 0 if there is nothing),
+            #  change datatype of "filesChanged" and "pullCommits" to int
             filesChanged = _replaceNoneWithEmptyString(\
                 str(pull.changed_files))
             pullCommits = _replaceNoneWithEmptyString(\
                 str(pull.commits))
             pullState = _replaceNoneWithEmptyString(\
                 pull.state)
+            mergeTo = _replaceNoneWithEmptyString(\
+                pull.base.label)
+            mergeFrom = _replaceNoneWithEmptyString(\
+                pull.head.label)
             if pull.merged_at is not None:
                 datetimeMerged = _replaceNoneWithEmptyString(\
                     str(get_time(pull.merged_at)))
@@ -107,10 +124,13 @@ class PullReqOverviewRoutine(OnlineRepositoryRoutine):
                 datetimeCreated, \
                 creatorLogin, \
                 ";".join(assigneeList), \
+                ";".join(reviewerList), \
                 title, \
                 filesChanged, \
                 pullCommits, \
                 pullState, \
+                mergeTo, \
+                mergeFrom, \
                 datetimeMerged, \
                 mergerLogin])
 
@@ -130,9 +150,10 @@ class PullReqOverviewRoutine(OnlineRepositoryRoutine):
 
 
 # Routine to scrape natural language data from pull requests
-#  Treats each "post" (i.e. original post and comments) as a separate entry
+#  Treats each "post" (i.e. original pull request and comments) as a separate entry
 #  For each post, gets:
-#   Unique issue ID (based on original post), type of post (original/comment),
+#   Unique issue ID (based on original post), type of post
+#   (original/issue comment/review comment),
 #   date/time of creation, creator login, body text
 
 class PullReqDetailsRoutineRequest(OnlineRoutineRequest):
@@ -156,43 +177,52 @@ class PullReqDetailsRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Issue ID of Original Post", \
+        output.setColumnNames(["Issue ID of Original Pull Request", \
             "Type of Post", \
             "Date Created", \
             "Creator Login", \
             "Body Text"])
-        output.setColumnDatatypes(["str", \
+        output.setColumnDatatypes(["int", \
             "str", \
-            "str", \
+            "int", \
             "str", \
             "str"])
 
-        issues = session.get_issues(state="all")
-        for issue in issues:
-            issueID = _replaceNoneWithEmptyString(\
-                str(issue.id))
-            datetimeCreated = _replaceNoneWithEmptyString(\
-                str(get_time(issue.created_at)))
+        pulls = session.get_pulls(state="all")
+        for pull in pulls:
+            pullID = pull.id
+            datetimeCreated = get_time(pull.created_at)
             creatorLogin = _replaceNoneWithEmptyString(\
-                issue.user.login)
+                pull.user.login)
             bodyText = _replaceNoneWithEmptyString(\
-                issue.body)
-            commentList = issue.get_comments()
+                pull.body)
+            issueComments = pull.get_issue_comments()
+            reviewComments = pull.get_review_comments()
 
-            output.addRecord([issueID, \
-                "original", \
+            output.addRecord([pullID, \
+                "original pull request", \
                 datetimeCreated, \
                 creatorLogin, \
                 bodyText])
-            for comment in commentList:
-                datetimeCreated = _replaceNoneWithEmptyString(\
-                    str(get_time(comment.created_at)))
+            for comment in issueComments:
+                datetimeCreated = get_time(comment.created_at)
                 creatorLogin = _replaceNoneWithEmptyString(\
                     comment.user.login)
                 bodyText = _replaceNoneWithEmptyString(\
                     comment.body)
-                output.addRecord([issueID, \
-                    "comment", \
+                output.addRecord([pullID, \
+                    "issue comment", \
+                    datetimeCreated, \
+                    creatorLogin, \
+                    bodyText])
+            for comment in reviewComments:
+                datetimeCreated = get_time(comment.created_at)
+                creatorLogin = _replaceNoneWithEmptyString(\
+                    comment.user.login)
+                bodyText = _replaceNoneWithEmptyString(\
+                    comment.body)
+                output.addRecord([pullID, \
+                    "review comment", \
                     datetimeCreated, \
                     creatorLogin, \
                     bodyText])

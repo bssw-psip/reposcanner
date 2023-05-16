@@ -128,20 +128,20 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
 #   Unique issue ID (based on original post), type of post (original/comment),
 #   date/time of creation, creator login, body text
 
-class IssueCommentsRoutineRequest(OnlineRoutineRequest):
+class IssueDetailsRoutineRequest(OnlineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, \
         username=None, password=None, token=None, keychain=None):
         super().__init__(repositoryURL, outputDirectory, \
             username=username, password=password, token=token, keychain=keychain)
 
-class IssueCommentsRoutine(OnlineRepositoryRoutine):
+class IssueDetailsRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
-        return IssueCommentsRoutineRequest
+        return IssueDetailsRoutineRequest
 
     def githubImplementation(self, request, session):
         factory = DataEntityFactory()
-        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueComments.csv".format(\
+        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueDetails.csv".format(\
             outputDirectory=request.getOutputDirectory(), \
             repoName=request.getRepositoryLocation().getRepositoryName()))
 
@@ -191,7 +191,7 @@ class IssueCommentsRoutine(OnlineRepositoryRoutine):
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(\
-            message="IssueCommentsRoutine completed!", attachments=output)
+            message="IssueDetailsRoutine completed!", attachments=output)
 
     def gitlabImplementation(self, request, session):
         # TODO:  Implement IssueTrackerRoutine for GitLab
