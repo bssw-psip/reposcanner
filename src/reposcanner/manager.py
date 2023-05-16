@@ -7,6 +7,7 @@ from reposcanner.response import ResponseFactory
 from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine
 from reposcanner.issues import IssueOverviewRoutine, IssueDetailsRoutine
 from reposcanner.pullrequests import PullRequestOverviewRoutine, PullRequestDetailsRoutine
+from reposcanner.kanban import KanbanProjectOverviewRoutine, KanbanProjectDetailsRoutine
 
 import datetime
 import logging
