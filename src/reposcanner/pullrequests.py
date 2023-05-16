@@ -154,7 +154,7 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
 #  Treats each "post" (i.e. original pull request and comments) as a separate entry
 #  For each post, gets:
 #   Unique issue ID (based on original post), type of post
-#   (original/issue comment/review comment),
+#   (original pull request/issue comment/review comment/review),
 #   date/time of creation, creator login, body text
 
 class PullRequestDetailsRoutineRequest(OnlineRoutineRequest):
@@ -197,36 +197,64 @@ class PullRequestDetailsRoutine(OnlineRepositoryRoutine):
                 pull.user.login)
             bodyText = _replaceNoneWithEmptyString(\
                 pull.body)
-            issueComments = pull.get_issue_comments()
-            reviewComments = pull.get_review_comments()
 
             output.addRecord([pullID, \
                 "original pull request", \
                 datetimeCreated, \
                 creatorLogin, \
                 bodyText])
-            for comment in issueComments:
+            
+            # TODO:  There's probably a more efficient way to combine the lists of
+            #  issue comments, review comments, and reviews using the
+            #  built-in pygithub class github.PaginatedList.PaginatedList,
+            #  but this should suffice for now
+            pullComments = []
+            
+            # Get the "conversation" comments on a pull request
+            #  Pygithub calls these "issue comments"
+            for comment in pull.get_issue_comments():
                 datetimeCreated = get_time(comment.created_at)
                 creatorLogin = _replaceNoneWithEmptyString(\
                     comment.user.login)
                 bodyText = _replaceNoneWithEmptyString(\
                     comment.body)
-                output.addRecord([pullID, \
+                pullComments.append([pullID, \
                     "issue comment", \
                     datetimeCreated, \
                     creatorLogin, \
                     bodyText])
-            for comment in reviewComments:
+                
+            # Get the in-line comments on specific lines of code in a pull request
+            #  Pygithub calls these "review comments"
+            for comment in pull.get_review_comments():
                 datetimeCreated = get_time(comment.created_at)
                 creatorLogin = _replaceNoneWithEmptyString(\
                     comment.user.login)
                 bodyText = _replaceNoneWithEmptyString(\
                     comment.body)
-                output.addRecord([pullID, \
+                pullComments.append([pullID, \
                     "review comment", \
                     datetimeCreated, \
                     creatorLogin, \
                     bodyText])
+                
+            # Get the overall comments associated with a group of in-line comments
+            #  Pygithub calls these "reviews"
+            for comment in pull.get_reviews():
+                datetimeCreated = get_time(comment.submitted_at)
+                creatorLogin = _replaceNoneWithEmptyString(\
+                    comment.user.login)
+                bodyText = _replaceNoneWithEmptyString(\
+                    comment.body)
+                pullComments.append([pullID, \
+                    "review", \
+                    datetimeCreated, \
+                    creatorLogin, \
+                    bodyText])
+                
+            # Sort list of all comments by date of posting
+            for comment in sorted(pullComments, key=lambda x: x[2]):
+                output.addRecord(comment)
 
         output.writeToFile()
         responseFactory = ResponseFactory()
