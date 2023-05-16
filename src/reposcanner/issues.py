@@ -175,6 +175,7 @@ class IssueDetailsRoutine(OnlineRepositoryRoutine):
                 datetimeCreated, \
                 creatorLogin, \
                 bodyText])
+            
             for comment in commentList:
                 datetimeCreated = _replaceNoneWithEmptyString(\
                     str(get_time(comment.created_at)))

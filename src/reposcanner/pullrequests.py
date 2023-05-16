@@ -64,9 +64,9 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
             "Title of Pull Request", \
             "Number of Changed Files", \
             "Number of Commits", \
-            "State of Pull Request", \
-            "Branch to Merge To", \
             "Branch to Merge From", \
+            "Branch to Merge To", \
+            "State of Pull Request", \
             "Date of Merge", \
             "Merger Login"])
         output.setColumnDatatypes(["int", \
@@ -75,8 +75,8 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
             "str", \
             "str", \
             "str", \
-            "str", \
-            "str", \
+            "int", \
+            "int", \
             "str", \
             "str", \
             "str", \
@@ -91,24 +91,25 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
                 pull.user.login)
             assigneeList = [_replaceNoneWithEmptyString(user.login) \
                 for user in pull.assignees]
-            reviewers = session.get_review_requests()
+            reviewers = pull.get_review_requests()
             reviewerList = [_replaceNoneWithEmptyString(user.login) \
                 for user in reviewers[0]]
             title = _replaceNoneWithEmptyString(\
                 pull.title)
-            # Can number of files changed and commits ever be "None"?
-            # If not (i.e. returns 0 if there is nothing),
-            #  change datatype of "filesChanged" and "pullCommits" to int
-            filesChanged = _replaceNoneWithEmptyString(\
-                str(pull.changed_files))
-            pullCommits = _replaceNoneWithEmptyString(\
-                str(pull.commits))
-            pullState = _replaceNoneWithEmptyString(\
-                pull.state)
-            mergeTo = _replaceNoneWithEmptyString(\
-                pull.base.label)
+            if pull.changed_files is not None:
+                filesChanged = pull.changed_files
+            else:
+                filesChanged = 0
+            if pull.commits is not None:
+                pullCommits = pull.commits
+            else:
+                pullCommits = 0
             mergeFrom = _replaceNoneWithEmptyString(\
                 pull.head.label)
+            mergeTo = _replaceNoneWithEmptyString(\
+                pull.base.label)
+            pullState = _replaceNoneWithEmptyString(\
+                pull.state)
             if pull.merged_at is not None:
                 datetimeMerged = _replaceNoneWithEmptyString(\
                     str(get_time(pull.merged_at)))
@@ -128,9 +129,9 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
                 title, \
                 filesChanged, \
                 pullCommits, \
-                pullState, \
-                mergeTo, \
                 mergeFrom, \
+                mergeTo, \
+                pullState, \
                 datetimeMerged, \
                 mergerLogin])
 
