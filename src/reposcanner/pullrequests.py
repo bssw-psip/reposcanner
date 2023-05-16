@@ -35,20 +35,20 @@ def _replaceNoneWithEmptyString(value):
 #  branch to merge to, branch to merge from, date/time of merge,
 #  login of user who merged
 
-class PullReqOverviewRoutineRequest(OnlineRoutineRequest):
+class PullRequestOverviewRoutineRequest(OnlineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, \
         username=None, password=None, token=None, keychain=None):
         super().__init__(repositoryURL, outputDirectory, \
             username=username, password=password, token=token, keychain=keychain)
 
-class PullReqOverviewRoutine(OnlineRepositoryRoutine):
+class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
-        return PullReqOverviewRoutineRequest
+        return PullRequestOverviewRoutineRequest
 
     def githubImplementation(self, request, session):
         factory = DataEntityFactory()
-        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_PullReqOverview.csv".format(\
+        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_PullRequestOverview.csv".format(\
             outputDirectory=request.getOutputDirectory(), \
             repoName=request.getRepositoryLocation().getRepositoryName()))
 
@@ -137,7 +137,7 @@ class PullReqOverviewRoutine(OnlineRepositoryRoutine):
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(\
-            message="PullReqOverviewRoutine completed!", attachments=output)
+            message="PullRequestOverviewRoutine completed!", attachments=output)
 
     def gitlabImplementation(self, request, session):
         # TODO:  Implement IssueTrackerRoutine for GitLab
@@ -156,20 +156,20 @@ class PullReqOverviewRoutine(OnlineRepositoryRoutine):
 #   (original/issue comment/review comment),
 #   date/time of creation, creator login, body text
 
-class PullReqDetailsRoutineRequest(OnlineRoutineRequest):
+class PullRequestDetailsRoutineRequest(OnlineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, \
         username=None, password=None, token=None, keychain=None):
         super().__init__(repositoryURL, outputDirectory, \
             username=username, password=password, token=token, keychain=keychain)
 
-class PullReqDetailsRoutine(OnlineRepositoryRoutine):
+class PullRequestDetailsRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
-        return PullReqDetailsRoutineRequest
+        return PullRequestDetailsRoutineRequest
 
     def githubImplementation(self, request, session):
         factory = DataEntityFactory()
-        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_PullReqDetails.csv".format(\
+        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_PullRequestDetails.csv".format(\
             outputDirectory=request.getOutputDirectory(), \
             repoName=request.getRepositoryLocation().getRepositoryName()))
 
@@ -230,7 +230,7 @@ class PullReqDetailsRoutine(OnlineRepositoryRoutine):
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(\
-            message="PullReqDetailsRoutine completed!", attachments=output)
+            message="PullRequestDetailsRoutine completed!", attachments=output)
 
     def gitlabImplementation(self, request, session):
         # TODO:  Implement IssueTrackerRoutine for GitLab
