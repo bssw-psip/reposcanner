@@ -28,24 +28,24 @@ def _replaceNoneWithEmptyString(value):
 
 
 
-# Routine to scrape general info about GitHub issues, specifically:
+# Routine to scrape general info about GitHub pull requests, specifically:
 #  Unique issue ID, date/time of creation, creator login, assignee login(s),
 #  title, label(s), state, date/time of closure, login of user who closed
 
-class IssueOverviewRoutineRequest(OnlineRoutineRequest):
+class PullReqOverviewRoutineRequest(OnlineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, \
         username=None, password=None, token=None, keychain=None):
         super().__init__(repositoryURL, outputDirectory, \
             username=username, password=password, token=token, keychain=keychain)
 
-class IssueOverviewRoutine(OnlineRepositoryRoutine):
+class PullReqOverviewRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
-        return IssueOverviewRoutineRequest
+        return PullReqOverviewRoutineRequest
 
     def githubImplementation(self, request, session):
         factory = DataEntityFactory()
-        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueOverview.csv".format(\
+        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_PullReqOverview.csv".format(\
             outputDirectory=request.getOutputDirectory(), \
             repoName=request.getRepositoryLocation().getRepositoryName()))
 
@@ -53,17 +53,19 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Issue ID", \
+        output.setColumnNames(["Pull Request ID", \
             "Date Created", \
             "Creator Login", \
             "Assignee Login(s)", \
-            "Title of Issue", \
-            "Label(s)", \
-            "State of Issue", \
-            "Date of Closure", \
-            "Closer Login"])
-        output.setColumnDatatypes(["int", \
-            "int", \
+            "Title of Pull Request", \
+            "Number of Changed Files", \
+            "Number of Commits", \
+            "State of Pull Request", \
+            "Date of Merge", \
+            "Merger Login"])
+        output.setColumnDatatypes(["str", \
+            "str", \
+            "str", \
             "str", \
             "str", \
             "str", \
@@ -72,45 +74,50 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
             "str", \
             "str"])
 
-        issues = session.get_issues(state="all")
-        for issue in issues:
-            issueID = issue.id
-            datetimeCreated = get_time(issue.created_at)
+        pulls = session.get_pulls(state="all")
+        for pull in pulls:
+            pullID = _replaceNoneWithEmptyString(\
+                str(pull.id))
+            datetimeCreated = _replaceNoneWithEmptyString(\
+                str(get_time(pull.created_at)))
             creatorLogin = _replaceNoneWithEmptyString(\
-                issue.user.login)
+                pull.user.login)
             assigneeList = [_replaceNoneWithEmptyString(user.login) \
-                for user in issue.assignees]
+                for user in pull.assignees]
             title = _replaceNoneWithEmptyString(\
-                issue.title)
-            labelList = [_replaceNoneWithEmptyString(label.name) \
-                for label in issue.labels]
-            issueState = _replaceNoneWithEmptyString(\
-                issue.state)
-            if issue.closed_at is not None:
-                datetimeClosed = _replaceNoneWithEmptyString(\
-                    str(get_time(issue.closed_at)))
+                pull.title)
+            filesChanged = _replaceNoneWithEmptyString(\
+                str(pull.changed_files))
+            pullCommits = _replaceNoneWithEmptyString(\
+                str(pull.commits))
+            pullState = _replaceNoneWithEmptyString(\
+                pull.state)
+            if pull.merged_at is not None:
+                datetimeMerged = _replaceNoneWithEmptyString(\
+                    str(get_time(pull.merged_at)))
             else:
-                datetimeClosed = ""
-            if issue.closed_by is not None:
-                closerLogin = _replaceNoneWithEmptyString(\
-                    issue.closed_by.login)
+                datetimeMerged = ""
+            if pull.merged_by is not None:
+                mergerLogin = _replaceNoneWithEmptyString(\
+                    pull.merged_by.login)
             else:
-                closerLogin = ""
+                mergerLogin = ""
 
-            output.addRecord([issueID, \
+            output.addRecord([pullID, \
                 datetimeCreated, \
                 creatorLogin, \
                 ";".join(assigneeList), \
                 title, \
-                ";".join(labelList), \
-                issueState, \
-                datetimeClosed, \
-                closerLogin])
+                filesChanged, \
+                pullCommits, \
+                pullState, \
+                datetimeMerged, \
+                mergerLogin])
 
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(\
-            message="IssueOverviewRoutine completed!", attachments=output)
+            message="PullReqOverviewRoutine completed!", attachments=output)
 
     def gitlabImplementation(self, request, session):
         # TODO:  Implement IssueTrackerRoutine for GitLab
@@ -122,26 +129,26 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
 
 
 
-# Routine to scrape natural language data from issues
+# Routine to scrape natural language data from pull requests
 #  Treats each "post" (i.e. original post and comments) as a separate entry
 #  For each post, gets:
 #   Unique issue ID (based on original post), type of post (original/comment),
 #   date/time of creation, creator login, body text
 
-class IssueCommentsRoutineRequest(OnlineRoutineRequest):
+class PullReqDetailsRoutineRequest(OnlineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, \
         username=None, password=None, token=None, keychain=None):
         super().__init__(repositoryURL, outputDirectory, \
             username=username, password=password, token=token, keychain=keychain)
 
-class IssueCommentsRoutine(OnlineRepositoryRoutine):
+class PullReqDetailsRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
-        return IssueCommentsRoutineRequest
+        return PullReqDetailsRoutineRequest
 
     def githubImplementation(self, request, session):
         factory = DataEntityFactory()
-        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_IssueComments.csv".format(\
+        output = factory.createAnnotatedCSVData("{outputDirectory}/{repoName}_PullReqDetails.csv".format(\
             outputDirectory=request.getOutputDirectory(), \
             repoName=request.getRepositoryLocation().getRepositoryName()))
 
@@ -154,16 +161,18 @@ class IssueCommentsRoutine(OnlineRepositoryRoutine):
             "Date Created", \
             "Creator Login", \
             "Body Text"])
-        output.setColumnDatatypes(["int", \
+        output.setColumnDatatypes(["str", \
             "str", \
-            "int", \
+            "str", \
             "str", \
             "str"])
 
         issues = session.get_issues(state="all")
         for issue in issues:
-            issueID = issue.id
-            datetimeCreated = get_time(issue.created_at)
+            issueID = _replaceNoneWithEmptyString(\
+                str(issue.id))
+            datetimeCreated = _replaceNoneWithEmptyString(\
+                str(get_time(issue.created_at)))
             creatorLogin = _replaceNoneWithEmptyString(\
                 issue.user.login)
             bodyText = _replaceNoneWithEmptyString(\
@@ -191,7 +200,7 @@ class IssueCommentsRoutine(OnlineRepositoryRoutine):
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(\
-            message="IssueCommentsRoutine completed!", attachments=output)
+            message="PullReqDetailsRoutine completed!", attachments=output)
 
     def gitlabImplementation(self, request, session):
         # TODO:  Implement IssueTrackerRoutine for GitLab
