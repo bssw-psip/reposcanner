@@ -56,13 +56,13 @@ class KanbanProjectOverviewRoutine(OnlineRepositoryRoutine):
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
         output.setColumnNames(["Project ID", \
-            "Date of Creation", \
+            "Date Created", \
             "Creator Login", \
             "Name of Project", \
             "Body Text of Project", \
             "Column Names", \
             "State of Project", \
-            "Date of Last Update"])
+            "Date Last Updated"])
         output.setColumnDatatypes(["int", \
             "int", \
             "str", \
@@ -147,7 +147,7 @@ class KanbanProjectDetailsRoutine(OnlineRepositoryRoutine):
             "Creator Login", \
             "Column Name", \
             "ID of Associated Issue or Pull Request", \
-            "Date of Last Update"])
+            "Date Last Updated"])
         output.setColumnDatatypes(["int", \
             "int", \
             "str", \

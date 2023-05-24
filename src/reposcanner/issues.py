@@ -56,11 +56,11 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
         output.setColumnNames(["Issue ID", \
             "Date Created", \
             "Creator Login", \
-            "Assignee Login(s)", \
+            "Assignee Logins", \
             "Title of Issue", \
-            "Label(s)", \
+            "Labels", \
             "State of Issue", \
-            "Date of Closure", \
+            "Date Closed", \
             "Closer Login"])
         output.setColumnDatatypes(["int", \
             "int", \

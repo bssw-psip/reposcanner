@@ -59,15 +59,15 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
         output.setColumnNames(["Pull Request ID", \
             "Date Created", \
             "Creator Login", \
-            "Assignee Login(s)", \
-            "Requested Reviewer Login(s)"
+            "Assignee Logins", \
+            "Requested Reviewer Logins"
             "Title of Pull Request", \
             "Number of Changed Files", \
             "Number of Commits", \
             "Branch to Merge From", \
             "Branch to Merge To", \
             "State of Pull Request", \
-            "Date of Merge", \
+            "Date Merged", \
             "Merger Login"])
         output.setColumnDatatypes(["int", \
             "int", \
