@@ -60,7 +60,7 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
             "Date Created", \
             "Creator Login", \
             "Assignee Logins", \
-            "Requested Reviewer Logins"
+            "Requested Reviewer Logins", \
             "Title of Pull Request", \
             "Number of Changed Files", \
             "Number of Commits", \
