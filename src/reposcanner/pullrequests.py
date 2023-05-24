@@ -56,19 +56,19 @@ class PullRequestOverviewRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Pull Request ID", \
-            "Date Created", \
-            "Creator Login", \
-            "Assignee Logins", \
-            "Requested Reviewer Logins", \
-            "Title of Pull Request", \
-            "Number of Changed Files", \
-            "Number of Commits", \
-            "Branch to Merge From", \
-            "Branch to Merge To", \
-            "State of Pull Request", \
-            "Date Merged", \
-            "Merger Login"])
+        output.setColumnNames(["pullRequestID", \
+            "dateCreated", \
+            "creatorLogin", \
+            "assigneeLogins", \
+            "requestedReviewerLogins", \
+            "pullRequestTitle", \
+            "numberOfChangedFiles", \
+            "numberOfCommits", \
+            "branchMergedFrom", \
+            "branchMergedTo", \
+            "pullRequestState", \
+            "dateMerged", \
+            "mergerLogin"])
         output.setColumnDatatypes(["int", \
             "int", \
             "str", \
@@ -178,11 +178,11 @@ class PullRequestDetailsRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Issue ID of Original Pull Request", \
-            "Type of Post", \
-            "Date Created", \
-            "Creator Login", \
-            "Body Text"])
+        output.setColumnNames(["pullRequestID", \
+            "postType", \
+            "dateCreated", \
+            "creatorLogin", \
+            "bodyText"])
         output.setColumnDatatypes(["int", \
             "str", \
             "int", \

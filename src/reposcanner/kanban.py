@@ -55,14 +55,14 @@ class KanbanProjectOverviewRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Project ID", \
-            "Date Created", \
-            "Creator Login", \
-            "Name of Project", \
-            "Body Text of Project", \
-            "Column Names", \
-            "State of Project", \
-            "Date Last Updated"])
+        output.setColumnNames(["projectID", \
+            "dateCreated", \
+            "creatorLogin", \
+            "projectName", \
+            "bodyText", \
+            "columnNames", \
+            "projectState", \
+            "dateLastUpdated"])
         output.setColumnDatatypes(["int", \
             "int", \
             "str", \
@@ -142,12 +142,12 @@ class KanbanProjectDetailsRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Project ID for Kanban Board", \
-            "Date Created", \
-            "Creator Login", \
-            "Column Name", \
-            "ID of Associated Issue or Pull Request", \
-            "Date Last Updated"])
+        output.setColumnNames(["projectID", \
+            "dateCreated", \
+            "creatorLogin", \
+            "columnName", \
+            "associatedIssueOrPullRequestID", \
+            "dateLastUpdated"])
         output.setColumnDatatypes(["int", \
             "int", \
             "str", \

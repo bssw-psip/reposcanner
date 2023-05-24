@@ -53,15 +53,15 @@ class IssueOverviewRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Issue ID", \
-            "Date Created", \
-            "Creator Login", \
-            "Assignee Logins", \
-            "Title of Issue", \
-            "Labels", \
-            "State of Issue", \
-            "Date Closed", \
-            "Closer Login"])
+        output.setColumnNames(["issueID", \
+            "dateCreated", \
+            "creatorLogin", \
+            "assigneeLogins", \
+            "issueTitle", \
+            "labels", \
+            "issueState", \
+            "dateClosed", \
+            "closerLogin"])
         output.setColumnDatatypes(["int", \
             "int", \
             "str", \
@@ -149,11 +149,11 @@ class IssueDetailsRoutine(OnlineRepositoryRoutine):
         output.setCreator(self.__class__.__name__)
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
-        output.setColumnNames(["Issue ID of Original Post", \
-            "Type of Post", \
-            "Date Created", \
-            "Creator Login", \
-            "Body Text"])
+        output.setColumnNames(["issueID", \
+            "postType", \
+            "dateCreated", \
+            "creatorLogin", \
+            "bodyText"])
         output.setColumnDatatypes(["int", \
             "str", \
             "int", \
