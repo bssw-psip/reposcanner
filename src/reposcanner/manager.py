@@ -8,6 +8,7 @@ from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRouti
 from reposcanner.issues import IssueOverviewRoutine, IssueDetailsRoutine
 from reposcanner.pullrequests import PullRequestOverviewRoutine, PullRequestDetailsRoutine
 from reposcanner.kanban import KanbanProjectOverviewRoutine, KanbanProjectDetailsRoutine
+from reposcanner.stars import StarGazersRoutine
 
 import datetime
 import logging
