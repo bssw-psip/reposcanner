@@ -152,7 +152,7 @@ class KanbanProjectDetailsRoutine(OnlineRepositoryRoutine):
             "int", \
             "str", \
             "str", \
-            "str", \
+            "int", \
             "int"])
 
         projects = session.get_projects(state="all")
@@ -170,10 +170,9 @@ class KanbanProjectDetailsRoutine(OnlineRepositoryRoutine):
                     creatorLogin = _replaceNoneWithEmptyString(\
                         card.creator.login)
                     if card.get_content() is not None:
-                        associatedID = _replaceNoneWithEmptyString(\
-                            str(card.get_content().id))
+                        associatedID = card.get_content().id
                     else:
-                        associatedID = ""
+                        associatedID = -1
                     if card.updated_at is not None:
                         datetimeUpdated = get_time(card.updated_at)
                     else:
