@@ -146,7 +146,7 @@ class KanbanProjectDetailsRoutine(OnlineRepositoryRoutine):
             "dateCreated", \
             "creatorLogin", \
             "columnName", \
-            "associatedIssueOrPullRequestID", \
+            "associatedObjectID", \
             "dateLastUpdated"])
         output.setColumnDatatypes(["int", \
             "int", \
