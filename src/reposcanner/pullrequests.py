@@ -219,7 +219,7 @@ class PullRequestDetailsRoutine(OnlineRepositoryRoutine):
                 bodyText = _replaceNoneWithEmptyString(\
                     comment.body)
                 pullComments.append([pullID, \
-                    "issue comment", \
+                    "pull request comment", \
                     datetimeCreated, \
                     creatorLogin, \
                     bodyText])
@@ -233,7 +233,7 @@ class PullRequestDetailsRoutine(OnlineRepositoryRoutine):
                 bodyText = _replaceNoneWithEmptyString(\
                     comment.body)
                 pullComments.append([pullID, \
-                    "review comment", \
+                    "pull request in-line comment", \
                     datetimeCreated, \
                     creatorLogin, \
                     bodyText])
@@ -247,7 +247,7 @@ class PullRequestDetailsRoutine(OnlineRepositoryRoutine):
                 bodyText = _replaceNoneWithEmptyString(\
                     comment.body)
                 pullComments.append([pullID, \
-                    "review", \
+                    "pull request review comment", \
                     datetimeCreated, \
                     creatorLogin, \
                     bodyText])

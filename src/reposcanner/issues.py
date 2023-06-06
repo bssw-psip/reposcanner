@@ -171,7 +171,7 @@ class IssueDetailsRoutine(OnlineRepositoryRoutine):
             commentList = issue.get_comments()
 
             output.addRecord([issueID, \
-                "original", \
+                "original issue", \
                 datetimeCreated, \
                 creatorLogin, \
                 bodyText])
@@ -184,7 +184,7 @@ class IssueDetailsRoutine(OnlineRepositoryRoutine):
                 bodyText = _replaceNoneWithEmptyString(\
                     comment.body)
                 output.addRecord([issueID, \
-                    "comment", \
+                    "issue comment", \
                     datetimeCreated, \
                     creatorLogin, \
                     bodyText])
