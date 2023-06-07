@@ -150,7 +150,7 @@ class IssueDetailsRoutine(OnlineRepositoryRoutine):
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
         output.setColumnNames(["issueID", \
-            "postType", \
+            "commentType", \
             "dateCreated", \
             "creatorLogin", \
             "bodyText"])

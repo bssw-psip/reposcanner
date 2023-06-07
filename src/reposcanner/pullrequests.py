@@ -179,7 +179,7 @@ class PullRequestDetailsRoutine(OnlineRepositoryRoutine):
         output.setDateCreated(datetime.date.today())
         output.setURL(request.getRepositoryLocation().getURL())
         output.setColumnNames(["pullRequestID", \
-            "postType", \
+            "commentType", \
             "dateCreated", \
             "creatorLogin", \
             "bodyText"])
