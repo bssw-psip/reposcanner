@@ -11,8 +11,7 @@ import datetime
 
 
 class DummyOfflineRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class DummyOfflineRoutine(OfflineRepositoryRoutine):
@@ -42,21 +41,7 @@ class DummyOfflineRoutine(OfflineRepositoryRoutine):
 
 
 class DummyOnlineRoutineRequest(OnlineRoutineRequest):
-    def __init__(
-            self,
-            repositoryURL,
-            outputDirectory,
-            username=None,
-            password=None,
-            token=None,
-            keychain=None):
-        super().__init__(
-            repositoryURL,
-            outputDirectory,
-            username=username,
-            password=password,
-            token=token,
-            keychain=keychain)
+    pass
 
 
 class DummyOnlineRoutine(OnlineRepositoryRoutine):

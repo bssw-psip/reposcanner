@@ -399,19 +399,12 @@ class CredentialKeychain:
                         a dictionary object, but got a {wrongType} instead!".format(
                 wrongType=type(credentialsDictionary)))
 
-        def safeAccess(dictionary, key):
-            """A convenience function for error-free access to a dictionary"""
-            if key in dictionary:
-                return dictionary[key]
-            else:
-                return None
-
         for entryName in credentialsDictionary:
             entry = credentialsDictionary[entryName]
-            url = safeAccess(entry, "url")
-            username = safeAccess(entry, "username")
-            password = safeAccess(entry, "password")
-            token = safeAccess(entry, "token")
+            url = entry.get("url", None)
+            username = entry.get("username", None)
+            password = entry.get("password", None)
+            token = entry.get("token", None)
             if url is None:
                 print("Reposcanner: Warning, the entry {entryName} in \
                                 the credentials file is missing a URL. Skipping.".format(
