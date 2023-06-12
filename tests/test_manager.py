@@ -29,7 +29,7 @@ def test_ManagerAnalysisTask_isDirectlyConstructible():
     task = management.ManagerAnalysisTask(request=requests.AnalysisRequestModel())
 
 
-def test_ManagerRepositoryRoutineTask_isConstructibleByFactory():
+def test_ManagerAnalysisTask_isConstructibleByFactory():
     factory = management.TaskFactory()
     task = factory.createManagerAnalysisTask(request=requests.AnalysisRequestModel())
 

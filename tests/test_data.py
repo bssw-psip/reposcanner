@@ -1,3 +1,4 @@
+from pathlib import Path
 import pytest
 import reposcanner.data as data
 import datetime
@@ -14,7 +15,7 @@ def test_AnnotatedCSVData_isConstructibleByFactory():
 
 def test_AnnotatedCSVData_canGetFilePath():
     dataEntity = data.AnnotatedCSVData("test.csv")
-    assert(dataEntity.getFilePath() == "test.csv")
+    assert(dataEntity.getFilePath() == Path("test.csv"))
 
 
 def test_AnnotatedCSVData_canGetKeysForMetadataAfterConstruction():
@@ -159,7 +160,7 @@ def test_YAMLData_isDirectlyConstructible():
     dataEntity = data.YAMLData("test.yaml")
 
 
-def test_AnnotatedCSVData_isConstructibleByFactory():
+def test_AnnotatedYAMLData_isConstructibleByFactory():
     factory = data.DataEntityFactory()
     factory.createYAMLData("test.yaml")
 

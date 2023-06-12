@@ -20,9 +20,10 @@ Abstract workflows do though typically contain things such as loop constructs, c
 These additional artifacts can be quite useful depending on the application scenario; application developers
 may choose to capture and manage these separately, but outside of the scope of the provenance application.
 """
-from prov.dot import prov_to_dot
-import prov.model as prov
+from prov.dot import prov_to_dot  # type: ignore
+import prov.model as prov  # type: ignore
 from abc import ABC, abstractmethod
+import argparse
 import datetime
 import json
 import uuid
@@ -30,6 +31,11 @@ import sys
 import subprocess
 import os
 import reposcanner.data as dataEntities
+from typing import Any, List, Union, TYPE_CHECKING
+from reposcanner.requests import RepositoryRoutineRequestModel, AnalysisRequestModel
+from reposcanner.routines import DataMiningRoutine, RepositoryRoutine
+from reposcanner.analyses import DataAnalysis
+from reposcanner.manager import ManagerRepositoryRoutineTask, ManagerTask
 
 """
 trungdong/prov, a W3C-compliant provenance Data Model
@@ -48,7 +54,7 @@ class ReposcannerRunInformant:
     # run of Reposcanner.
     EXECUTIONID = uuid.uuid1().hex
 
-    def getReposcannerExecutionID(self):
+    def getReposcannerExecutionID(self) -> str:
         """
         Return a unique identifier string associated with the current run of
         Reposcanner.
@@ -57,7 +63,7 @@ class ReposcannerRunInformant:
         """
         return ReposcannerRunInformant.EXECUTIONID
 
-    def getReposcannerVersion(self):
+    def getReposcannerVersion(self) -> str:
         """
         Return a string indicating what version of Reposcanner was used for this run.
         Since we aren't yet versioning releases of the tool, this is the hash of the
@@ -65,7 +71,9 @@ class ReposcannerRunInformant:
         """
         try:
             completedProcess = subprocess.run(
-                ["git", "log", "--pretty=format:'%h'", "-n 1"])
+                ["git", "log", "--pretty=format:'%h'", "-n 1"],
+                text=True,
+            )
             return completedProcess.stdout
         except Exception as e:
             return "UNKNOWN"
@@ -78,7 +86,7 @@ class AbstractLabNotebook(ABC):
     """
 
     @abstractmethod
-    def onStartup(self, args):
+    def onStartup(self, args: argparse.Namespace) -> None:
         """
         Called when Reposcanner is first initialized.
 
@@ -87,14 +95,14 @@ class AbstractLabNotebook(ABC):
         pass
 
     @abstractmethod
-    def onExit(self):
+    def onExit(self) -> None:
         """
         Called when Reposcanner has finished execution.
         """
         pass
 
     @abstractmethod
-    def onRoutineCreation(self, routine):
+    def onRoutineCreation(self, routine: DataMiningRoutine) -> None:
         """
         Called when a RepositoryRoutine object is created during initialization.
 
@@ -103,7 +111,7 @@ class AbstractLabNotebook(ABC):
         pass
 
     @abstractmethod
-    def onAnalysisCreation(self, analysis):
+    def onAnalysisCreation(self, analysis: DataAnalysis) -> None:
         """
         Called when an DataAnalysis object is created during initialization.
 
@@ -112,7 +120,7 @@ class AbstractLabNotebook(ABC):
         pass
 
     @abstractmethod
-    def onTaskCreation(self, task):
+    def onTaskCreation(self, task: ManagerTask) -> None:
         """
         Called when a ManagerTask object is created.
 
@@ -121,7 +129,12 @@ class AbstractLabNotebook(ABC):
         pass
 
     @abstractmethod
-    def onTaskStart(self, task, store, agent):
+    def onTaskStart(
+            self,
+            task: ManagerTask,
+            store: dataEntities.DataEntityStore,
+            agent: Union[DataMiningRoutine, DataAnalysis],
+    ) -> None:
         """
         Called when a ManagerTask object is created.
 
@@ -132,7 +145,11 @@ class AbstractLabNotebook(ABC):
         pass
 
     @abstractmethod
-    def onTaskCompletion(self, task, agent):
+    def onTaskCompletion(
+            self,
+            task: ManagerTask,
+            agent: Union[DataMiningRoutine, DataAnalysis],
+    ) -> None:
         """
         Called when a ManagerTask object has been processed and has received a response.
 
@@ -142,7 +159,7 @@ class AbstractLabNotebook(ABC):
         pass
 
     @abstractmethod
-    def publishNotebook(self):
+    def publishNotebook(self) -> None:
         """
         Output the lab notebook's contents to a file.
 
@@ -159,7 +176,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
     class.
     """
 
-    def __init__(self, notebookOutputDirectory):
+    def __init__(self, notebookOutputDirectory: str) -> None:
         """
         notebookOutputDirectory: The directory where provenance files should be stored when calling
         publishNotebook().
@@ -181,20 +198,20 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                         {notebookOutputDirectory}.".format(
                     notebookOutputDirectory=self._notebookOutputDirectory))
 
-    def getJSONRepresentation(self):
+    def getJSONRepresentation(self) -> Any:
         """
         Returns the underlying Prov document in JSON form for testing purposes.
         """
         serialized = self._document.serialize()
         return json.loads(serialized)
 
-    def getProvnRepresentation(self):
+    def getProvnRepresentation(self) -> str:
         """
         Returns the underlying Prov document in PROV-N form for testing purposes.
         """
         return self._document.get_provn()
 
-    def onStartup(self, args):
+    def onStartup(self, args: argparse.Namespace) -> None:
         """
         Called when Reposcanner is first initialized.
 
@@ -230,13 +247,13 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         self._document.wasInformedBy("rs:ReposcannerManager", credentialsListEntity)
         self._document.wasInformedBy("rs:ReposcannerManager", configListEntity)
 
-    def onExit(self):
+    def onExit(self) -> None:
         """
         Called when Reposcanner has finished execution.
         """
         pass
 
-    def onRoutineCreation(self, routine):
+    def onRoutineCreation(self, routine: DataMiningRoutine) -> None:
         """
         Called when a RepositoryRoutine or ExternalCommandLineToolRoutine object is created during initialization.
 
@@ -248,7 +265,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 clazz=routine.__class__.__name__))
         self._document.actedOnBehalfOf(routine, "rs:ReposcannerManager")
 
-    def onAnalysisCreation(self, analysis):
+    def onAnalysisCreation(self, analysis: DataAnalysis) -> None:
         """
         Called when an DataAnalysis object is created during initialization.
 
@@ -259,14 +276,13 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                 clazz=analysis.__class__.__name__))
         self._document.actedOnBehalfOf(analysis, "rs:ReposcannerManager")
 
-    def onTaskCreation(self, task):
+    def onTaskCreation(self, task: ManagerTask) -> None:
         """
         Called when a ManagerTask object is created.
 
         task: The ManagerTask object.
         """
-        request = task.getRequest()
-        if request.isRoutineRequestType():
+        if isinstance(task, ManagerRepositoryRoutineTask):
             task = self._document.activity("rs:task{taskid}".format(taskid=id(task)), other_attributes=(
                 ('rs:requestType', task.getRequestClassName()),
                 ('rs:projectID', task.getProjectID()),
@@ -282,7 +298,12 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
 
         self._document.wasGeneratedBy("rs:ReposcannerManager", task)
 
-    def onTaskStart(self, task, store, agent):
+    def onTaskStart(
+            self,
+            task: ManagerTask,
+            store: dataEntities.DataEntityStore,
+            agent: Union[DataMiningRoutine, DataAnalysis],
+    ) -> None:
         """
         Called when a ManagerTask object is created.
 
@@ -300,7 +321,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         # If the request is an analysis request, we can probe the request to see which
         # files it intends to grab from the data store.
         request = task.getRequest()
-        if request.isAnalysisRequestType():
+        if isinstance(request, AnalysisRequestModel):
             filesToBeUsedInAnalysis = store.getByCriteria(request.getDataCriteria())
             for entity in filesToBeUsedInAnalysis:
                 entityID = None
@@ -311,7 +332,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                         objID=id(entity))
                 self._document.usage(taskID, entityID)
 
-    def logAdditionalDataEntity(self, entity):
+    def logAdditionalDataEntity(self, attachment: dataEntities.ReposcannerDataEntity) -> None:
         """
         Convenience method added to enable us to log reposcanner-data files added
         to the data store at start-up.
@@ -320,12 +341,16 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         dataEntity = self._document.entity(dataEntityID, (
             (prov.PROV_TYPE, "File"),
             ('rs:executionID', attachment.getReposcannerExecutionID()),
-            ('rs:path', attachment.getFilePath()),
+            ('rs:path', str(attachment.getFilePath())),
             ('rs:creator', attachment.getCreator()),
-            ('rs:md5hash', str(entity.getMD5Hash())),
+            ('rs:md5hash', str(attachment.getMD5Hash())),
         ))
 
-    def onTaskCompletion(self, task, agent):
+    def onTaskCompletion(
+            self,
+            task: ManagerTask,
+            agent: Union[DataMiningRoutine, DataAnalysis],
+    ) -> None:
         """
         Called when a ManagerTask object has been processed and has received a response.
 
@@ -352,7 +377,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                     dataEntity = self._document.entity(dataEntityID, (
                         (prov.PROV_TYPE, "File"),
                         ('rs:executionID', attachment.getReposcannerExecutionID()),
-                        ('rs:path', attachment.getFilePath()),
+                        ('rs:path', str(attachment.getFilePath())),
                         ('rs:creator', attachment.getCreator()),
                         ('rs:dateCreated', str(attachment.getDateCreated())),
                         ('rs:md5hash', str(md5Hash)),
@@ -379,7 +404,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                     self._document.wasGeneratedBy(dataEntityID, taskID)
                     self._document.wasAttributedTo(dataEntityID, agentID)
 
-    def publishNotebook(self):
+    def publishNotebook(self) -> None:
         """
         Output the lab notebook's contents to a file.
 
@@ -425,7 +450,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
                     versionInfo=versionInfo, executionID=executionID))
 
             # TODO: Collect all the names of the routines/analyses used.
-            routinesAndAnalyses = []
+            routinesAndAnalyses: List[str] = []
 
             markdownFile.write("## Reposcanner\n")
             markdownFile.write(

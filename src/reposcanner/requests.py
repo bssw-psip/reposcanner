@@ -1,5 +1,7 @@
 import datetime
 import reposcanner.git as gitEntities
+from reposcanner.data import ReposcannerDataEntity, DataEntityStore
+from typing import List, Optional, Callable
 import os
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -11,36 +13,23 @@ class BaseRequestModel:
     form of a request model which routines/analyses understand.
     """
 
-    def __init__(self):
-        self._errors = []
+    def __init__(self) -> None:
+        self._errors: List[str] = []
 
-    def addError(self, message):
+    def addError(self, message: str) -> None:
         self._errors.append(message)
 
-    def hasErrors(self):
+    def hasErrors(self) -> bool:
         return len(self._errors) > 0
 
-    def getErrors(self):
+    def getErrors(self) -> List[str]:
         return self._errors
-
-    @classmethod
-    def isRoutineRequestType(cls):
-        return False
-
-    @classmethod
-    def isAnalysisRequestType(cls):
-        return False
 
 
 class AnalysisRequestModel(BaseRequestModel):
-
-    @classmethod
-    def isAnalysisRequestType(cls):
-        return True
-
-    def __init__(self, outputDirectory="./"):
+    def __init__(self, outputDirectory: str = "./") -> None:
         super().__init__()
-        self._data = []
+        self._data: List[ReposcannerDataEntity] = []
         try:
             self._outputDirectory = outputDirectory
             if not os.path.isdir(
@@ -62,10 +51,10 @@ class AnalysisRequestModel(BaseRequestModel):
                         {outputDirectory}: {exception}".format(outputDirectory=self._outputDirectory,
                                                                exception=exception))
 
-    def getOutputDirectory(self):
+    def getOutputDirectory(self) -> str:
         return self._outputDirectory
 
-    def criteriaFunction(self, entity):
+    def criteriaFunction(self, entity: ReposcannerDataEntity) -> bool:
         """
         Classes that inherit from AnalysisRequestModel must
         override the criteriaFunction to describe the data
@@ -81,7 +70,7 @@ class AnalysisRequestModel(BaseRequestModel):
         """
         return True
 
-    def getDataCriteria(self):
+    def getDataCriteria(self) -> Callable[[ReposcannerDataEntity], bool]:
         """
         This is called to get the criteria function, which is passed
         to DataEntityStore.getByCriteria() to retrieve the data which
@@ -89,7 +78,7 @@ class AnalysisRequestModel(BaseRequestModel):
         """
         return self.criteriaFunction
 
-    def fetchDataFromStore(self, store):
+    def fetchDataFromStore(self, store: DataEntityStore) -> None:
         """
         This is called by ManagerTask.process() prior to running an analysis request.
         It loads any data that fits the request's criteria into the request.
@@ -99,7 +88,7 @@ class AnalysisRequestModel(BaseRequestModel):
         for entity in store.getByCriteria(self.getDataCriteria()):
             self._data.append(entity)
 
-    def getData(self):
+    def getData(self) -> List[ReposcannerDataEntity]:
         """
         Get any stored data associated with this request.
         Called by the DataAnalysis instance responsible for handling the request.
@@ -113,7 +102,7 @@ class ExternalCommandLineToolRoutineRequest(BaseRequestModel):
     form of a request model which repository-mining routines understand.
     """
 
-    def __init__(self, outputDirectory):
+    def __init__(self, outputDirectory: str) -> None:
         """
         parameters:
                 outputDirectory (@input): The directory where files generated
@@ -142,16 +131,8 @@ class ExternalCommandLineToolRoutineRequest(BaseRequestModel):
                     {outputDirectory}: {exception}".format(outputDirectory=self._outputDirectory,
                                                            exception=exception))
 
-    def getOutputDirectory(self):
+    def getOutputDirectory(self) -> str:
         return self._outputDirectory
-
-    @classmethod
-    def isRoutineRequestType(cls):
-        return True
-
-    @classmethod
-    def isExternalCommandLineToolRequestType(cls):
-        return True
 
 
 class RepositoryRoutineRequestModel(BaseRequestModel):
@@ -160,7 +141,7 @@ class RepositoryRoutineRequestModel(BaseRequestModel):
     form of a request model which repository-mining routines understand.
     """
 
-    def __init__(self, repositoryURL, outputDirectory):
+    def __init__(self, repositoryURL: str, outputDirectory: str) -> None:
         """
         parameters:
                 repositoryURL (@input): A URL to a version control
@@ -172,7 +153,6 @@ class RepositoryRoutineRequestModel(BaseRequestModel):
         """
         super().__init__()
         factory = gitEntities.GitEntityFactory()
-        self._repositoryLocation = None
         try:
             self._repositoryLocation = factory.createRepositoryLocation(
                 url=repositoryURL)
@@ -207,19 +187,11 @@ class RepositoryRoutineRequestModel(BaseRequestModel):
                         {outputDirectory}: {exception}".format(outputDirectory=self._outputDirectory,
                                                                exception=exception))
 
-    def getRepositoryLocation(self):
+    def getRepositoryLocation(self) -> gitEntities.RepositoryLocation:
         return self._repositoryLocation
 
-    def getOutputDirectory(self):
+    def getOutputDirectory(self) -> str:
         return self._outputDirectory
-
-    @classmethod
-    def isRoutineRequestType(cls):
-        return True
-
-    @classmethod
-    def isExternalCommandLineToolRequestType(cls):
-        return False
 
 
 class OnlineRoutineRequest(RepositoryRoutineRequestModel):
@@ -228,22 +200,15 @@ class OnlineRoutineRequest(RepositoryRoutineRequestModel):
     Request classes for OnlineRepositoryRoutine should inherit from this class.
     """
 
-    @classmethod
-    def requiresOnlineAPIAccess(cls):
-        """
-        Tells the caller whether this request requires access to an online
-        version control API.
-        """
-        return True
-
     def __init__(
             self,
-            repositoryURL,
-            outputDirectory,
-            username=None,
-            password=None,
-            token=None,
-            keychain=None):
+            repositoryURL: str,
+            outputDirectory: str,
+            username: Optional[str] = None,
+            password: Optional[str] = None,
+            token: Optional[str] = None,
+            keychain: Optional[gitEntities.CredentialKeychain] = None,
+    ) -> None:
         """
         Additional Parameters:
 
@@ -259,8 +224,8 @@ class OnlineRoutineRequest(RepositoryRoutineRequestModel):
         """
         super().__init__(repositoryURL, outputDirectory)
 
-        self._credentials = None
         factory = gitEntities.GitEntityFactory()
+        self._credentials: Optional[gitEntities.VersionControlPlatformCredentials]
         if keychain is None:
             try:
                 self._credentials = factory.createVersionControlPlatformCredentials(
@@ -268,15 +233,20 @@ class OnlineRoutineRequest(RepositoryRoutineRequestModel):
                     password=password,
                     token=token)
             except Exception as exception:
-                self.addError("Encountered an unexpected exception \
-                                while constructing credentials object: {exception}".format(exception=exception))
+                self.addError(
+                    "Encountered an unexpected exception while constructing "
+                    "credentials object: {exception}".format(exception=exception))
         else:
             self._credentials = keychain.lookup(self.getRepositoryLocation())
             if self._credentials is None:
-                self.addError("Failed to find a matching set of credentials \
-                                 on the keychain (out of {numberOfCredentials} credentials) corresponding to the URL of the repository ({URL}).".format(numberOfCredentials=len(keychain), URL=repositoryURL))
+                self.addError(
+                    "Failed to find a matching set of credentials on the "
+                    "keychain (out of {numberOfCredentials} credentials) "
+                    "corresponding to the URL of the repository ({URL})."
+                    .format(numberOfCredentials=len(keychain), URL=repositoryURL)
+                )
 
-    def getCredentials(self):
+    def getCredentials(self) -> Optional[gitEntities.VersionControlPlatformCredentials]:
         return self._credentials
 
 
@@ -285,16 +255,7 @@ class OfflineRoutineRequest(RepositoryRoutineRequestModel):
     The base class for requests to routines that operate on an offline clone to compute results.
     Request classes for OfflineRepositoryRoutine should inherit from this class.
     """
-
-    @classmethod
-    def requiresOnlineAPIAccess(cls):
-        """
-        Tells the caller whether this request requires access to an online
-        version control API.
-        """
-        return False
-
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
+    def __init__(self, repositoryURL: str, outputDirectory: str, workspaceDirectory: str) -> None:
         """
         Additional Parameters:
 
@@ -310,18 +271,18 @@ class OfflineRoutineRequest(RepositoryRoutineRequestModel):
                 self.addError(
                     "The workspace directory {workspaceDirectory} either does not exist or \
                                 is not a valid directory.".format(
-                        outputDirectory=self._workspaceDirectory))
+                        workspaceDirectory=self._workspaceDirectory))
         except Exception as exception:
             self.addError("Encountered an unexpected exception \
                         while parsing workspace directory \
                         {workspaceDirectory}: {exception}".format(workspaceDirectory=self._workspaceDirectory,
                                                                   exception=exception))
 
-    def getCloneDirectory(self):
+    def getCloneDirectory(self) -> Path:
         return Path(self._workspaceDirectory) \
             / "{repoOwner}_{repoName}".format(
             repoOwner=self.getRepositoryLocation().getOwner(),
             repoName=self.getRepositoryLocation().getRepositoryName())
 
-    def getWorkspaceDirectory(self):
+    def getWorkspaceDirectory(self) -> str:
         return self._workspaceDirectory

@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 import urllib3
 import os
-import pygit2
-from reposcanner.git import GitEntityFactory, RepositoryLocation
-from reposcanner.response import ResponseFactory
+import pygit2  # type: ignore
+from reposcanner.git import GitEntityFactory, RepositoryLocation, VCSAPISessionCreator, Session
+from reposcanner.response import ResponseFactory, ResponseModel
+from reposcanner.requests import BaseRequestModel, ExternalCommandLineToolRoutineRequest, RepositoryRoutineRequestModel, OfflineRoutineRequest, OnlineRoutineRequest
+from typing import Optional, Dict, Any, Type, TYPE_CHECKING
 
 
 class DataMiningRoutine(ABC):
@@ -11,7 +13,7 @@ class DataMiningRoutine(ABC):
     The abstract base class for all data mining routines.
     """
 
-    def canHandleRequest(self, request):
+    def canHandleRequest(self, request: BaseRequestModel) -> bool:
         """
         Returns True if the routine is capable of handling the request (i.e. the
         RequestModel is of the type that the routine expects), and False otherwise.
@@ -22,14 +24,14 @@ class DataMiningRoutine(ABC):
             return False
 
     @abstractmethod
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         """
         Returns the class object for the routine's companion request type.
         """
         pass
 
     @abstractmethod
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
         """
         Contains the code for executing the data mining operations.
 
@@ -39,7 +41,7 @@ class DataMiningRoutine(ABC):
         """
         pass
 
-    def run(self, request):
+    def run(self, request: BaseRequestModel) -> ResponseModel:
         """
         Encodes the workflow of a DataMiningRoutine object. The client only needs
         to run this method in order to get results.
@@ -47,7 +49,7 @@ class DataMiningRoutine(ABC):
         response = self.execute(request)
         return response
 
-    def hasConfigurationParameters(self):
+    def hasConfigurationParameters(self) -> bool:
         """
         Checks whether the routine object was passed configuration parameters,
         whether valid or not. Routines are not required to do anything with parameters
@@ -59,7 +61,7 @@ class DataMiningRoutine(ABC):
         except BaseException:
             return False
 
-    def getConfigurationParameters(self):
+    def getConfigurationParameters(self) -> Optional[Dict[str, Any]]:
         """
         Returns the configuration parameters assigned to the routine.
         """
@@ -69,7 +71,7 @@ class DataMiningRoutine(ABC):
         except BaseException:
             return None
 
-    def setConfigurationParameters(self, configParameters):
+    def setConfigurationParameters(self, configParameters: Dict[str, Any]) -> None:
         """
         Assigns configuration parameters to a newly created routine.
         """
@@ -88,15 +90,7 @@ class ExternalCommandLineToolRoutine(DataMiningRoutine):
     provenance for their use.
     """
 
-    @abstractmethod
-    def isExternalToolAvailable(self):
-        """
-        Checks to see whether the tool can be called on the command-line.
-        This method should return True if so, False if not.
-        """
-        pass
-
-    def commandLineToolImplementation(self, request):
+    def commandLineToolImplementation(self, request: BaseRequestModel) -> ResponseModel:
         """
         This method should contain an implementation that calls the command-line tool
         and handles any information it gets back from that tool.
@@ -110,16 +104,16 @@ class ExternalCommandLineToolRoutine(DataMiningRoutine):
             message="This routine has no implementation available\
                         to call the command-line tool.")
 
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
         responseFactory = ResponseFactory()
-        if not self.canHandleRequest(request):
+        if not self.canHandleRequest(request) or not isinstance(request, ExternalCommandLineToolRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The routine was passed a request of the wrong type.")
         elif request.hasErrors():
             return responseFactory.createFailureResponse(
                 message="The request had errors in it and cannot be processed.",
                 attachments=request.getErrors())
-        elif not self.isExternalToolAvailable():
+        elif not isinstance(request, ExternalCommandLineToolRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The command-line tool required by this routine is not available or\
                         is otherwise unable to be called.")
@@ -137,14 +131,14 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
     Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
     """
 
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
         """
         The Offline routine execute() method delegates responsibility for performing the routine to
         the offlineImplementation() method. Subclasses of this class are responsible for
         overriding that methods.
         """
         responseFactory = ResponseFactory()
-        if not self.canHandleRequest(request):
+        if not self.canHandleRequest(request) or not isinstance(request, OfflineRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The routine was passed a request of the wrong type.")
         elif request.hasErrors():
@@ -154,7 +148,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
         else:
             try:
                 if not os.path.exists(request.getCloneDirectory()):
-                    def init_remote(repo, name, url):
+                    def init_remote(repo, name: str, url: str):
                         # Create the remote with a mirroring url
                         remote = repo.remotes.create(
                             name, url, "+refs/heads/*:refs/heads/*")
@@ -163,6 +157,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                         #repo.config[mirror_var] = True
                         # Return the remote, which pygit2 will use to perform the clone
                         return remote
+                    
                     session = pygit2.clone_repository(
                         request.getRepositoryLocation().getURL(),
                         request.getCloneDirectory(),
@@ -177,8 +172,9 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                 return responseFactory.createFailureResponse(
                     message="OfflineRepositoryRoutine Encountered an unexpected exception ({etype}).".format(
                         etype=type(e)), attachments=[e])
+            
 
-    def offlineImplementation(self, request, session):
+    def offlineImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
         """
         This method should contain the PyGit2-based implementation of the routine.
         By default, it'll return a failure response. Subclasses are responsible for
@@ -198,23 +194,23 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
     Class that encapsulates the stages of an PyGitHub-based analysis procedure operating on the GitHub API.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         factory = GitEntityFactory()
         compositeCreator = factory.createVCSAPISessionCompositeCreator()
         githubCreator = factory.createGitHubAPISessionCreator()
         gitlabCreator = factory.createGitlabAPISessionCreator()
         compositeCreator.addChild(githubCreator)
         compositeCreator.addChild(gitlabCreator)
-        self._sessionCreator = compositeCreator
+        self._sessionCreator: VCSAPISessionCreator = compositeCreator
 
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
         """
         The Online routine execute() method delegates responsibility for performing the routine to
         platform-API-specific methods. Subclasses of this class are responsible for
         overriding those methods.
         """
         responseFactory = ResponseFactory()
-        if not self.canHandleRequest(request):
+        if not self.canHandleRequest(request) or not isinstance(request, OnlineRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The routine was passed a request of the wrong type.")
         elif request.hasErrors():
@@ -230,6 +226,10 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
             platform = request.getRepositoryLocation().getVersionControlPlatform()
             repositoryLocation = request.getRepositoryLocation()
             credentials = request.getCredentials()
+            if credentials is None:
+                return responseFactory.createFailureResponse(
+                    message="request.getCredentials() returned None",
+                )
             try:
                 if platform == RepositoryLocation.VersionControlPlatform.GITHUB:
                     return self.githubImplementation(
@@ -254,18 +254,18 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
                     attachments=[e])
 
     @property
-    def sessionCreator(self):
+    def sessionCreator(self) -> VCSAPISessionCreator:
         """We expose this attribute for testing/validation purposes. Normally
         the session creator isn't touched after construction."""
         return self._sessionCreator
 
     @sessionCreator.setter
-    def sessionCreator(self, sessionCreator):
+    def sessionCreator(self, sessionCreator: VCSAPISessionCreator) -> None:
         """We expose this attribute for testing/validation purposes. Normally
         the session creator isn't touched after construction."""
         self._sessionCreator = sessionCreator
 
-    def githubImplementation(self, request, session):
+    def githubImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
         """
         This method should contain the GitHub API implementation of the routine.
         By default, it'll return a failure response. Subclasses are responsible for
@@ -279,7 +279,7 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
             message="This routine has no implementation available \
                         to handle a GitHub repository.")
 
-    def gitlabImplementation(self, request, session):
+    def gitlabImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
         """
         This method should contain the GitHub API implementation of the routine.
         By default, it'll return a failure response. Subclasses are responsible for
@@ -293,7 +293,7 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
             message="This routine has no implementation available \
                         to handle a Gitlab repository.")
 
-    def bitbucketImplementation(self, request, session):
+    def bitbucketImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
         """
         This method should contain the GitHub API implementation of the routine.
         By default, it'll return a failure response. Subclasses are responsible for

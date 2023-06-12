@@ -1,6 +1,13 @@
+# This future import allows us to reference a class in type annotations before it is declared.
+from __future__ import annotations
 import abc
 from enum import Enum
 import collections
+from typing import Optional, List, Iterable, Union, Any
+from reposcanner.data import ReposcannerDataEntity
+
+
+AttachmentType = Union[ReposcannerDataEntity, str, Exception]
 
 
 class ResponseStatus(Enum):
@@ -16,12 +23,20 @@ class ResponseFactory:
     A factory for churning out response model objects. Classes should use this factory to construct responses.
     """
 
-    def createSuccessResponse(self, message=None, attachments=None):
+    def createSuccessResponse(
+            self,
+            message: Optional[str] = None,
+            attachments: Union[None, AttachmentType, Iterable[AttachmentType]] = None,
+    ) -> ResponseModel:
         return ResponseModel(status=ResponseStatus.SUCCESS,
                              message=message,
                              attachments=attachments)
 
-    def createFailureResponse(self, message=None, attachments=None):
+    def createFailureResponse(
+            self,
+            message: Optional[str] = None,
+            attachments: Union[None, AttachmentType, Iterable[AttachmentType]] = None,
+    ) -> ResponseModel:
         return ResponseModel(status=ResponseStatus.FAILURE,
                              message=message,
                              attachments=attachments)
@@ -34,7 +49,12 @@ class ResponseModel:
     of how that data is presented to a client.
     """
 
-    def __init__(self, status, message=None, attachments=None):
+    def __init__(
+            self,
+            status: ResponseStatus,
+            message: Optional[str] = None,
+            attachments: Union[None, AttachmentType, Iterable[AttachmentType]] = None,
+    ) -> None:
         """
         Parameters
         ----------
@@ -50,37 +70,41 @@ class ResponseModel:
         """
         self._status = status
         self._message = message
-        self._attachments = []
+        self._attachments: List[AttachmentType] = []
 
-        def isIterable(obj):
+        def isIterable(obj: Any) -> bool:
             try:
                 iter(obj)
                 return True
             except TypeError as e:
                 return False
         if attachments is not None:
-            if isIterable(attachments) and not isinstance(attachments, str):
+            if isinstance(attachments, Iterable) and isIterable(attachments) and not isinstance(attachments, str):
                 for attachment in attachments:
                     self._attachments.append(attachment)
-            else:
+            elif isinstance(attachments, (str, ReposcannerDataEntity, Exception)):
                 self._attachments.append(attachments)
+            else:
+                raise TypeError("Invalid attachment type {attachmentType}".format(
+                    attachmentType=str(type(attachments))))
 
-    def hasMessage(self):
+
+    def hasMessage(self) -> bool:
         return self._message is not None
 
-    def getMessage(self):
+    def getMessage(self) -> Optional[str]:
         return self._message
 
-    def hasAttachments(self):
+    def hasAttachments(self) -> bool:
         return len(self._attachments) != 0
 
-    def getAttachments(self):
+    def getAttachments(self) -> List[AttachmentType]:
         return self._attachments
 
-    def addAttachment(self, attachment):
+    def addAttachment(self, attachment: AttachmentType) -> None:
         self._attachments.append(attachment)
 
-    def wasSuccessful(self):
+    def wasSuccessful(self) -> bool:
         if self._status == ResponseStatus.SUCCESS:
             return True
         else:

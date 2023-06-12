@@ -5,6 +5,28 @@ import reposcanner.requests as requests
 import reposcanner.response as responses
 
 
+# TODO: These tests use monkeypatching in a way that can affect other tests.
+# The test will monkeypatch a method, do an assertion, and then restore the method.
+# However, when the assertion fails, the method never gets restored.
+# Then, unrelated tests will start to fail, which makes it harder to localize the error.
+# Where possible, these tests should monkeypatch individual objects rather than classes.
+# Rather than:
+#
+#     originalMethod = Clazz.method
+#     Clazz.method = newMethod
+#     obj = Clazz()
+#     assert foo(obj)
+#     Clazz.method = originalMethod
+#
+# I propose:
+#
+#     obj = Clazz()
+#     obj.method = newMethod
+#     assert foo(obj)
+#
+# Clazz remains unaffected.
+
+
 def test_RepositoryRoutine_isConstructibleWithMockImplementation(mocker):
     mocker.patch.multiple(routines.RepositoryRoutine, __abstractmethods__=set())
     genericRoutine = routines.RepositoryRoutine()
@@ -103,7 +125,7 @@ def test_ExternalCommandLineToolRoutine_canSetConfigurationParameters(mocker):
     assert(genericRoutine.getConfigurationParameters() == configurationParameters)
 
 
-def test_OnlineRepositoryRoutine_isConstructibleWithMockImplementation(mocker):
+def test_OfflineRepositoryRoutine_isConstructibleWithMockImplementation(mocker):
     mocker.patch.multiple(routines.OnlineRepositoryRoutine, __abstractmethods__=set())
     genericRoutine = routines.OfflineRepositoryRoutine()
 
@@ -136,8 +158,8 @@ def test_OfflineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker
     routines.OfflineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
     genericRoutine = routines.OfflineRepositoryRoutine()
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
-        repositoryURL="https://github.com/owner/repo", outputDirectory="./")
+    genericRequest = requests.OfflineRoutineRequest(
+        repositoryURL="https://github.com/owner/repo", outputDirectory="./out", workspaceDirectory="./workspace")
     genericRequest.addError(message="Something has gone horribly wrong.")
     response = genericRoutine.run(genericRequest)
     assert(not response.wasSuccessful())
@@ -161,8 +183,8 @@ def test_OnlineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespons
     routines.OnlineRepositoryRoutine.canHandleRequest = canNeverHandleRequest
     genericRoutine = routines.OnlineRepositoryRoutine()
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
-        repositoryURL="https://github.com/owner/repo", outputDirectory="./")
+    genericRequest = requests.OnlineRoutineRequest(
+        repositoryURL="https://github.com/owner/repo", outputDirectory="./out")
     response = genericRoutine.run(genericRequest)
     assert(not response.wasSuccessful())
     assert(response.hasMessage())
@@ -179,7 +201,7 @@ def test_OnlineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker)
     routines.OnlineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
     genericRoutine = routines.OnlineRepositoryRoutine()
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
+    genericRequest = requests.OnlineRoutineRequest(
         repositoryURL="https://github.com/owner/repo", outputDirectory="./")
     genericRequest.addError(message="Something has gone horribly wrong.")
     response = genericRoutine.run(genericRequest)
@@ -203,11 +225,12 @@ def test_OnlineRepositoryRoutine_inabilityOfSessionCreatorToHandleRepositoryResu
     emptyAPICreator = gitEntityFactory.createVCSAPISessionCompositeCreator()
     genericRoutine.sessionCreator = emptyAPICreator
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
-        repositoryURL="https://github.com/owner/repo", outputDirectory="./")
+    genericRequest = requests.OnlineRoutineRequest(
+        repositoryURL="https://github.com/owner/repo", outputDirectory="./", username="foo", password="bar")
     response = genericRoutine.run(genericRequest)
     assert(not response.wasSuccessful())
     assert(response.hasMessage())
+    print(response.getMessage(), response.getAttachments())
     assert("to handle the platform of the repository" in response.getMessage())
     routines.OnlineRepositoryRoutine.canHandleRequest = originalCanHandleRequest
 

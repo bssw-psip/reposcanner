@@ -3,16 +3,17 @@ Here we have do-nothing dummy routines and analyses used in integration testing 
 """
 from reposcanner.routines import OfflineRepositoryRoutine, OnlineRepositoryRoutine
 from reposcanner.analyses import DataAnalysis
-from reposcanner.requests import OfflineRoutineRequest, OnlineRoutineRequest, AnalysisRequestModel
-from reposcanner.response import ResponseFactory
+from reposcanner.requests import OfflineRoutineRequest, OnlineRoutineRequest, AnalysisRequestModel, BaseRequestModel
+from reposcanner.response import ResponseFactory, ResponseModel
 from reposcanner.provenance import ReposcannerRunInformant
-from reposcanner.data import DataEntityFactory
+from reposcanner.data import DataEntityFactory, ReposcannerDataEntity
+from reposcanner.git import Session
 import datetime
+from typing import Type
 
 
 class DummyOfflineRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class DummyOfflineRoutine(OfflineRepositoryRoutine):
@@ -21,10 +22,11 @@ class DummyOfflineRoutine(OfflineRepositoryRoutine):
     file that only contains metadata.
     """
 
-    def getRequestType(self):
+    def getRequestType(self) -> type[BaseRequestModel]:
         return DummyOfflineRoutineRequest
 
-    def offlineImplementation(self, request, session):
+    def offlineImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, DummyOfflineRoutineRequest)
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_dummyOfflineData.csv".format(
@@ -42,21 +44,7 @@ class DummyOfflineRoutine(OfflineRepositoryRoutine):
 
 
 class DummyOnlineRoutineRequest(OnlineRoutineRequest):
-    def __init__(
-            self,
-            repositoryURL,
-            outputDirectory,
-            username=None,
-            password=None,
-            token=None,
-            keychain=None):
-        super().__init__(
-            repositoryURL,
-            outputDirectory,
-            username=username,
-            password=password,
-            token=token,
-            keychain=keychain)
+    pass
 
 
 class DummyOnlineRoutine(OnlineRepositoryRoutine):
@@ -65,10 +53,11 @@ class DummyOnlineRoutine(OnlineRepositoryRoutine):
     repository, then will output a data file that only contains metadata.
     """
 
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         return DummyOnlineRoutineRequest
 
-    def githubImplementation(self, request, session):
+    def githubImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, DummyOnlineRoutineRequest)
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_dummyOnlineData.csv".format(
@@ -84,7 +73,8 @@ class DummyOnlineRoutine(OnlineRepositoryRoutine):
         return responseFactory.createSuccessResponse(
             message="DummyOnlineRoutine completed!", attachments=output)
 
-    def gitlabImplementation(self, request, session):
+    def gitlabImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, DummyOnlineRoutineRequest)
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_dummyOnlineData.csv".format(
@@ -102,7 +92,7 @@ class DummyOnlineRoutine(OnlineRepositoryRoutine):
 
 
 class DummyAnalysisRequest(AnalysisRequestModel):
-    def criteriaFunction(self, entity):
+    def criteriaFunction(self, entity: ReposcannerDataEntity) -> bool:
         """
         The DummyAnalysisRequest attempts to fetch all data from the data store which
         was created by a DummyOfflineRoutine or a DummyOnlineRoutine.
@@ -118,9 +108,10 @@ class DummyAnalysisRequest(AnalysisRequestModel):
 
 
 class DummyAnalysis(DataAnalysis):
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         return DummyAnalysisRequest
 
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
+        assert isinstance(request, DummyAnalysisRequest)
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(message="DummyAnalysis completed!")

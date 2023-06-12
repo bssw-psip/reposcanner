@@ -13,12 +13,16 @@ logging.basicConfig(filename='reposcanner.log', level=logging.DEBUG)
 # TODO: Update this to be more generic (e.g. allow for reloading of data generated on) previous runs.
 # If the file doesn't have readable metadata associated with it, we can just say the creator is
 # "external" or unlisted.
-def loadReposcannerData(reposcannerDataDirectory, notebook, manager):
+def loadReposcannerData(
+        reposcannerDataDirectory: str,
+        notebook: provenance.ReposcannerLabNotebook,
+        manager: ReposcannerManager,
+) -> None:
     """
     Read in additional data files held by bssw-psip/reposcanner-data
     and add them to the manager's data store.
     """
-    def setupDataEntity(path):
+    def setupDataEntity(path: str) -> data.ReposcannerDataEntity:
         informant = provenance.ReposcannerRunInformant()
         dataEntityFactory = data.DataEntityFactory()
         dataEntity = dataEntityFactory.createAnnotatedCSVData(path)
@@ -50,12 +54,12 @@ def loadReposcannerData(reposcannerDataDirectory, notebook, manager):
         filePath = "{datadir}/{name}".format(
             datadir=reposcannerDataDirectory, name=fileName)
         if os.path.exists(filePath):
-            dataEntity = setupDataEntity(path)
+            dataEntity = setupDataEntity(filePath)
             manager.addDataEntityToStore(dataEntity)
             notebook.logAdditionalDataEntity(dataEntity)
 
 
-def scannerMain(args):
+def scannerMain(args: argparse.Namespace) -> None:
     """
     The master routine for Reposcanner.
     """
@@ -127,7 +131,7 @@ gui:
 """
 
 
-def run():
+def run() -> None:
     """Calls :func:`scannerMain` passing the CLI arguments extracted from :obj:`sys.argv`
 
     This function can be used as entry point to create console scripts with setuptools.

@@ -9,12 +9,6 @@ def test_AnalysisRequestModel_isDirectlyConstructible():
     analysisRequest = requests.AnalysisRequestModel(outputDirectory="./")
 
 
-def test_AnalysisRequestModel_isAnAnalysisRequestType():
-    analysisRequest = requests.AnalysisRequestModel(outputDirectory="./")
-    assert(analysisRequest.isAnalysisRequestType())
-    assert(not analysisRequest.isRoutineRequestType())
-
-
 def test_AnalysisRequestModel_hasNoErrorsForValidInput():
     analysisRequest = requests.AnalysisRequestModel(outputDirectory="./")
     assert(not analysisRequest.hasErrors())
@@ -52,13 +46,6 @@ def test_ExternalCommandLineToolRoutineRequest_isDirectlyConstructible():
     requests.ExternalCommandLineToolRoutineRequest(outputDirectory="./")
 
 
-def test_ExternalCommandLineToolRoutineRequest_isARoutineRequestType():
-    commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequest(
-        outputDirectory="./")
-    assert(not commandLineToolRequest.isAnalysisRequestType())
-    assert(commandLineToolRequest.isRoutineRequestType())
-
-
 def test_ExternalCommandLineToolRoutineRequest_hasNoErrorsForValidInput():
     commandLineToolRequest = requests.ExternalCommandLineToolRoutineRequest(
         outputDirectory="./")
@@ -85,13 +72,6 @@ def test_RepositoryRoutineRequestModel_isDirectlyConstructible():
     requests.RepositoryRoutineRequestModel(
         repositoryURL="https://github.com/owner/repo",
         outputDirectory="./")
-
-
-def test_AnalysisRequestModel_isARoutineRequestType():
-    routineRequest = requests.RepositoryRoutineRequestModel(
-        repositoryURL="https://github.com/owner/repo", outputDirectory="./")
-    assert(not routineRequest.isAnalysisRequestType())
-    assert(routineRequest.isRoutineRequestType())
 
 
 def test_RepositoryRoutineRequestModel_hasNoErrorsForValidInput():

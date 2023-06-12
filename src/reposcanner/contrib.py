@@ -1,10 +1,15 @@
+# This future import allows us to reference a class in type annotations before it is declared.
+from __future__ import annotations
 from reposcanner.routines import OfflineRepositoryRoutine, OnlineRepositoryRoutine
 from reposcanner.analyses import DataAnalysis
-from reposcanner.requests import OfflineRoutineRequest, OnlineRoutineRequest, AnalysisRequestModel
-from reposcanner.response import ResponseFactory
+from reposcanner.requests import BaseRequestModel, OfflineRoutineRequest, OnlineRoutineRequest, AnalysisRequestModel
+from reposcanner.response import ResponseFactory, ResponseModel
 from reposcanner.provenance import ReposcannerRunInformant
-from reposcanner.data import DataEntityFactory
-import pygit2
+from reposcanner.data import DataEntityFactory, ReposcannerDataEntity, AnnotatedCSVData
+from reposcanner.util import replaceNoneWithEmptyString
+from reposcanner.git import Session
+from typing import Dict, Type, List
+import pygit2  # type: ignore
 
 from pathlib import Path
 import time
@@ -21,8 +26,7 @@ import numpy as np
 
 
 class CommitInfoMiningRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
@@ -31,11 +35,8 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
     authorship information, the commit message, and which files were interacted with.
     """
 
-    def getRequestType(self):
-        return CommitInfoMiningRoutineRequest
-
-    def offlineImplementation(self, request, session):
-
+    def offlineImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, CommitInfoMiningRoutineRequest)
         factory = DataEntityFactory()
         fout = Path(request.getOutputDirectory()) \
             / "{repoOwner}_{repoName}_CommitInfoMining.csv".format(
@@ -80,7 +81,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             ["list"] +
             ["str"])
 
-        def _getFilesTouched(commit):
+        def _getFilesTouched(commit) -> List[str]:
             # TODO: Go back and check this method. Are we correctly interpreting the semantics of
             # the deltas we receive from pygit2?
             changes = []
@@ -103,13 +104,13 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                             changes.append(delta.new_file.path)
             return changes
 
-        def _cleanCommitMessage(s):
+        def _cleanCommitMessage(s: str) -> str:
             # This replaces all sequences of whitespace characters
             # with a single space, eliminating tabs, newlines, etc.
             # Also get rid of commas, as commas are our default delimiter.
             return re.sub('\\s+', ' ', s).replace(',', ' ')
 
-        def _getStats(commit):
+        def _getStats(commit) -> Dict[str, int]:
             changes = {'ins': 0, 'del': 0, 'files': 0}
             if len(commit.parents) == 0:
                 diff = commit.tree.diff_to_tree()
@@ -126,16 +127,8 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                     changes['files'] += diff.stats.files_changed
             return changes
 
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
         for commit in session.walk(session.head.target,
                                    pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL):
-            extractedCommitData = {}
-
             # The person who originally made the change and when they made it, a
             # pygit2.Signature.
             author = commit.author
@@ -180,18 +173,18 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
 
             filesTouched = _getFilesTouched(commit)
 
-            output.addRecord([_replaceNoneWithEmptyString(commitHash),
-                              _replaceNoneWithEmptyString(commitTime),
-                              _replaceNoneWithEmptyString(authorEmail),
-                              _replaceNoneWithEmptyString(authorName),
-                              _replaceNoneWithEmptyString(authorTime),
-                              _replaceNoneWithEmptyString(committerEmail),
-                              _replaceNoneWithEmptyString(committerName),
-                              _replaceNoneWithEmptyString(committerTime),
+            output.addRecord([replaceNoneWithEmptyString(commitHash),
+                              replaceNoneWithEmptyString(commitTime),
+                              replaceNoneWithEmptyString(authorEmail),
+                              replaceNoneWithEmptyString(authorName),
+                              replaceNoneWithEmptyString(authorTime),
+                              replaceNoneWithEmptyString(committerEmail),
+                              replaceNoneWithEmptyString(committerName),
+                              replaceNoneWithEmptyString(committerTime),
                               ";".join(coAuthors),
                               changes['ins'], changes['del'], changes['files'],
                               ';'.join(filesTouched),
-                              _cleanCommitMessage(_replaceNoneWithEmptyString(commitMessage))
+                              _cleanCommitMessage(replaceNoneWithEmptyString(commitMessage))
                               ])
 
         output.writeToFile()
@@ -200,21 +193,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
 
 
 class OnlineCommitAuthorshipRoutineRequest(OnlineRoutineRequest):
-    def __init__(
-            self,
-            repositoryURL,
-            outputDirectory,
-            username=None,
-            password=None,
-            token=None,
-            keychain=None):
-        super().__init__(
-            repositoryURL,
-            outputDirectory,
-            username=username,
-            password=password,
-            token=token,
-            keychain=keychain)
+    pass
 
 
 class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
@@ -223,16 +202,8 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
     with GitHub/Gitlab/Bitbucket account information.
     """
 
-    def getRequestType(self):
-        return OnlineCommitAuthorshipRoutineRequest
-
-    def githubImplementation(self, request, session):
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
+    def githubImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, OnlineCommitAuthorshipRoutineRequest)
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_OnlineCommitAuthorship.csv".format(
@@ -260,22 +231,17 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
             else:
                 committerLogin = None
 
-            output.addRecord([_replaceNoneWithEmptyString(commitHash),
-                              _replaceNoneWithEmptyString(authorLogin),
-                              _replaceNoneWithEmptyString(committerLogin)])
+            output.addRecord([replaceNoneWithEmptyString(commitHash),
+                              replaceNoneWithEmptyString(authorLogin),
+                              replaceNoneWithEmptyString(committerLogin)])
 
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(
             message="OnlineCommitAuthorshipRoutine completed!", attachments=output)
 
-    def gitlabImplementation(self, request, session):
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
+    def gitlabImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, OnlineCommitAuthorshipRoutineRequest)
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_OnlineCommitAuthorship.csv".format(
@@ -315,23 +281,23 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
             else:
                 committerLogin = None
 
-            output.addRecord([_replaceNoneWithEmptyString(commitHash),
-                              _replaceNoneWithEmptyString(authorLogin),
-                              _replaceNoneWithEmptyString(committerLogin)])
+            output.addRecord([replaceNoneWithEmptyString(commitHash),
+                              replaceNoneWithEmptyString(authorLogin),
+                              replaceNoneWithEmptyString(committerLogin)])
 
         output.writeToFile()
         responseFactory = ResponseFactory()
         return responseFactory.createSuccessResponse(
             message="OnlineCommitAuthorshipRoutine completed!", attachments=output)
 
-    def bitbucketImplementation(self, request, session):
+    def bitbucketImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
         # TODO: Implement Commit Author Identification Routine implementation for
         # Gitlab.
-        pass
+        raise NotImplementedError
 
 
 class GambitCommitAuthorshipInferenceAnalysisRequest(AnalysisRequestModel):
-    def criteriaFunction(self, entity):
+    def criteriaFunction(self, entity: ReposcannerDataEntity) -> bool:
         try:
             creator = entity.getCreator()
             if creator == "CommitInfoMiningRoutine":
@@ -361,31 +327,29 @@ class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         We check for the presence of the (optional) gambit package. This analysis
         cannot run unless gambit-disambig is installed.
         """
         super(GambitCommitAuthorshipInferenceAnalysis, self).__init__()
         try:
-            import gambit
+            import gambit  # type: ignore
         except ImportError:
-            self.gambitIsAvailable = False
             self.gambitImportRef = None
         else:
-            self.gambitIsAvailable = True
             self.gambitImportRef = gambit
 
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         """
         Returns the class object for the routine's companion request type.
         """
         return GambitCommitAuthorshipInferenceAnalysisRequest
 
-    def execute(self, request):
-
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
+        assert isinstance(request, GambitCommitAuthorshipInferenceAnalysisRequest)
         responseFactory = ResponseFactory()
-        if not self.gambitIsAvailable:
+        if not self.gambitImportRef is not None:
             return responseFactory.createFailureResponse(message="Gambit is not \
             installed, halting execution.")
 
@@ -416,6 +380,7 @@ class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
         contributorNamesAndEmails = set()
 
         for commitLogEntity in commitLogEntities:
+            assert isinstance(commitLogEntity, AnnotatedCSVData)
             commitLogFrame = commitLogEntity.getDataFrame()
             # TODO: Add support for co-authors listed in commit messages. We now collect this data
             # when running CommitInfoMiningRoutine, but we aren't yet checking it here.
@@ -452,7 +417,7 @@ class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
 
 
 class VerifiedCommitAuthorshipAnalysisRequest(AnalysisRequestModel):
-    def criteriaFunction(self, entity):
+    def criteriaFunction(self, entity: ReposcannerDataEntity) -> bool:
         try:
             creator = entity.getCreator()
             if creator == "OnlineCommitAuthorshipRoutine" or creator == "CommitInfoMiningRoutine":
@@ -465,22 +430,22 @@ class VerifiedCommitAuthorshipAnalysisRequest(AnalysisRequestModel):
 
 
 class VerifiedCommitAuthorshipAnalysis(DataAnalysis):
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         """
         Returns the class object for the routine's companion request type.
         """
         return VerifiedCommitAuthorshipAnalysisRequest
 
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
+        assert isinstance(request, VerifiedCommitAuthorshipAnalysisRequest)
         # TODO: Set up Verified Commit Authorship Analysis.
-        pass
+        raise NotImplementedError
 
 ########################################
 
 
 class OfflineCommitCountsRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
@@ -489,10 +454,11 @@ class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
     emails of contributors.
     """
 
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         return OfflineCommitCountsRoutineRequest
 
-    def offlineImplementation(self, request, session):
+    def offlineImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, OfflineCommitCountsRoutineRequest)
         numberOfCommitsByContributor = {}
 
         for commit in session.walk(session.head.target, pygit2.GIT_SORT_TOPOLOGICAL):
@@ -527,21 +493,7 @@ class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
 
 
 class ContributorAccountListRoutineRequest(OnlineRoutineRequest):
-    def __init__(
-            self,
-            repositoryURL,
-            outputDirectory,
-            username=None,
-            password=None,
-            token=None,
-            keychain=None):
-        super().__init__(
-            repositoryURL,
-            outputDirectory,
-            username=username,
-            password=password,
-            token=token,
-            keychain=keychain)
+    pass
 
 
 class ContributorAccountListRoutine(OnlineRepositoryRoutine):
@@ -551,16 +503,11 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
     # TODO: ContributorAccountListRoutine lacks a
     # bitbucketImplementation(self,request,session) method.
 
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         return ContributorAccountListRoutineRequest
 
-    def _replaceNoneWithEmptyString(self, value):
-        if value is None:
-            return ""
-        else:
-            return value
-
-    def githubImplementation(self, request, session):
+    def githubImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, ContributorAccountListRoutineRequest)
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_contributorAccounts.csv".format(
@@ -578,9 +525,9 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         contributors = [contributor for contributor in session.get_contributors()]
         for contributor in contributors:
             output.addRecord([
-                self._replaceNoneWithEmptyString(contributor.login),
-                self._replaceNoneWithEmptyString(contributor.name),
-                ';'.join([self._replaceNoneWithEmptyString(contributor.email)])
+                replaceNoneWithEmptyString(contributor.login),
+                replaceNoneWithEmptyString(contributor.name),
+                ';'.join([replaceNoneWithEmptyString(contributor.email)])
 
             ])
 
@@ -589,8 +536,10 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         return responseFactory.createSuccessResponse(
             message="Completed!", attachments=output)
 
-    def gitlabImplementation(self, request, session):
+    def gitlabImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, ContributorAccountListRoutineRequest)
         contributors = [contributor for contributor in session.users.list()]
+        factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_contributorAccounts.csv".format(
                 outputDirectory=request.getOutputDirectory(),
@@ -607,8 +556,8 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         contributors = [contributor for contributor in session.get_contributors()]
         for contributor in contributors:
             output.addRecord([
-                self._replaceNoneWithEmptyString(contributor.username),
-                self._replaceNoneWithEmptyString(contributor.name),
+                replaceNoneWithEmptyString(contributor.username),
+                replaceNoneWithEmptyString(contributor.name),
                 ';'.join(contributor.emails.list())
 
             ])
@@ -619,22 +568,22 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
 
 
 class FileInteractionRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class FileInteractionRoutine(OfflineRepositoryRoutine):
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         return FileInteractionRoutineRequest
 
-    def offlineImplementation(self, request, session):
+    def offlineImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
+        assert isinstance(request, FileInteractionRoutineRequest)
         # TODO: Implement offline, commit-based file interaction routine (in the
         # vein of Vasilescu et al.).
-        pass
+        raise NotImplementedError
 
 
 class ContributorFileInteractionAnalysisRequest(AnalysisRequestModel):
-    def criteriaFunction(self, entity):
+    def criteriaFunction(self, entity: ReposcannerDataEntity) -> bool:
         """
         Here we assume that the entity is, in fact, a
         ReposcannerDataEntity. Because we haven't yet
@@ -655,19 +604,19 @@ class ContributorFileInteractionAnalysisRequest(AnalysisRequestModel):
 
 
 class ContributorFileInteractionAnalysis(DataAnalysis):
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         """
         Returns the class object for the routine's companion request type.
         """
         return ContributorFileInteractionAnalysisRequest
 
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
         # TODO: Set up the Contributor File Interaction Analysis
-        pass
+        raise NotImplementedError()
 
 
 class TeamSizeAndDistributionAnalysisRequest(AnalysisRequestModel):
-    def criteriaFunction(self, entity):
+    def criteriaFunction(self, entity: ReposcannerDataEntity) -> bool:
         """
         Here we assume that the entity is, in fact, a
         ReposcannerDataEntity. Because we haven't yet
@@ -697,13 +646,14 @@ class TeamSizeAndDistributionAnalysis(DataAnalysis):
     the data, and a CSV file containing the data used to generate those graphs.
     """
 
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         """
         Returns the class object for the routine's companion request type.
         """
         return TeamSizeAndDistributionAnalysisRequest
 
-    def execute(self, request):
+    def execute(self, request: BaseRequestModel) -> ResponseModel:
+        assert isinstance(request, TeamSizeAndDistributionAnalysisRequest)
         responseFactory = ResponseFactory()
 
         data = request.getData()
@@ -713,22 +663,24 @@ class TeamSizeAndDistributionAnalysis(DataAnalysis):
             return responseFactory.createFailureResponse(
                 message="Received no ContributorAccountListRoutine data.")
 
-        loginData = next(
-            (entity for entity in data if "github_login.csv" in entity.getFilePath()),
+        loginDataEnt = next(
+            (entity for entity in data if "github_login.csv" in entity.getFilePath().name),
             None)
-        if loginData is None:
+        if loginDataEnt is None:
             return responseFactory.createFailureResponse(
                 message="Failed to find github_login.csv from reposcanner-data.")
         else:
-            loginData = loginData.getDataFrame(firstRowContainsHeaders=True)
+            assert isinstance(loginDataEnt, AnnotatedCSVData)
+            loginData = loginDataEnt.getDataFrame(firstRowContainsHeaders=True)
 
-        memberData = next(
-            (entity for entity in data if "members.csv" in entity.getFilePath()), None)
-        if memberData is None:
+        memberDataEnt = next(
+            (entity for entity in data if "members.csv" in entity.getFilePath().name), None)
+        if memberDataEnt is None:
             return responseFactory.createFailureResponse(
                 message="Failed to find members.csv from reposcanner-data.")
         else:
-            memberData = memberData.getDataFrame(firstRowContainsHeaders=True)
+            assert isinstance(memberDataEnt, AnnotatedCSVData)
+            memberData = memberDataEnt.getDataFrame(firstRowContainsHeaders=True)
 
         dataEntityFactory = DataEntityFactory()
         analysisCSVOutput = dataEntityFactory.createAnnotatedCSVData(
@@ -746,6 +698,7 @@ class TeamSizeAndDistributionAnalysis(DataAnalysis):
         analysisCSVOutput.setColumnDatatypes(["str", "int", "int", "int"])
 
         for contributorListEntity in contributorListEntities:
+            assert isinstance(contributorListEntity, AnnotatedCSVData)
             contributorListFrame = contributorListEntity.getDataFrame()
 
             repositoryURL = contributorListEntity.getURL()
