@@ -159,7 +159,7 @@ def test_YAMLData_isDirectlyConstructible():
     dataEntity = data.YAMLData("test.yaml")
 
 
-def test_AnnotatedCSVData_isConstructibleByFactory():
+def test_AnnotatedYAMLData_isConstructibleByFactory():
     factory = data.DataEntityFactory()
     factory.createYAMLData("test.yaml")
 
