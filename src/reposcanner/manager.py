@@ -5,7 +5,7 @@ from reposcanner.git import CredentialKeychain
 from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
 from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine
-from reposcanner.reproducibility import ReproducibilityOfflineRoutine
+from reposcanner.reproducibility import NextflowReproducibilityOfflineRoutine, SnakemakeReproducibilityOfflineRoutine
 import datetime
 import logging
 import curses

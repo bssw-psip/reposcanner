@@ -1,9 +1,26 @@
+"""
+SETUP
+"""
 . ../repo-env/bin/activate
 
+"""
+NEXTFLOW
+"""
 reposcanner \
 --credentials ldrd/inputs/credentials.yml \
---config ldrd/inputs/config.yml \
---repositories ldrd/inputs/repositories.yml \
+--config ldrd/inputs/nextflow-config.yml \
+--repositories ldrd/inputs/nextflow-repositories.yml \
+--workspaceDirectory ldrd/workspace \
+--outputDirectory ldrd/outputs \
+--notebookOutputPath ldrd/outputs
+
+"""
+SNAKEMAKE
+"""
+reposcanner \
+--credentials ldrd/inputs/credentials.yml \
+--config ldrd/inputs/snakemake-config.yml \
+--repositories ldrd/inputs/snakemake-repositories.yml \
 --workspaceDirectory ldrd/workspace \
 --outputDirectory ldrd/outputs \
 --notebookOutputPath ldrd/outputs
