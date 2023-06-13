@@ -48,14 +48,42 @@ reposcanner --credentials tutorial/inputs/credentials.yml --config tutorial/inpu
 
 3. examine the output files written to `tutorial/outputs`
 
-
 # How to extend functionality
 
-1. Create a new source file, `src/reposcanner/<routine.py>`, including a class
-   based on the `ContributorAccountListRoutine`.  See `stars.py` as an
-   example of the kind of modifications required.
+In the early days, the only way to extend Reposcanner was to modify its source, but now Reposcanner can be extended externally as well. We recommend the external method for future projects, so we don't create tons of forks of Reposcanner for each new analysis.
 
-2. Add the new class name (for example `- StarGazersRoutine`) to the end of `config.yml`.
+1. Create a new source file, `my_module.py` or `my_package/my_module.py`.
 
-3. Run the test scan and inspect output to ensure your scan worked as intended.
+2. Import `reposcanner.requests` and one of {`reposcanner.routine` or `reposcanner.analysis`}, depending on if you want to write a routine or an analysis.
 
+3. Locate the most relevant subclass of `reposcanner.requests.BaseRequestModel` and one of {`reposcanner.routines.DataMiningRoutine` or `reposcanner.analyses.DataAnalysis`}. E.g., for a routine that requires GitHub API access, one would subclass `OnlineRoutineRequest` and `OnlineRepositoryRoutine`. Reference the minimal blank example in `reposcanner.dummy` or real-world examples in `reposcanner.contrib`.
+
+4. Write a config file that refers to your routines and analyses. See the next section on configuration files.
+
+5. Check that `my_module` or `my_package.my_module` is importable. E.g., `python -c 'from my_module import MyRoutineOrAnalysis'`.
+  - The current working directory is implicitly in the `PYTHONPATH`, so your module or package will be importable if you run Python and Reposcanner from the directory which contains your module or package
+  - If your module or package does not reside in the current working directory, you need to add it to your `$PYTHONPATH` for it to be importable: `export PYTHONPATH=/path/to/proj:$PYTHONPATH`. This only has to be done once for your entire shell session. Note that the `$PYTHONPATH` should have the path to the directory containing your module or package, not the path to your module or package itself. E.g., In the previous example, if you have `/path/to/proj/my_module.py` or `/path/to/proj/my_package/my_module.py`, set the `PYTHONPATH` to `/path/to/proj`.
+
+6. Run Reposcanner.
+
+# Input files
+
+
+## config.yaml
+
+The config file contains a list of routines and a list of analyses. Each routine or analysis is identified as `my_module:ClassName` or `my_module.my_package:ClassName`.
+
+Within each routine, one can put a dictionary of keyword parameters that will get passed to that routine.
+
+```
+routines:
+  - my_module:NameOfOneRoutine
+  - routine: my_module:NameOfAnotherOneRoutine
+    arg0: "foo"
+    arg1: [1, 2, 3]
+analysis:
+  - my_module:NameOfOneRoutine
+  - my_module:NameOfAnotherOneRoutine
+    arg0: "foo"
+    arg1: [1, 2, 3]
+```
