@@ -23,21 +23,8 @@ class BaseRequestModel:
     def getErrors(self):
         return self._errors
 
-    @classmethod
-    def isRoutineRequestType(cls):
-        return False
-
-    @classmethod
-    def isAnalysisRequestType(cls):
-        return False
-
 
 class AnalysisRequestModel(BaseRequestModel):
-
-    @classmethod
-    def isAnalysisRequestType(cls):
-        return True
-
     def __init__(self, outputDirectory="./"):
         super().__init__()
         self._data = []
@@ -145,14 +132,6 @@ class ExternalCommandLineToolRoutineRequest(BaseRequestModel):
     def getOutputDirectory(self):
         return self._outputDirectory
 
-    @classmethod
-    def isRoutineRequestType(cls):
-        return True
-
-    @classmethod
-    def isExternalCommandLineToolRequestType(cls):
-        return True
-
 
 class RepositoryRoutineRequestModel(BaseRequestModel):
     """
@@ -213,28 +192,12 @@ class RepositoryRoutineRequestModel(BaseRequestModel):
     def getOutputDirectory(self):
         return self._outputDirectory
 
-    @classmethod
-    def isRoutineRequestType(cls):
-        return True
-
-    @classmethod
-    def isExternalCommandLineToolRequestType(cls):
-        return False
-
 
 class OnlineRoutineRequest(RepositoryRoutineRequestModel):
     """
     The base class for requests to routines that use an online API to compute results.
     Request classes for OnlineRepositoryRoutine should inherit from this class.
     """
-
-    @classmethod
-    def requiresOnlineAPIAccess(cls):
-        """
-        Tells the caller whether this request requires access to an online
-        version control API.
-        """
-        return True
 
     def __init__(
             self,
@@ -285,14 +248,6 @@ class OfflineRoutineRequest(RepositoryRoutineRequestModel):
     The base class for requests to routines that operate on an offline clone to compute results.
     Request classes for OfflineRepositoryRoutine should inherit from this class.
     """
-
-    @classmethod
-    def requiresOnlineAPIAccess(cls):
-        """
-        Tells the caller whether this request requires access to an online
-        version control API.
-        """
-        return False
 
     def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
         """

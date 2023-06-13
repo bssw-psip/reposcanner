@@ -31,9 +31,6 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
     authorship information, the commit message, and which files were interacted with.
     """
 
-    def getRequestType(self):
-        return CommitInfoMiningRoutineRequest
-
     def offlineImplementation(self, request, session):
 
         factory = DataEntityFactory()
@@ -335,10 +332,8 @@ class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
         try:
             import gambit
         except ImportError:
-            self.gambitIsAvailable = False
             self.gambitImportRef = None
         else:
-            self.gambitIsAvailable = True
             self.gambitImportRef = gambit
 
     def getRequestType(self):
@@ -350,7 +345,7 @@ class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
     def execute(self, request):
 
         responseFactory = ResponseFactory()
-        if not self.gambitIsAvailable:
+        if not self.gambitImportRef is not None:
             return responseFactory.createFailureResponse(message="Gambit is not \
             installed, halting execution.")
 

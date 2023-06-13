@@ -4,6 +4,7 @@ import os
 import pygit2
 from reposcanner.git import GitEntityFactory, RepositoryLocation
 from reposcanner.response import ResponseFactory
+from reposcanner.requests import ExternalCommandLineToolRoutineRequest, OfflineRoutineRequest, OnlineRoutineRequest
 
 
 class DataMiningRoutine(ABC):
@@ -112,14 +113,14 @@ class ExternalCommandLineToolRoutine(DataMiningRoutine):
 
     def execute(self, request):
         responseFactory = ResponseFactory()
-        if not self.canHandleRequest(request):
+        if not self.canHandleRequest(request) or not isinstance(request, ExternalCommandLineToolRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The routine was passed a request of the wrong type.")
         elif request.hasErrors():
             return responseFactory.createFailureResponse(
                 message="The request had errors in it and cannot be processed.",
                 attachments=request.getErrors())
-        elif not self.isExternalToolAvailable():
+        elif not isinstance(request, ExternalCommandLineToolRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The command-line tool required by this routine is not available or\
                         is otherwise unable to be called.")
@@ -144,7 +145,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
         overriding that methods.
         """
         responseFactory = ResponseFactory()
-        if not self.canHandleRequest(request):
+        if not self.canHandleRequest(request) or not isinstance(request, OfflineRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The routine was passed a request of the wrong type.")
         elif request.hasErrors():
@@ -214,7 +215,7 @@ class OnlineRepositoryRoutine(RepositoryRoutine):
         overriding those methods.
         """
         responseFactory = ResponseFactory()
-        if not self.canHandleRequest(request):
+        if not self.canHandleRequest(request) or not isinstance(request, OnlineRoutineRequest):
             return responseFactory.createFailureResponse(
                 message="The routine was passed a request of the wrong type.")
         elif request.hasErrors():

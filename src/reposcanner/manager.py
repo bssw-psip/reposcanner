@@ -1,6 +1,7 @@
 from reposcanner.git import CredentialKeychain
 from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
+from reposcanner.requests import AnalysisRequestModel, ExternalCommandLineToolRoutineRequest, OnlineRoutineRequest, RepositoryRoutineRequestModel
 from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine
 from reposcanner.analyses import DataAnalysis
 import warnings
@@ -63,7 +64,7 @@ class ManagerTask(ABC):
         if selectedAgent is not None:
             if notebook is not None:
                 notebook.onTaskStart(self, store, selectedAgent)
-            if self._request.isAnalysisRequestType():
+            if isinstance(self._request, AnalysisRequestModel):
                 self._request.fetchDataFromStore(store)
             self._response = selectedAgent.run(self._request)
             if notebook is not None:
@@ -73,7 +74,7 @@ class ManagerTask(ABC):
             self._response = responseFactory.createFailureResponse(
                 message="No routine/analysis was found that could \
                                 execute the request ({requestType}).".format(
-                    requestType=type(request)))
+                    requestType=type(self._request)))
 
     @abstractmethod
     def getResponseDescription(self):
@@ -348,27 +349,28 @@ class ReposcannerManager:
     def buildTask(self, projectID, projectName, url, routineOrAnalysis):
         """Constructs a task to hold a request/response pair."""
         requestType = routineOrAnalysis.getRequestType()
-        if requestType.isRoutineRequestType():
-            if requestType.isExternalCommandLineToolRequestType():
-                request = requestType(outputDirectory=self._outputDirectory)
-                task = ManagerExternalCommandLineToolTask(request)
-                return task
-            else:
-                if requestType.requiresOnlineAPIAccess():
-                    request = requestType(repositoryURL=url,
-                                          outputDirectory=self._outputDirectory,
-                                          keychain=self._keychain)
-                else:
-                    request = requestType(repositoryURL=url,
-                                          outputDirectory=self._outputDirectory,
-                                          workspaceDirectory=self._workspaceDirectory)
-                task = ManagerRepositoryRoutineTask(
-                    projectID=projectID, projectName=projectName, url=url, request=request)
-                return task
-        elif requestType.isAnalysisRequestType():
-            request = requestType()
-            task = ManagerAnalysisTask(request)
-            return task
+        if issubclass(requestType, ExternalCommandLineToolRoutineRequest):
+            cmd_request = requestType(outputDirectory=self._outputDirectory)
+            cmd_task = ManagerExternalCommandLineToolTask(cmd_request)
+            return cmd_task
+        elif issubclass(requestType, OnlineRoutineRequest):
+            online_request = requestType(repositoryURL=url,
+                                  outputDirectory=self._outputDirectory,
+                                  keychain=self._keychain)
+            online_task = ManagerRepositoryRoutineTask(
+                projectID=projectID, projectName=projectName, url=url, request=online_request)
+            return online_task
+        elif issubclass(requestType, RepositoryRoutineRequestModel):
+            repo_request = requestType(repositoryURL=url,
+                                  outputDirectory=self._outputDirectory,
+                                  workspaceDirectory=self._workspaceDirectory)
+            repo_task = ManagerRepositoryRoutineTask(
+                projectID=projectID, projectName=projectName, url=url, request=repo_request)
+            return repo_task
+        elif issubclass(requestType, AnalysisRequestModel):
+            analysis_request = requestType()
+            analysis_task = ManagerAnalysisTask(analysis_request)
+            return analysis_task
         else:
             raise TypeError(
                 "Encountered unrecognized request type when building task: {requestType}.".format(
