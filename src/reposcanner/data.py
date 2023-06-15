@@ -1,11 +1,16 @@
+# This future import allows us to reference a class in type annotations before it is declared.
+from __future__ import annotations
 from abc import ABC, abstractmethod
 import csv
+import _csv
 import re
 import os
 import hashlib
 import yaml
 import pandas as pd
+from pathlib import Path
 import datetime
+from typing import List, Iterable, Dict, Callable, Optional, Any, Tuple, Union, cast
 
 
 class DataEntityStore:
@@ -20,10 +25,10 @@ class DataEntityStore:
     class is used by the ReposcannerManager, who intercepts data following the completion of tasks.
     """
 
-    def __init__(self):
-        self._storage = []
+    def __init__(self) -> None:
+        self._storage: List[ReposcannerDataEntity] = []
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         Length operator for DataEntityStore.
 
@@ -31,7 +36,7 @@ class DataEntityStore:
         """
         return len(self._storage)
 
-    def __contains__(self, entity):
+    def __contains__(self, entity: ReposcannerDataEntity) -> bool:
         """
         'in' operator for DataEntityStore.
 
@@ -39,7 +44,7 @@ class DataEntityStore:
         """
         return entity in self._storage
 
-    def read(self):
+    def read(self) -> Iterable[ReposcannerDataEntity]:
         """
         Provides a generator to iterate over all the
         data held in the store. Usually callers will
@@ -48,7 +53,7 @@ class DataEntityStore:
         for entity in self._storage:
             yield entity
 
-    def insert(self, entity):
+    def insert(self, entity: ReposcannerDataEntity) -> None:
         """
         Add the ReposcannerDataEntity to the data store.
 
@@ -56,7 +61,7 @@ class DataEntityStore:
         """
         self._storage.append(entity)
 
-    def remove(self, entity):
+    def remove(self, entity: ReposcannerDataEntity) -> None:
         """
         Remove an entity from the data store, if it exists.
         This method will raise a ValueError if there is no such entity.
@@ -65,7 +70,7 @@ class DataEntityStore:
         """
         self._storage.remove(entity)
 
-    def getByCriteria(self, criteria):
+    def getByCriteria(self, criteria: Callable[[ReposcannerDataEntity], bool]) -> List[ReposcannerDataEntity]:
         """
         Return only those data entities that meet the specified criteria.
 
@@ -81,10 +86,10 @@ class DataEntityStore:
 
 
 class DataEntityFactory:
-    def createAnnotatedCSVData(self, filePath):
+    def createAnnotatedCSVData(self, filePath: Union[Path, str]) -> AnnotatedCSVData:
         return AnnotatedCSVData(filePath=filePath)
 
-    def createYAMLData(self, filePath):
+    def createYAMLData(self, filePath: Union[Path, str]) -> YAMLData:
         return YAMLData(filePath=filePath)
 
 
@@ -94,30 +99,30 @@ class ReposcannerDataEntity(ABC):
     by Reposcanner and its mining routines and analyses.
     """
 
-    def __init__(self, filePath):
+    def __init__(self, filePath: Union[Path, str]) -> None:
         """
         filepath: The path to the file where the data will be written (or read from).
         metadataAttributes: metadata associated with the data entity.
         """
-        self._metadataAttributes = {}
-        self._filePath = filePath
+        self._metadataAttributes: dict[str, Any] = {}
+        self._filePath = Path(filePath)
         self.setReposcannerExecutionID(None)
         self.setDateCreated(None)
         self.setCreator(None)
 
-    def getFilePath(self):
+    def getFilePath(self) -> Path:
         return self._filePath
 
-    def setMetadataAttribute(self, key, value):
+    def setMetadataAttribute(self, key: str, value: Any) -> None:
         self._metadataAttributes[key] = value
 
-    def getMetadataAttribute(self, key):
+    def getMetadataAttribute(self, key: str) -> Any:
         return self._metadataAttributes[key]
 
-    def getAttributeKeys(self):
+    def getAttributeKeys(self) -> Iterable[str]:
         return self._metadataAttributes.keys()
 
-    def setReposcannerExecutionID(self, executionid):
+    def setReposcannerExecutionID(self, executionid: Optional[str]) -> None:
         """
         executionid: A string containing an id that uniquely identifies
         the particular run of the Reposcanner tool that was used to
@@ -125,32 +130,32 @@ class ReposcannerDataEntity(ABC):
         """
         self.setMetadataAttribute("executionid", executionid)
 
-    def getReposcannerExecutionID(self):
-        return self.getMetadataAttribute("executionid")
+    def getReposcannerExecutionID(self) -> Optional[str]:
+        return cast(Optional[str], self.getMetadataAttribute("executionid"))
 
-    def setDateCreated(self, date):
+    def setDateCreated(self, dt: Optional[datetime.date]) -> None:
         """
-        datetime: A datetime.date object.
+        dt: A datetime.date object.
         """
-        self.setMetadataAttribute("datecreated", date)
+        self.setMetadataAttribute("datecreated", dt)
 
-    def getDateCreated(self):
-        return self.getMetadataAttribute("datecreated")
+    def getDateCreated(self) -> Optional[datetime.date]:
+        return cast(Optional[datetime.date], self.getMetadataAttribute("datecreated"))
 
-    def setCreator(self, creator):
+    def setCreator(self, creator: Optional[str]) -> None:
         """
         creator: A string indicating what routine, analysis, etc.
         was responsible for creating this data entity.
         """
         self.setMetadataAttribute("creator", creator)
 
-    def getCreator(self):
-        return self.getMetadataAttribute("creator")
+    def getCreator(self) -> Optional[str]:
+        return cast(Optional[str], self.getMetadataAttribute("creator"))
 
-    def fileExists(self):
+    def fileExists(self) -> bool:
         return os.path.exists(self._filePath)
 
-    def getMD5Hash(self):
+    def getMD5Hash(self) -> str:
         """
         Compute the MD5 checksum for a file for provenance-tracking purposes.
         """
@@ -162,7 +167,7 @@ class ReposcannerDataEntity(ABC):
         return hash_md5.hexdigest()
 
     @abstractmethod
-    def validateMetadata(self):
+    def validateMetadata(self) -> bool:
         """
         Should hold routines that validate that all necessary
         metadata is provided and/or is accurate
@@ -171,7 +176,7 @@ class ReposcannerDataEntity(ABC):
         pass
 
     @abstractmethod
-    def readFromFile(self):
+    def readFromFile(self) -> None:
         """
         Load the data in the file. Data will be accessible via
         this object.
@@ -179,7 +184,7 @@ class ReposcannerDataEntity(ABC):
         pass
 
     @abstractmethod
-    def writeToFile(self):
+    def writeToFile(self) -> None:
         """
         Write data held by this object to the file.
         """
@@ -195,24 +200,24 @@ class YAMLData(ReposcannerDataEntity):
     These files have no metadata associated with them.
     """
 
-    def __init__(self, filePath):
+    def __init__(self, filePath: Union[Path, str]) -> None:
         """
         filepath: The path to the file where the data will be written (or read from).
         data: The data loaded from or written to the output file in dictionary form.
         """
-        super().__init__(filePath)
-        self._data = {}
+        super().__init__(Path(filePath))
+        self._data: Dict[str, Any] = {}
 
-    def validateMetadata(self):
+    def validateMetadata(self) -> bool:
         return True
 
-    def getData(self):
+    def getData(self) -> Dict[str, Any]:
         return self._data
 
-    def setData(self, data):
+    def setData(self, data: Dict[str, Any]) -> None:
         self._data = data
 
-    def readFromFile(self):
+    def readFromFile(self) -> None:
         if not os.path.exists(self.getFilePath()):
             raise OSError("Reposcanner couldn't find the YAML file ({path})\
                         Shutting down as a precaution.".format(path=self.getFilePath()))
@@ -229,7 +234,7 @@ class YAMLData(ReposcannerDataEntity):
                                 the file.".format(path=self.getFilePath()))
         self._data = contents
 
-    def writeToFile(self):
+    def writeToFile(self) -> None:
         with open(self.getFilePath(), 'w') as outfile:
             yaml.dump(self._data, outfile, default_flow_style=False)
 
@@ -243,66 +248,66 @@ class AnnotatedCSVData(ReposcannerDataEntity):
     (Model for Tabular Data and Metadata on the Web, section 5.4).
     """
 
-    def __init__(self, filePath):
-        super().__init__(filePath)
-        self._records = []
+    def __init__(self, filePath: Union[Path, str]) -> None:
+        super().__init__(Path(filePath))
+        self._records: List[List[str]] = []
         self.setColumnNames([])
         self.setColumnDatatypes([])
         self.setProjectID(None)
         self.setProjectName(None)
         self.setURL(None)
 
-    def setProjectID(self, projectid):
+    def setProjectID(self, projectid: Optional[str]) -> None:
         """
         projectid: A string containing the idea for the project ID associated
         with a repository
         """
         self.setMetadataAttribute("projectid", projectid)
 
-    def getProjectID(self):
-        return self.getMetadataAttribute("projectid")
+    def getProjectID(self) -> Optional[str]:
+        return cast(Optional[str], self.getMetadataAttribute("projectid"))
 
-    def setProjectName(self, projectname):
+    def setProjectName(self, projectname: Optional[str]) -> None:
         """
         projectname: A string containing the name of the project associated with
         a repository.
         """
         self.setMetadataAttribute("projectname", projectname)
 
-    def getProjectName(self):
-        return self.getMetadataAttribute("projectname")
+    def getProjectName(self) -> Optional[str]:
+        return cast(Optional[str], self.getMetadataAttribute("projectname"))
 
-    def setURL(self, url):
+    def setURL(self, url: Optional[str]) -> None:
         """
         url: A string containing the URL that points to the repository where the
         data in this file was mined.
         """
         self.setMetadataAttribute("url", url)
 
-    def getURL(self):
-        return self.getMetadataAttribute("url")
+    def getURL(self) -> Optional[str]:
+        return cast(Optional[str], self.getMetadataAttribute("url"))
 
-    def getColumnNames(self):
-        return self.getMetadataAttribute("names")
+    def getColumnNames(self) -> List[str]:
+        return cast(List[str], self.getMetadataAttribute("names"))
 
-    def setColumnNames(self, names):
+    def setColumnNames(self, names: List[str]) -> None:
         """
         names: A list of strings containing the (in-order)
         names for each of the columns.
         """
         self.setMetadataAttribute("names", names)
 
-    def getColumnDatatypes(self):
-        return self.getMetadataAttribute("datatypes")
+    def getColumnDatatypes(self) -> List[str]:
+        return cast(List[str], self.getMetadataAttribute("datatypes"))
 
-    def setColumnDatatypes(self, datatypes):
+    def setColumnDatatypes(self, datatypes: List[str]) -> None:
         """
         datatypes: A list of strings describing the data
         types for each of the columns.
         """
         return self.setMetadataAttribute("datatypes", datatypes)
 
-    def addRecord(self, record):
+    def addRecord(self, record: List[Any]) -> None:
         """
         record: A list of objects containing the data needed
         to write out a record. Records are guaranteed to be
@@ -310,7 +315,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
         """
         self._records.append(record)
 
-    def getRawRecords(self):
+    def getRawRecords(self) -> List[List[Any]]:
         """
         Get a list of lists, each containing the data associated
         with the record. This method is provided for testing purposes
@@ -318,7 +323,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
         """
         return self._records
 
-    def getDataFrame(self, firstRowContainsHeaders=False):
+    def getDataFrame(self, firstRowContainsHeaders: bool = False) -> pd.DataFrame:
         """
         Returns file data in the form of a pandas DataFrame.
 
@@ -332,7 +337,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
             return pd.DataFrame.from_records(
                 self._records[1:], columns=self._records[0])
 
-    def getRecordsAsDicts(self):
+    def getRecordsAsDicts(self) -> List[Dict[str, Any]]:
         """
         Returns a list of dictionaries, one for each record, that maps
         the names of columns to their respective data in the files.
@@ -346,7 +351,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
             recordDicts.append(recordDict)
         return recordDicts
 
-    def validateMetadata(self):
+    def validateMetadata(self) -> bool:
         hasExecutionID = self.getReposcannerExecutionID() is not None
         hasCreator = self.getCreator() is not None
         hasDateCreated = self.getDateCreated() is not None
@@ -360,8 +365,8 @@ class AnnotatedCSVData(ReposcannerDataEntity):
             and hasProjectID and hasProjectName and hasURL \
             and hasColumnNames and hasColumnDatatypes
 
-    def readFromFile(self):
-        def readMetadataFromFile(text):
+    def readFromFile(self) -> None:
+        def readMetadataFromFile(text: str) -> Tuple[str, str]:
             try:
                 # TODO: This may turn out to be a fragile way of parsing the
                 # metadata line if the metadata value has spaces in it.
@@ -383,20 +388,21 @@ class AnnotatedCSVData(ReposcannerDataEntity):
                         if metadataKey == "names" or metadataKey == "datatypes":
                             # TODO: Parse names and datatypes, which are lists delimited
                             # by semicolons.
-                            metadataValue = metadataValue.split(sep=';')
-                            self.setMetadataAttribute(metadataKey, metadataValue)
-                        else:
-                            if metadataKey == "datecreated":
-                                metadataValue = datetime.date.fromisoformat(
+                            metadataValueSplit = metadataValue.split(sep=';')
+                            self.setMetadataAttribute(metadataKey, metadataValueSplit)
+                        elif metadataKey == "datecreated":
+                            metadataValueDate = datetime.date.fromisoformat(
                                     metadataValue)
+                            self.setMetadataAttribute(metadataKey, metadataValueDate)
+                        else:
                             self.setMetadataAttribute(metadataKey, metadataValue)
                     else:
                         currentlyReadingMetadata = False
                 else:
                     self.addRecord(row)
 
-    def writeToFile(self):
-        def writeMetadataFieldToFile(csvwriter, key, value):
+    def writeToFile(self) -> None:
+        def writeMetadataFieldToFile(csvwriter: _csv._writer, key: str, value: str) -> None:
             csvwriter.writerow(["#{key} {value}".format(key=key, value=value)])
         with open(self.getFilePath(), 'w', newline='\n') as f:
             csvwriter = csv.writer(
@@ -415,12 +421,18 @@ class AnnotatedCSVData(ReposcannerDataEntity):
             names = ";".join(self.getColumnNames())
             datatypes = ";".join(self.getColumnDatatypes())
 
-            writeMetadataFieldToFile(csvwriter, "executionid", executionid)
-            writeMetadataFieldToFile(csvwriter, "creator", creator)
-            writeMetadataFieldToFile(csvwriter, "datecreated", dateCreated)
-            writeMetadataFieldToFile(csvwriter, "projectid", projectID)
-            writeMetadataFieldToFile(csvwriter, "projectname", projectName)
-            writeMetadataFieldToFile(csvwriter, "url", url)
+            if executionid is not None:
+                writeMetadataFieldToFile(csvwriter, "executionid", executionid)
+            if creator is not None:
+                writeMetadataFieldToFile(csvwriter, "creator", creator)
+            if dateCreated is not None:
+                writeMetadataFieldToFile(csvwriter, "datecreated", dateCreated.isoformat())
+            if projectID is not None:
+                writeMetadataFieldToFile(csvwriter, "projectid", projectID)
+            if projectName is not None:
+                writeMetadataFieldToFile(csvwriter, "projectname", projectName)
+            if url is not None:
+                writeMetadataFieldToFile(csvwriter, "url", url)
             writeMetadataFieldToFile(csvwriter, "names", names)
             writeMetadataFieldToFile(csvwriter, "datatypes", datatypes)
 

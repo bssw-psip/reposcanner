@@ -1,12 +1,13 @@
 import reposcanner.contrib as contrib
 import reposcanner.data as data
+import pathlib
 
 
-def test_TeamSizeAndDistributionAnalysisRequest_isDirectlyConstructible():
+def test_TeamSizeAndDistributionAnalysisRequest_isDirectlyConstructible() -> None:
     request = contrib.TeamSizeAndDistributionAnalysisRequest()
 
 
-def test_TeamSizeAndDistributionAnalysisRequest_criteriaFunctionRecognizesNecessaryFiles():
+def test_TeamSizeAndDistributionAnalysisRequest_criteriaFunctionRecognizesNecessaryFiles() -> None:
     request = contrib.TeamSizeAndDistributionAnalysisRequest()
 
     dataEntityFactory = data.DataEntityFactory()
@@ -25,7 +26,7 @@ def test_TeamSizeAndDistributionAnalysisRequest_criteriaFunctionRecognizesNecess
     assert(irregularData)
 
 
-def test_TeamSizeAndDistributionAnalysisRequest_fetchesDataFromStore():
+def test_TeamSizeAndDistributionAnalysisRequest_fetchesDataFromStore() -> None:
     request = contrib.TeamSizeAndDistributionAnalysisRequest()
 
     dataEntityFactory = data.DataEntityFactory()
@@ -42,7 +43,7 @@ def test_TeamSizeAndDistributionAnalysisRequest_fetchesDataFromStore():
     store.insert(fileA)
     store.insert(fileB)
     store.insert(fileC)
-    store.insert(irregularData)
+    store.insert(irregularData)  # type: ignore
 
     assert(len(request.getData()) == 0)
     request.fetchDataFromStore(store)
@@ -52,18 +53,18 @@ def test_TeamSizeAndDistributionAnalysisRequest_fetchesDataFromStore():
     assert(fileB in dataInsideRequest)
 
 
-def test_TeamSizeAndDistributionAnalysis_isDirectlyConstructible():
+def test_TeamSizeAndDistributionAnalysis_isDirectlyConstructible() -> None:
     analysis = contrib.TeamSizeAndDistributionAnalysis()
 
 
-def test_TeamSizeAndDistributionAnalysis_requestTypeMatchesExpectedType():
+def test_TeamSizeAndDistributionAnalysis_requestTypeMatchesExpectedType() -> None:
     analysis = contrib.TeamSizeAndDistributionAnalysis()
     assert(analysis.getRequestType() == contrib.TeamSizeAndDistributionAnalysisRequest)
     request = contrib.TeamSizeAndDistributionAnalysisRequest()
     assert(analysis.canHandleRequest(request))
 
 
-def test_TeamSizeAndDistributionAnalysis_analysisReturnsFailureResponseIfThereIsNoContributorDataAvailable():
+def test_TeamSizeAndDistributionAnalysis_analysisReturnsFailureResponseIfThereIsNoContributorDataAvailable() -> None:
     request = contrib.TeamSizeAndDistributionAnalysisRequest()
     store = data.DataEntityStore()  # Store is empty! No data available to compute the analysis!
     request.fetchDataFromStore(store)
@@ -75,7 +76,7 @@ def test_TeamSizeAndDistributionAnalysis_analysisReturnsFailureResponseIfThereIs
     assert(response.getMessage() == "Received no ContributorAccountListRoutine data.")
 
 
-def test_TeamSizeAndDistributionAnalysis_analysisReturnsFailureResponseIfLoginDataNotAvailable():
+def test_TeamSizeAndDistributionAnalysis_analysisReturnsFailureResponseIfLoginDataNotAvailable() -> None:
     store = data.DataEntityStore()
     dataEntityFactory = data.DataEntityFactory()
     analysis = contrib.TeamSizeAndDistributionAnalysis()
@@ -92,8 +93,8 @@ def test_TeamSizeAndDistributionAnalysis_analysisReturnsFailureResponseIfLoginDa
     assert(not noLoginDataResponse.wasSuccessful())
 
 
-def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmpdir):
-    def generateContributorAccountListFile(store):
+def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmp_path: pathlib.Path) -> None:
+    def generateContributorAccountListFile(store: data.DataEntityStore) -> None:
         dataEntityFactory = data.DataEntityFactory()
         contributorAccountFile = dataEntityFactory.createAnnotatedCSVData(
             "data/contrib_account_file.csv")
@@ -111,7 +112,7 @@ def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmpdir):
             ["jimthewizard", "Jimothy Forrest", "jforrest@lbl@gov"])
         store.insert(contributorAccountFile)
 
-    def generateGithubLoginFile(store):
+    def generateGithubLoginFile(store: data.DataEntityStore) -> None:
         dataEntityFactory = data.DataEntityFactory()
         githubLoginFile = dataEntityFactory.createAnnotatedCSVData(
             "data/github_login.csv")
@@ -123,7 +124,7 @@ def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmpdir):
         githubLoginFile.addRecord([2, "jimthewizard", 138])
         store.insert(githubLoginFile)
 
-    def generateECPMembersFile(store):
+    def generateECPMembersFile(store: data.DataEntityStore) -> None:
         dataEntityFactory = data.DataEntityFactory()
         membersFile = dataEntityFactory.createAnnotatedCSVData("data/members.csv")
         membersFile.setCreator("external")
@@ -140,9 +141,9 @@ def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmpdir):
     generateGithubLoginFile(store)
     generateECPMembersFile(store)
 
-    mockOutputDirectory = tmpdir.mkdir("./mockoutput/")
+    mockOutputDirectory = tmp_path
     request = contrib.TeamSizeAndDistributionAnalysisRequest(
-        outputDirectory=mockOutputDirectory)
+        outputDirectory=str(mockOutputDirectory))
     request.fetchDataFromStore(store)
 
     analysis = contrib.TeamSizeAndDistributionAnalysis()
@@ -150,6 +151,7 @@ def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmpdir):
     assert(response.wasSuccessful())
 
     csvOutput = response.getAttachments()[0]
+    assert(isinstance(csvOutput, data.AnnotatedCSVData))
     assert(csvOutput.getCreator() == "TeamSizeAndDistributionAnalysis")
     scikitEntry = csvOutput.getRawRecords()[0]
     print(scikitEntry)

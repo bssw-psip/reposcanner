@@ -2,7 +2,7 @@ import pytest
 import reposcanner.response as responseapi
 
 
-def test_ResponseModel_CanConstructSuccessfulResponseByFactory():
+def test_ResponseModel_CanConstructSuccessfulResponseByFactory() -> None:
     message = None
     attachments = None
     responseFactory = responseapi.ResponseFactory()
@@ -11,7 +11,7 @@ def test_ResponseModel_CanConstructSuccessfulResponseByFactory():
     assert (successfulResponse.wasSuccessful() is True)
 
 
-def test_ResponseModel_CanConstructFailureResponseByFactory():
+def test_ResponseModel_CanConstructFailureResponseByFactory() -> None:
     message = None
     attachments = None
     responseFactory = responseapi.ResponseFactory()
@@ -20,22 +20,22 @@ def test_ResponseModel_CanConstructFailureResponseByFactory():
     assert (successfulResponse.wasSuccessful() is False)
 
 
-def test_ResponseModel_HasNoMessageByDefault():
-    status = None
+def test_ResponseModel_HasNoMessageByDefault() -> None:
+    status = responseapi.ResponseStatus.SUCCESS
     response = responseapi.ResponseModel(status)
     assert (response.hasMessage() is False)
     assert (response.getMessage() is None)
 
 
-def test_ResponseModel_HasNoAttachmentsByDefault():
-    status = None
+def test_ResponseModel_HasNoAttachmentsByDefault() -> None:
+    status = responseapi.ResponseStatus.SUCCESS
     response = responseapi.ResponseModel(status)
     assert (response.hasAttachments() is False)
     assert (len(response.getAttachments()) == 0)
 
 
-def test_ResponseModel_CanStoreAttachments():
-    status = None
+def test_ResponseModel_CanStoreAttachments() -> None:
+    status = responseapi.ResponseStatus.SUCCESS
     attachments = ["dataA", "dataB"]
     response = responseapi.ResponseModel(status,
                                          message=None,
@@ -44,8 +44,8 @@ def test_ResponseModel_CanStoreAttachments():
     assert (len(response.getAttachments()) == 2)
 
 
-def test_ResponseModel_CanStoreMessage():
-    status = None
+def test_ResponseModel_CanStoreMessage() -> None:
+    status = responseapi.ResponseStatus.SUCCESS
     message = "details listed here"
     response = responseapi.ResponseModel(status,
                                          message=message,

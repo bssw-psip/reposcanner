@@ -1,22 +1,30 @@
+# This future import allows us to reference a class in type annotations before it is declared.
+from __future__ import annotations
 from enum import Enum, auto
 import re
 import urllib3
 from abc import ABC, abstractmethod
+from typing import Optional, NewType, Dict, List, Any, cast
 
 import github as pygithub
 import gitlab as pygitlab
-import bitbucket as pybitbucket
-import pygit2
+import bitbucket as pybitbucket  # type: ignore
+import pygit2  # type: ignore
+
+
+# Placeholder
+Session = Any
 
 
 class GitEntityFactory:
     def createRepositoryLocation(
             self,
-            url,
-            expectedPlatform=None,
-            expectedHostType=None,
-            expectedOwner=None,
-            expectedRepositoryName=None):
+            url: str,
+            expectedPlatform: Optional[RepositoryLocation.VersionControlPlatform] = None,
+            expectedHostType: Optional[RepositoryLocation.HostType] = None,
+            expectedOwner: Optional[str] = None,
+            expectedRepositoryName: Optional[str] = None,
+    ) -> RepositoryLocation:
         return RepositoryLocation(url=url,
                                   expectedPlatform=expectedPlatform,
                                   expectedHostType=expectedHostType,
@@ -24,17 +32,21 @@ class GitEntityFactory:
                                   expectedRepositoryName=expectedRepositoryName)
 
     def createVersionControlPlatformCredentials(
-            self, username=None, password=None, token=None):
+            self,
+            username: Optional[str] = None,
+            password: Optional[str] = None,
+            token: Optional[str] = None,
+    ) -> VersionControlPlatformCredentials:
         return VersionControlPlatformCredentials(
             username=username, password=password, token=token)
 
-    def createVCSAPISessionCompositeCreator(self):
+    def createVCSAPISessionCompositeCreator(self) -> VCSAPISessionCompositeCreator:
         return VCSAPISessionCompositeCreator()
 
-    def createGitHubAPISessionCreator(self):
+    def createGitHubAPISessionCreator(self) -> GitHubAPISessionCreator:
         return GitHubAPISessionCreator()
 
-    def createGitlabAPISessionCreator(self):
+    def createGitlabAPISessionCreator(self) -> GitlabAPISessionCreator:
         return GitlabAPISessionCreator()
 
 
@@ -45,7 +57,7 @@ class VCSAPISessionCreator(ABC):
     sessions with those services.
     """
     @abstractmethod
-    def canHandleRepository(self, repositoryLocation):
+    def canHandleRepository(self, repositoryLocation: RepositoryLocation) -> bool:
         """
         Returns True if the creator knows how to connect to a given repository,
         and False otherwise.
@@ -55,7 +67,11 @@ class VCSAPISessionCreator(ABC):
         pass
 
     @abstractmethod
-    def connect(self, repositoryLocation, credentials):
+    def connect(
+            self,
+            repositoryLocation: RepositoryLocation,
+            credentials: VersionControlPlatformCredentials,
+    ) -> Session:
         """
         Attempts to establish a connection to a given repository using
         the credentials provided.
@@ -71,40 +87,49 @@ class VCSAPISessionCompositeCreator(VCSAPISessionCreator):
     A Composite pattern class for VCSAPISessionCreators.
     """
 
-    def __init__(self):
-        self._children = []
+    def __init__(self) -> None:
+        self._children: List[VCSAPISessionCreator] = []
 
-    def addChild(self, child):
+    def addChild(self, child: VCSAPISessionCreator) -> None:
         self._children.append(child)
 
-    def hasChild(self, child):
+    def hasChild(self, child: VCSAPISessionCreator) -> bool:
         return child in self._children
 
-    def getNumberOfChildren(self):
+    def getNumberOfChildren(self) -> int:
         return len(self._children)
 
-    def removeChild(self, child):
+    def removeChild(self, child: VCSAPISessionCreator) -> None:
         self._children.remove(child)
 
-    def canHandleRepository(self, repositoryLocation):
+    def canHandleRepository(self, repositoryLocation: RepositoryLocation) -> bool:
         for child in self._children:
             if child.canHandleRepository(repositoryLocation):
                 return True
         return False
 
-    def connect(self, repositoryLocation, credentials):
+    def connect(
+            self,
+            repositoryLocation: RepositoryLocation,
+            credentials: VersionControlPlatformCredentials,
+    ) -> Session:
         for child in self._children:
             if child.canHandleRepository(repositoryLocation):
                 return child.connect(repositoryLocation, credentials)
+        raise RuntimeError("No connector found for {}".format(repositoryLocation))
 
 
 class GitHubAPISessionCreator(VCSAPISessionCreator):
 
-    def canHandleRepository(self, repositoryLocation):
+    def canHandleRepository(self, repositoryLocation: RepositoryLocation) -> bool:
         return repositoryLocation.getVersionControlPlatform(
         ) == RepositoryLocation.VersionControlPlatform.GITHUB
 
-    def connect(self, repositoryLocation, credentials):
+    def connect(
+            self,
+            repositoryLocation: RepositoryLocation,
+            credentials: VersionControlPlatformCredentials,
+    ) -> Session:
         # These status codes are caused by random GitHub errors which should
         # trigger a retry.
         status_forcelist = (500, 502, 504)
@@ -129,16 +154,20 @@ class GitHubAPISessionCreator(VCSAPISessionCreator):
                 "with no username/password or token in it.")
 
         repository = session.get_repo(repositoryLocation.getCanonicalName())
-        return repository
+        return cast(Session, repository)
 
 
 class GitlabAPISessionCreator(VCSAPISessionCreator):
 
-    def canHandleRepository(self, repositoryLocation):
+    def canHandleRepository(self, repositoryLocation: RepositoryLocation) -> bool:
         return repositoryLocation.getVersionControlPlatform(
         ) == RepositoryLocation.VersionControlPlatform.GITLAB
 
-    def connect(self, repositoryLocation, credentials):
+    def connect(
+            self,
+            repositoryLocation: RepositoryLocation,
+            credentials: VersionControlPlatformCredentials,
+    ) -> Session:
         if credentials.hasTokenAvailable():
             session = pygitlab.Gitlab(
                 repositoryLocation.getURL(),
@@ -154,18 +183,22 @@ class GitlabAPISessionCreator(VCSAPISessionCreator):
                 "with no username/password or token in it.")
 
         repository = session.projects.get(repositoryLocation.getCanonicalName())
-        return repository
+        return cast(Session, repository)
 
 
 class BitbucketAPISessionCreator(VCSAPISessionCreator):
 
-    def canHandleRepository(self, repositoryLocation):
+    def canHandleRepository(self, repositoryLocation: RepositoryLocation) -> bool:
         return repositoryLocation.getVersionControlPlatform(
         ) == RepositoryLocation.VersionControlPlatform.BITBUCKET
 
-    def connect(self, repositoryLocation, credentials):
+    def connect(
+            self,
+            repositoryLocation: RepositoryLocation,
+            credentials: VersionControlPlatformCredentials,
+    ) -> Session:
         # TODO: Need to figure out how to connect to the Bitbucket API.
-        pass
+        raise NotImplementedError()
 
 
 class RepositoryLocation:
@@ -185,7 +218,7 @@ class RepositoryLocation:
         SELFHOSTED = auto()
         UNKNOWN = auto()
 
-    def _guessPlatformFromURL(self):
+    def _guessPlatformFromURL(self) -> None:
         """
         If the user does not explicitly state the expected platform (or type of platform)
         where the repository is located, we attempt to deduce this based on the URL.
@@ -217,7 +250,7 @@ class RepositoryLocation:
             self._platform = RepositoryLocation.VersionControlPlatform.UNKNOWN
             self._hostType = RepositoryLocation.HostType.UNKNOWN
 
-    def _guessOwnerAndRepositoryNameFromURL(self):
+    def _guessOwnerAndRepositoryNameFromURL(self) -> None:
         """
         If the user does not explicitly state the expected owner and repository name,
         we attempt to deduce these based on the URL.
@@ -267,11 +300,12 @@ class RepositoryLocation:
 
     def __init__(
             self,
-            url,
-            expectedPlatform=None,
-            expectedHostType=None,
-            expectedOwner=None,
-            expectedRepositoryName=None):
+            url: str,
+            expectedPlatform: Optional[VersionControlPlatform] = None,
+            expectedHostType: Optional[HostType] = None,
+            expectedOwner: Optional[str] = None,
+            expectedRepositoryName: Optional[str] = None,
+    ) -> None:
         """
         Parameters:
                 url: The URL to the repository.
@@ -312,25 +346,27 @@ class RepositoryLocation:
         else:
             self._guessOwnerAndRepositoryNameFromURL()
 
-    def getURL(self):
+    def getURL(self) -> str:
         return self._url
 
-    def getVersionControlPlatform(self):
+    def getVersionControlPlatform(self) -> VersionControlPlatform:
         return self._platform
 
-    def getVersionControlHostType(self):
+    def getVersionControlHostType(self) -> HostType:
         return self._hostType
 
-    def getOwner(self):
+    def getOwner(self) -> Optional[str]:
+        assert isinstance(self._owner, (str, type(None)))
         return self._owner
 
-    def getRepositoryName(self):
+    def getRepositoryName(self) -> Optional[str]:
+        assert isinstance(self._owner, (str, type(None)))
         return self._repositoryName
 
-    def getCanonicalName(self):
+    def getCanonicalName(self) -> str:
         return "{owner}/{repo}".format(owner=self._owner, repo=self._repositoryName)
 
-    def isRecognizable(self):
+    def isRecognizable(self) -> bool:
         return (self._platform != RepositoryLocation.VersionControlPlatform.UNKNOWN and
                 self._hostType != RepositoryLocation.HostType.UNKNOWN and
                 self._owner is not None and
@@ -346,7 +382,12 @@ class VersionControlPlatformCredentials:
     If all of the above, then the username and password should take precedence.
     """
 
-    def __init__(self, username=None, password=None, token=None):
+    def __init__(
+            self,
+            username: Optional[str] = None,
+            password: Optional[str] = None,
+            token: Optional[str] = None,
+    ) -> None:
         """
         Parameters:
                 username (@input): A string containing the client's handle.
@@ -364,19 +405,19 @@ class VersionControlPlatformCredentials:
             raise ValueError(
                 "Client did not supply a username/password or token. We need one of these in order to proceed!")
 
-    def hasUsernameAndPasswordAvailable(self):
+    def hasUsernameAndPasswordAvailable(self) -> bool:
         return self._username is not None and self._password is not None
 
-    def hasTokenAvailable(self):
+    def hasTokenAvailable(self) -> bool:
         return self._token is not None
 
-    def getUsername(self):
+    def getUsername(self) -> Optional[str]:
         return self._username
 
-    def getPassword(self):
+    def getPassword(self) -> Optional[str]:
         return self._password
 
-    def getToken(self):
+    def getToken(self) -> Optional[str]:
         return self._token
 
 
@@ -388,30 +429,23 @@ class CredentialKeychain:
     they need from a keychain during construction.
     """
 
-    def __init__(self, credentialsDictionary):
+    def __init__(self, credentialsDictionary: Dict[str, Dict[str, str]]) -> None:
         """
         credentialsDictionary: A dictionary containing credentials information.
         """
-        self._credentials = {}
+        self._credentials: Dict[str, VersionControlPlatformCredentials] = {}
 
         if not isinstance(credentialsDictionary, dict):
             raise TypeError("CredentialKeychain constructor expected to receive \
                         a dictionary object, but got a {wrongType} instead!".format(
                 wrongType=type(credentialsDictionary)))
 
-        def safeAccess(dictionary, key):
-            """A convenience function for error-free access to a dictionary"""
-            if key in dictionary:
-                return dictionary[key]
-            else:
-                return None
-
         for entryName in credentialsDictionary:
             entry = credentialsDictionary[entryName]
-            url = safeAccess(entry, "url")
-            username = safeAccess(entry, "username")
-            password = safeAccess(entry, "password")
-            token = safeAccess(entry, "token")
+            url = entry.get("url", None)
+            username = entry.get("username", None)
+            password = entry.get("password", None)
+            token = entry.get("token", None)
             if url is None:
                 print("Reposcanner: Warning, the entry {entryName} in \
                                 the credentials file is missing a URL. Skipping.".format(
@@ -428,10 +462,10 @@ class CredentialKeychain:
                 continue
             self._credentials[url] = credentialsObject
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._credentials)
 
-    def lookup(self, repositoryLocation):
+    def lookup(self, repositoryLocation: RepositoryLocation) -> Optional[VersionControlPlatformCredentials]:
         """
         Fetches a key from a keychain based on a RepositoryLocation's URL.
         If the URL matches more than one entry (e.g. a platform-wide entry

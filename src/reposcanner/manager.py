@@ -1,26 +1,40 @@
-from reposcanner.contrib import ContributorAccountListRoutine, OfflineCommitCountsRoutine, GambitCommitAuthorshipInferenceAnalysis
-from reposcanner.contrib import CommitInfoMiningRoutine, OnlineCommitAuthorshipRoutine
-from reposcanner.dummy import DummyOfflineRoutine, DummyOnlineRoutine, DummyAnalysis
+# This future import allows us to reference a class in type annotations before it is declared.
+from __future__ import annotations
 from reposcanner.git import CredentialKeychain
-from reposcanner.data import DataEntityStore
-from reposcanner.response import ResponseFactory
-from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine
-import datetime
+from reposcanner.data import DataEntityStore, ReposcannerDataEntity, YAMLData
+from reposcanner.response import ResponseFactory, ResponseModel
+from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine, DataMiningRoutine
+from reposcanner.requests import BaseRequestModel, AnalysisRequestModel, ExternalCommandLineToolRoutineRequest, RepositoryRoutineRequestModel, OnlineRoutineRequest
+from reposcanner.analyses import DataAnalysis
 import logging
+import warnings
+import importlib
 import curses
 import sys
+from typing import Sequence, Union, Optional, List, Iterable, Dict, Any, Tuple, cast, TYPE_CHECKING
 from tqdm import tqdm  # For progress checking in non-GUI mode.
 from abc import ABC, abstractmethod
 
+if TYPE_CHECKING:
+    # TYPE_CHECKING is false when actually executing
+    # This avoids an import cycle.
+    from reposcanner.provenance import AbstractLabNotebook
+
 
 class TaskFactory:
-    def createManagerRepositoryRoutineTask(self, projectID, projectName, url, request):
+    def createManagerRepositoryRoutineTask(
+            self,
+            projectID: str,
+            projectName: str,
+            url: str,
+            request: RepositoryRoutineRequestModel,
+    ) -> ManagerTask:
         return ManagerRepositoryRoutineTask(projectID, projectName, url, request)
 
-    def createManagerExternalCommandLineToolTask(self, request):
+    def createManagerExternalCommandLineToolTask(self, request: BaseRequestModel) -> ManagerTask:
         return ManagerExternalCommandLineToolTask(request)
 
-    def createManagerAnalysisTask(self, request):
+    def createManagerAnalysisTask(self, request: BaseRequestModel) -> ManagerTask:
         return ManagerAnalysisTask(request)
 
 
@@ -29,23 +43,29 @@ class ManagerTask(ABC):
     requests and responses that makes it easier for the frontend to display execution
     progress."""
 
-    def __init__(self, request):
+    def __init__(self, request: BaseRequestModel) -> None:
         self._request = request
-        self._response = None
+        self._response: Optional[ResponseModel] = None
 
-    def getRequestClassName(self):
+    def getRequestClassName(self) -> str:
         return self._request.__class__.__name__
 
-    def getRequest(self):
+    def getRequest(self) -> BaseRequestModel:
         return self._request
 
-    def hasResponse(self):
+    def hasResponse(self) -> bool:
         return self._response is not None
 
-    def getResponse(self):
+    def getResponse(self) -> ResponseModel:
+        assert self._response is not None
         return self._response
 
-    def process(self, agents, store, notebook):
+    def process(
+            self,
+            agents: Iterable[Union[DataMiningRoutine, DataAnalysis]],
+            store: DataEntityStore,
+            notebook: AbstractLabNotebook,
+    ) -> None:
         """
         Scan through a set of available routines or analyses and see if any can
         execute the request held by this task. If no routines or analyses can handle
@@ -63,7 +83,7 @@ class ManagerTask(ABC):
         if selectedAgent is not None:
             if notebook is not None:
                 notebook.onTaskStart(self, store, selectedAgent)
-            if self._request.isAnalysisRequestType():
+            if isinstance(self._request, AnalysisRequestModel):
                 self._request.fetchDataFromStore(store)
             self._response = selectedAgent.run(self._request)
             if notebook is not None:
@@ -73,10 +93,10 @@ class ManagerTask(ABC):
             self._response = responseFactory.createFailureResponse(
                 message="No routine/analysis was found that could \
                                 execute the request ({requestType}).".format(
-                    requestType=type(request)))
+                    requestType=type(self._request)))
 
     @abstractmethod
-    def getResponseDescription(self):
+    def getResponseDescription(self) -> str:
         """
         Generate a string that describes the response to the request in a human-readable
         way.
@@ -89,13 +109,13 @@ class ManagerRepositoryRoutineTask(ManagerTask):
     This Task class wraps requests and responses for RepositoryRoutines.
     """
 
-    def __init__(self, projectID, projectName, url, request):
+    def __init__(self, projectID: str, projectName: str, url: str, request: RepositoryRoutineRequestModel) -> None:
         super().__init__(request)
         self._projectID = projectID
         self._projectName = projectName
         self._url = url
 
-    def getDescription(self):
+    def getDescription(self) -> str:
         """
         Generates a string that describes the task.
         """
@@ -104,6 +124,7 @@ class ManagerRepositoryRoutineTask(ManagerTask):
         else:
             nameOrID = self._projectID
 
+        assert isinstance(self._request, RepositoryRoutineRequestModel)
         repositoryLocation = self._request.getRepositoryLocation()
         if repositoryLocation.isRecognizable():
             canonicalRepoNameOrUrl = repositoryLocation.getCanonicalName()
@@ -116,22 +137,23 @@ class ManagerRepositoryRoutineTask(ManagerTask):
             requestType=self._request.__class__.__name__
         )
 
-    def getProjectID(self):
+    def getProjectID(self) -> str:
         return self._projectID
 
-    def getProjectName(self):
+    def getProjectName(self) -> str:
         return self._projectName
 
-    def getURL(self):
+    def getURL(self) -> str:
         return self._url
 
-    def getResponseDescription(self):
-        repositoryLocation = self.getRequest().getRepositoryLocation()
+    def getResponseDescription(self) -> str:
+        assert isinstance(self._request, RepositoryRoutineRequestModel)
+        repositoryLocation = self._request.getRepositoryLocation()
         if repositoryLocation.isRecognizable():
             canonicalRepoNameOrUrl = repositoryLocation.getCanonicalName()
         else:
             canonicalRepoNameOrUrl = self._url
-
+        assert self._response is not None
         if self._response.wasSuccessful():
             return "✅ Routine ({repoNameOrURL} --> {requestType}) was successful!".format(
                 repoNameOrURL=canonicalRepoNameOrUrl,
@@ -149,14 +171,15 @@ class ManagerExternalCommandLineToolTask(ManagerTask):
     This Task class wraps requests and responses for ExternalCommandLineToolRoutines.
     """
 
-    def __init__(self, request):
+    def __init__(self, request: BaseRequestModel) -> None:
         super().__init__(request)
 
-    def getResponseDescription(self):
+    def getResponseDescription(self) -> str:
         """
         Generate a string that describes the response to the request in a human-readable
         way.
         """
+        assert self._response is not None
         if self._response.wasSuccessful():
             return "✅ External Command Line Tool Request ({requestType}) was successful!".format(
                 requestType=self.getRequest().__class__.__name__)
@@ -170,10 +193,11 @@ class ManagerAnalysisTask(ManagerTask):
     This Task class wraps requests and responses for DataAnalyses.
     """
 
-    def __init__(self, request):
+    def __init__(self, request: BaseRequestModel) -> None:
         super().__init__(request)
 
-    def getResponseDescription(self):
+    def getResponseDescription(self) -> str:
+        assert self._response is not None
         if self._response.wasSuccessful():
             return "✅ Analysis ({requestType}) was successful!".format(
                 requestType=self.getRequest().__class__.__name__
@@ -194,99 +218,133 @@ class ReposcannerManager:
 
     def __init__(
             self,
-            notebook=None,
-            outputDirectory="./",
-            workspaceDirectory="./",
-            gui=False):
+            notebook: Optional[AbstractLabNotebook] = None,
+            outputDirectory: str = "./",
+            workspaceDirectory: str = "./",
+            gui: bool = False,
+    ) -> None:
         self._notebook = notebook
-        self._repositoryRoutines = []
-        self._externalCommandLineToolRoutines = []
-        self._analyses = []
-        self._tasks = []
-        self._keychain = None
+        self._repositoryRoutines: List[RepositoryRoutine] = []
+        self._externalCommandLineToolRoutines: List[ExternalCommandLineToolRoutine] = []
+        self._analyses: List[DataAnalysis] = []
+        self._tasks: List[ManagerRepositoryRoutineTask] = []
+        self._keychain: Optional[CredentialKeychain] = None
         self._outputDirectory = outputDirectory
         self._workspaceDirectory = workspaceDirectory
         self._guiModeEnabled = gui
         self._store = DataEntityStore()
 
-    def initializeRoutinesAndAnalyses(self, configData):
+    @staticmethod
+    def dynamicallyImportFrom(name: str) -> Any:
+        if ":" not in name:
+            warnings.warn(
+                "Unqualified routine names ({}) are deprecated. "
+                "Use <module>.<RoutineClassName> or <package>.<module>:<RoutineClassName>."
+                .format(name),
+                DeprecationWarning,
+            )
+            import reposcanner.contrib, reposcanner.dummy
+            if hasattr(reposcanner.contrib, name):
+                return getattr(reposcanner.contrib, name)
+            elif hasattr(reposcanner.dummy, name):
+                return getattr(reposcanner.dummy, name)
+            elif name in globals():
+                return globals()[name]
+            else:
+                raise ValueError(
+                    "{} not found in the default search locations."
+                    .format(name)
+                )
+        else:
+            importName, _, objectName = name.partition(":")
+            module = importlib.import_module(importName)
+            return getattr(module, objectName)
+
+
+    def initializeRoutinesAndAnalyses(self, configData: Dict[str, Any]) -> None:
         """Constructs RepositoryRoutine and DataAnalysis objects that belong to the manager."""
 
-        if 'routines' in configData:
-            for routineEntry in configData['routines']:
-                if isinstance(routineEntry, dict):
-                    # The routineEntry is a dictionary, implying it
-                    # has parameters we need to pass to the
-                    # constructor. Otherwise it'll just be a plain string.
-                    routineName = list(routineEntry.keys())[0]
-                    configParameters = routineEntry[routineName]
-                else:
-                    routineName = routineEntry
-                    configParameters = None
-                try:
-                    routineClazz = getattr(sys.modules[__name__], routineName)
-                    routineInstance = routineClazz()
-                    routineInstance.setConfigurationParameters(configParameters)
+        for routineEntry in configData.get('routines', []):
+            if isinstance(routineEntry, dict):
+                # The routineEntry is a dictionary, implying it
+                # has parameters we need to pass to the
+                # constructor. Otherwise it'll just be a plain string.
+                routineName = list(routineEntry.keys())[0]
+                configParameters = routineEntry[routineName]
+            elif isinstance(routineEntry, str):
+                routineName = routineEntry
+                configParameters = None
+            else:
+                raise TypeError("Invalid routine: {} ({})"
+                                .format(routineEntry, type(routineEntry)))
 
-                    if isinstance(routineInstance, RepositoryRoutine):
-                        self._repositoryRoutines.append(routineInstance)
-                    elif isinstance(routineInstance, ExternalCommandLineToolRoutine):
-                        self._externalCommandLineToolRoutines.append(routineInstance)
-                    else:
-                        raise TypeError("ReposcannerManager does not know how to \
-                                                handle this routine type: {routineType}".format(type(routineInstance)))
-                except BaseException:
-                    raise ValueError(
-                        "Failed to instantiate routine matching name {name}".format(
-                            name=routineName))
+            routineClazz = self.dynamicallyImportFrom(routineName)
+            routineInstance = routineClazz()
+            routineInstance.setConfigurationParameters(configParameters)
 
-        if 'analyses' in configData:
-            for analysisEntry in configData['analyses']:
-                if isinstance(routineEntry, dict):
-                    # The analysisEntry is a dictionary, implying it
-                    # has parameters we need to pass to the
-                    # constructor. Otherwise it'll just be a plain string.
-                    analysisName = list(analysisEntry.keys())[0]
-                    configParameters = analysisEntry[analysisName]
-                else:
-                    analysisName = analysisEntry
-                    configParameters = None
-                try:
-                    analysisClazz = getattr(sys.modules[__name__], analysisName)
-                    analysisInstance = analysisClazz()
-                    analysisInstance.setConfigurationParameters(configParameters)
-                    self._analyses.append(analysisInstance)
-                except BaseException:
-                    raise ValueError(
-                        "Failed to instantiate analysis matching name {name}".format(
-                            name=analysisName))
+            if isinstance(routineInstance, RepositoryRoutine):
+                self._repositoryRoutines.append(routineInstance)
+            elif isinstance(routineInstance, ExternalCommandLineToolRoutine):
+                self._externalCommandLineToolRoutines.append(routineInstance)
+            else:
+                raise TypeError(
+                    "ReposcannerManager does not know how to handle this "
+                    "routine type: {}"
+                    .format(type(routineInstance))
+                )
 
-        for routine in self._repositoryRoutines:
+        for analysisEntry in configData.get('analyses', []):
+            if isinstance(analysisEntry, dict):
+                # The analysisEntry is a dictionary, implying it
+                # has parameters we need to pass to the
+                # constructor. Otherwise it'll just be a plain string.
+                analysisName = list(analysisEntry.keys())[0]
+                configParameters = analysisEntry[analysisName]
+            elif isinstance(analysisEntry, str):
+                analysisName = analysisEntry
+                configParameters = None
+            else:
+                raise TypeError("Invalid analysis: {} ({})"
+                                .format(analysisName, type(analysisName)))
+            analysisClazz = self.dynamicallyImportFrom(analysisName)
+            analysisInstance = analysisClazz()
+            analysisInstance.setConfigurationParameters(configParameters)
+
+            if isinstance(analysisInstance, DataAnalysis):
+                self._analyses.append(analysisInstance)
+            else:
+                raise TypeError(
+                    "ReposcannerManager does not know how to handle this "
+                    "analysis type: {}"
+                    .format(type(analysisInstance))
+                )
+
+        for r_routine in self._repositoryRoutines:
             if self._notebook is not None:
-                self._notebook.onRoutineCreation(routine)
-        for routine in self._externalCommandLineToolRoutines:
+                self._notebook.onRoutineCreation(r_routine)
+        for cmd_routine in self._externalCommandLineToolRoutines:
             if self._notebook is not None:
-                self._notebook.onRoutineCreation(routine)
+                self._notebook.onRoutineCreation(cmd_routine)
         for analysis in self._analyses:
             if self._notebook is not None:
                 self._notebook.onAnalysisCreation(analysis)
 
-    def addDataEntityToStore(self, entity):
+    def addDataEntityToStore(self, entity: ReposcannerDataEntity) -> None:
         """
         Allows the user to add additional data to the DataEntityStore
         prior to execution (e.g. from reposcanner-data)
         """
         self._store.insert(entity)
 
-    def getRoutines(self):
+    def getRoutines(self) -> Sequence[DataMiningRoutine]:
         """
         Provides a list of all routines
         available for the manager to delgate tasks to.
         Used for testing purposes.
         """
-        return self._repositoryRoutines + self._externalCommandLineToolRoutines
+        return (*self._repositoryRoutines, *self._externalCommandLineToolRoutines)
 
-    def getRepositoryRoutines(self):
+    def getRepositoryRoutines(self) -> Sequence[RepositoryRoutine]:
         """
         Provides a list of repository-mining routines
         available for the manager to delgate tasks to.
@@ -294,7 +352,7 @@ class ReposcannerManager:
         """
         return self._repositoryRoutines
 
-    def getExternalCommandLineToolRoutines(self):
+    def getExternalCommandLineToolRoutines(self) -> Sequence[ExternalCommandLineToolRoutine]:
         """
         Provides a list of external command-line tool routines
         available for the manager to delgate tasks to.
@@ -302,46 +360,51 @@ class ReposcannerManager:
         """
         return self._externalCommandLineToolRoutines
 
-    def getAnalyses(self):
+    def getAnalyses(self) -> Sequence[DataAnalysis]:
         """
         Provides a list of analyses available for the manager
         to delgate tasks to. Used for testing purposes.
         """
         return self._analyses
 
-    def isGUIModeEnabled(self):
+    def isGUIModeEnabled(self) -> bool:
         return self._guiModeEnabled
 
-    def buildTask(self, projectID, projectName, url, routineOrAnalysis):
+    def buildTask(self, projectID: str, projectName: str, url: str, routineOrAnalysis: Union[DataMiningRoutine, DataAnalysis]) -> ManagerTask:
         """Constructs a task to hold a request/response pair."""
         requestType = routineOrAnalysis.getRequestType()
-        if requestType.isRoutineRequestType():
-            if requestType.isExternalCommandLineToolRequestType():
-                request = requestType(outputDirectory=self._outputDirectory)
-                task = ManagerExternalCommandLineToolTask(request)
-                return task
-            else:
-                if requestType.requiresOnlineAPIAccess():
-                    request = requestType(repositoryURL=url,
-                                          outputDirectory=self._outputDirectory,
-                                          keychain=self._keychain)
-                else:
-                    request = requestType(repositoryURL=url,
-                                          outputDirectory=self._outputDirectory,
-                                          workspaceDirectory=self._workspaceDirectory)
-                task = ManagerRepositoryRoutineTask(
-                    projectID=projectID, projectName=projectName, url=url, request=request)
-                return task
-        elif requestType.isAnalysisRequestType():
-            request = requestType()
-            task = ManagerAnalysisTask(request)
-            return task
+        if issubclass(requestType, ExternalCommandLineToolRoutineRequest):
+            cmd_request = requestType(outputDirectory=self._outputDirectory)
+            cmd_task = ManagerExternalCommandLineToolTask(cmd_request)
+            return cmd_task
+        elif issubclass(requestType, OnlineRoutineRequest):
+            online_request = requestType(repositoryURL=url,
+                                  outputDirectory=self._outputDirectory,
+                                  keychain=self._keychain)
+            online_task = ManagerRepositoryRoutineTask(
+                projectID=projectID, projectName=projectName, url=url, request=online_request)
+            return online_task
+        elif issubclass(requestType, RepositoryRoutineRequestModel):
+            repo_request = requestType(repositoryURL=url,
+                                  outputDirectory=self._outputDirectory,
+                                  workspaceDirectory=self._workspaceDirectory) # type: ignore
+            repo_task = ManagerRepositoryRoutineTask(
+                projectID=projectID, projectName=projectName, url=url, request=repo_request)
+            return repo_task
+        elif issubclass(requestType, AnalysisRequestModel):
+            analysis_request = requestType()
+            analysis_task = ManagerAnalysisTask(analysis_request)
+            return analysis_task
         else:
             raise TypeError(
                 "Encountered unrecognized request type when building task: {requestType}.".format(
                     requestType=requestType))
 
-    def prepareTasks(self, repositoryDictionary, credentialsDictionary):
+    def prepareTasks(
+            self,
+            repositoryDictionary: Dict[str, Dict[str, Any]],
+            credentialsDictionary: Dict[str, Dict[str, str]],
+    ) -> None:
         """Interpret the user's inputs so we know what repositories we need to
         collect data on and how we can access them."""
         self._keychain = CredentialKeychain(credentialsDictionary)
@@ -357,14 +420,18 @@ class ReposcannerManager:
                     task = self.buildTask(projectID, projectName, url, routine)
                     if self._notebook is not None:
                         self._notebook.onTaskCreation(task)
+                    if not isinstance(task, ManagerRepositoryRoutineTask):
+                        raise TypeError("Tasks must be ManagerRepositoryRoutineTask not {}".format(type(task)))
                     self._tasks.append(task)
         for analysis in self._analyses:
             task = self.buildTask(projectID, projectName, url, analysis)
             if self._notebook is not None:
                 self._notebook.onTaskCreation(task)
+            if not isinstance(task, ManagerRepositoryRoutineTask):
+                raise TypeError("Tasks must be ManagerRepositoryRoutineTask not {}".format(type(task)))
             self._tasks.append(task)
 
-    def run(self, repositoriesDataFile, credentialsDataFile, configDataFile):
+    def run(self, repositoriesDataFile: YAMLData, credentialsDataFile: YAMLData, configDataFile: YAMLData) -> None:
         """
         run() is the primary method that is called by the main function.
         This method starts Reposcanner's execution.
@@ -377,15 +444,15 @@ class ReposcannerManager:
         else:
             self.executeWithGUI()
 
-    def executeWithNoGUI(self):
+    def executeWithNoGUI(self) -> None:
         """
         Plain-text execution mode.
         """
         for task in tqdm(self._tasks):
+            assert self._notebook is not None
+            #s: Tuple[Union[DataMiningRoutine, DataAnalysis], ...] = 
             task.process(
-                self._repositoryRoutines +
-                self._externalCommandLineToolRoutines +
-                self._analyses,
+                (*self._repositoryRoutines, *self._externalCommandLineToolRoutines, *self._analyses),
                 self._store,
                 self._notebook)
             response = task.getResponse()
@@ -394,13 +461,16 @@ class ReposcannerManager:
                 for attachment in response.getAttachments():
                     print(attachment)
             for attachment in response.getAttachments():
-                self._store.insert(attachment)
+                if isinstance(attachment, ReposcannerDataEntity):
+                    self._store.insert(attachment)
+                else:
+                    print("Cannot store attachment of type {attachmentType}".format(attachmentType=str(type(attachment))))
 
-    def executeWithGUI(self):
+    def executeWithGUI(self) -> None:
         """
         Fancy Curses-based GUI execution mode.
         """
-        def centerTextPosition(text, windowWidth):
+        def centerTextPosition(text: str, windowWidth: int) -> int:
             half_length_of_text = int(len(text) / 2)
             middle_column = int(windowWidth / 2)
             x_position = middle_column - half_length_of_text
@@ -442,7 +512,7 @@ class ReposcannerManager:
                                           int(screenWidth * 0.1))
             messageWindow.border(2)
             messageWindow.refresh()
-            messages = []
+            messages: List[str] = []
             messageLimit = messageWindowHeight - 4
             messages.insert(0, "Reposcanner Initalized")
 
@@ -510,13 +580,16 @@ class ReposcannerManager:
                 footer.addstr(1, 4, taskDescription, curses.A_BOLD)
                 footer.border(2)
                 footer.refresh()
+                assert self._notebook is not None
                 currentTask.process(
-                    self._repositoryRoutines +
-                    self._analyses,
+                    (*self._repositoryRoutines, *self._analyses),
                     self._store,
                     self._notebook)
                 for attachment in currentTask.getResponse().getAttachments():
-                    self._store.insert(attachment)
+                    if isinstance(attachment, ReposcannerDataEntity):
+                        self._store.insert(attachment)
+                    else:
+                        print("Cannot store attachment of type {attachmentType}".format(attachmentType=str(type(attachment))))
 
                 messages.insert(0, currentTask.getResponseDescription())
                 screen.refresh()
