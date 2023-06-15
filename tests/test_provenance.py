@@ -1,3 +1,4 @@
+import pathlib
 import pytest
 import datetime
 import reposcanner.provenance as provenance
@@ -135,10 +136,11 @@ def test_ReposcannerLabNotebook_canLogStartOfTask():
 def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
     # Overwriting methods of ContributorAccountListRoutine to return a
     # predetermined response.
+    path = pathlib.Path("loggedentitytest.csv")
 
     def generateCSVDataFile(tmpdir):
         informant = provenance.ReposcannerRunInformant()
-        dataEntity = dataEntities.AnnotatedCSVData("loggedentitytest.csv")
+        dataEntity = dataEntities.AnnotatedCSVData(str(path))
         timestamp = datetime.date.today()
 
         columnNames = ["Login Name", "Actual Name", "Email(s)"]
@@ -163,7 +165,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse(attachments=[])
         factory = dataEntities.DataEntityFactory()
-        csvDataEntity = factory.createAnnotatedCSVData(filePath="loggedentitytest.csv")
+        csvDataEntity = factory.createAnnotatedCSVData(filePath=str(path))
         csvDataEntity.readFromFile()
         response.addAttachment(csvDataEntity)
         return response
@@ -190,6 +192,9 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         store=dataEntities.DataEntityStore(),
         notebook=notebook)
 
+    assert path.exists()
+    path.unlink() # clean up after this test
+
     jsonDocument = notebook.getJSONRepresentation()
     taskID = list(jsonDocument['activity'].keys())[0]
 
@@ -203,7 +208,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
     dataEntityID = None
     for entityID in jsonDocument['entity']:
         dataEntity = jsonDocument['entity'][entityID]
-        if dataEntity['rs:path'] == 'loggedentitytest.csv':
+        if dataEntity['rs:path'] == str(path):
             dataEntityID = entityID
     assert(dataEntityID is not None)
 
@@ -265,10 +270,11 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
 
 
 def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
+    path = pathlib.Path("loggedentitytest.csv")
 
     def generateCSVDataFile():
         informant = provenance.ReposcannerRunInformant()
-        dataEntity = dataEntities.AnnotatedCSVData("loggedentitytest.csv")
+        dataEntity = dataEntities.AnnotatedCSVData(str(path))
         timestamp = datetime.date.today()
 
         columnNames = ["Login Name", "Actual Name", "Email(s)"]
@@ -296,7 +302,7 @@ def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
 
     def exportAddsAnAttachment(self, request, response):
         factory = dataEntities.DataEntityFactory()
-        csvDataEntity = factory.createAnnotatedCSVData(filePath="loggedentitytest.csv")
+        csvDataEntity = factory.createAnnotatedCSVData(filePath=path.name)
         csvDataEntity.readFromFile()
         response.addAttachment(csvDataEntity)
     contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
@@ -322,5 +328,8 @@ def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
         agents=[routine],
         store=dataEntities.DataEntityStore(),
         notebook=notebook)
+
+    assert path.exists()
+    path.unlink() # clean up after this test
 
     notebook.publishNotebook()

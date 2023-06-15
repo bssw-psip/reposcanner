@@ -126,7 +126,7 @@ def test_ExternalCommandLineToolRoutine_canSetConfigurationParameters(mocker):
 
 
 def test_OfflineRepositoryRoutine_isConstructibleWithMockImplementation(mocker):
-    mocker.patch.multiple(routines.OnlineRepositoryRoutine, __abstractmethods__=set())
+    mocker.patch.multiple(routines.OfflineRepositoryRoutine, __abstractmethods__=set())
     genericRoutine = routines.OfflineRepositoryRoutine()
 
 
