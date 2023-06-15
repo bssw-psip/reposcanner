@@ -13,24 +13,9 @@ The diagram above illustrates the overall architecture of the Reposcanner toolki
 
 ## How to Install
 
-First, clone the repository from GitHub:
-
 ```
-git clone https://github.com/bssw-psip/reposcanner.git
+pip install git+https://github.com/bssw-psip/reposcanner.git
 ```
-
-Then install Reposcanner and run the test suite:
-
-```
-cd reposcanner
-python3 -m venv ../repo-env # create a new virtual environment
-. ../repo-env/bin/activate  # activate the new virtual env
-pip install -e .            # create editable install
-tox                         # run tests
-```
-
-If all tests pass, the installation was successful, and you are ready to go!
-
 
 # How to Run
 
@@ -87,3 +72,41 @@ analysis:
     arg0: "foo"
     arg1: [1, 2, 3]
 ```
+
+# Contributing
+
+## How to install in development mode
+
+```
+git clone https://github.com/bssw-psip/reposcanner.git
+cd reposcanner
+python3 -m venv ../repo-env # create a new virtual environment
+. ../repo-env/bin/activate  # activate the new virtual env
+pip install -e .            # create editable install
+```
+
+Note you will need to run `. ../repo-env/bin/activate` every time you start a
+new shell to get this environment back.
+
+You can use a type-checker like [mypy] to catch errors before runtime. Mypy can
+catch variable name errors, type errors, function arity mismatches, and many
+others.
+
+[mypy]: https://www.mypy-lang.org/
+
+To run mypy,
+
+```
+export MYPYPATH=${PWD}/src:$MYPYPATH
+mypy --strict tests src
+```
+
+One can also use tests to build confidence in the correctness of the code.
+
+```
+export PYTHONPATH=${PWD}/src:$PYTHONPATH
+pytest
+```
+
+You can pass `--exitfirst` to exit after the first failing test and
+`--failed-first` to run the tests which failed last time first.
