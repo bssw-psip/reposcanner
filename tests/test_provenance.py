@@ -133,12 +133,12 @@ def test_ReposcannerLabNotebook_canLogStartOfTask():
     print(jsonDocument)
 
 
-def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
+def test_ReposcannerLabNotebook_canLogCompletionOfTask():
     # Overwriting methods of ContributorAccountListRoutine to return a
     # predetermined response.
     path = pathlib.Path("loggedentitytest.csv")
 
-    def generateCSVDataFile(tmpdir):
+    def generateCSVDataFile():
         informant = provenance.ReposcannerRunInformant()
         dataEntity = dataEntities.AnnotatedCSVData(str(path))
         timestamp = datetime.date.today()
@@ -159,7 +159,7 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         dataEntity.addRecord(["alicejones", "Alice Jones", "alice@llnl.gov"])
         dataEntity.writeToFile()
 
-    generateCSVDataFile(tmpdir)
+    generateCSVDataFile()
 
     def executeGeneratesResponse(self, request):
         factory = responses.ResponseFactory()
@@ -220,11 +220,10 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
     assert(relationExistsBetweenTaskAndFile)
 
 
-def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpdir):
+def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask():
     def executeGeneratesResponse(self, request):
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse(attachments=[])
-        factory = dataEntities.DataEntityFactory()
         nonstandardData = {"a": 5, "b": 255}
         response.addAttachment(nonstandardData)
         return response
@@ -269,7 +268,7 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
     assert(relationExistsBetweenTaskAndFile)
 
 
-def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
+def test_ReposcannerLabNotebook_canPublishResults(tmp_path):
     path = pathlib.Path("loggedentitytest.csv")
 
     def generateCSVDataFile():
@@ -299,16 +298,9 @@ def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse(attachments=[])
         return response
-
-    def exportAddsAnAttachment(self, request, response):
-        factory = dataEntities.DataEntityFactory()
-        csvDataEntity = factory.createAnnotatedCSVData(filePath=path.name)
-        csvDataEntity.readFromFile()
-        response.addAttachment(csvDataEntity)
     contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
-    contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
 
-    outputDir = tmpdir.mkdir("notebookOutput/")
+    outputDir = tmp_path
     notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory=outputDir)
 
     request = contributionRoutines.ContributorAccountListRoutineRequest(

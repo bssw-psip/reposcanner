@@ -92,7 +92,7 @@ def test_TeamSizeAndDistributionAnalysis_analysisReturnsFailureResponseIfLoginDa
     assert(not noLoginDataResponse.wasSuccessful())
 
 
-def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmpdir):
+def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmp_path):
     def generateContributorAccountListFile(store):
         dataEntityFactory = data.DataEntityFactory()
         contributorAccountFile = dataEntityFactory.createAnnotatedCSVData(
@@ -140,9 +140,9 @@ def test_TeamSizeAndDistributionAnalysis_canHandleTestData(tmpdir):
     generateGithubLoginFile(store)
     generateECPMembersFile(store)
 
-    mockOutputDirectory = tmpdir.mkdir("./mockoutput/")
+    mockOutputDirectory = tmp_path
     request = contrib.TeamSizeAndDistributionAnalysisRequest(
-        outputDirectory=mockOutputDirectory)
+        outputDirectory=str(mockOutputDirectory))
     request.fetchDataFromStore(store)
 
     analysis = contrib.TeamSizeAndDistributionAnalysis()
