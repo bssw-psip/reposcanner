@@ -6,7 +6,7 @@ from reposcanner.requests import BaseRequestModel, OfflineRoutineRequest, Online
 from reposcanner.response import ResponseFactory, ResponseModel
 from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory, ReposcannerDataEntity, AnnotatedCSVData
-from reposcanner.util import replaceNoneWithEmptyString
+from reposcanner.util import replaceNoneWithEmptyString as _replaceNoneWithEmptyString
 from reposcanner.git import Session
 from typing import Dict, Type, List
 import pygit2  # type: ignore
@@ -173,18 +173,18 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
 
             filesTouched = _getFilesTouched(commit)
 
-            output.addRecord([replaceNoneWithEmptyString(commitHash),
-                              replaceNoneWithEmptyString(commitTime),
-                              replaceNoneWithEmptyString(authorEmail),
-                              replaceNoneWithEmptyString(authorName),
-                              replaceNoneWithEmptyString(authorTime),
-                              replaceNoneWithEmptyString(committerEmail),
-                              replaceNoneWithEmptyString(committerName),
-                              replaceNoneWithEmptyString(committerTime),
+            output.addRecord([_replaceNoneWithEmptyString(commitHash),
+                              _replaceNoneWithEmptyString(commitTime),
+                              _replaceNoneWithEmptyString(authorEmail),
+                              _replaceNoneWithEmptyString(authorName),
+                              _replaceNoneWithEmptyString(authorTime),
+                              _replaceNoneWithEmptyString(committerEmail),
+                              _replaceNoneWithEmptyString(committerName),
+                              _replaceNoneWithEmptyString(committerTime),
                               ";".join(coAuthors),
                               changes['ins'], changes['del'], changes['files'],
                               ';'.join(filesTouched),
-                              _cleanCommitMessage(replaceNoneWithEmptyString(commitMessage))
+                              _cleanCommitMessage(_replaceNoneWithEmptyString(commitMessage))
                               ])
 
         output.writeToFile()
@@ -201,6 +201,9 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
     This routine traverses the commits for a given repository and associates each commit
     with GitHub/Gitlab/Bitbucket account information.
     """
+
+    def getRequestType(self):
+        return OnlineCommitAuthorshipRoutineRequest
 
     def githubImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:
         assert isinstance(request, OnlineCommitAuthorshipRoutineRequest)
@@ -231,9 +234,9 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
             else:
                 committerLogin = None
 
-            output.addRecord([replaceNoneWithEmptyString(commitHash),
-                              replaceNoneWithEmptyString(authorLogin),
-                              replaceNoneWithEmptyString(committerLogin)])
+            output.addRecord([_replaceNoneWithEmptyString(commitHash),
+                              _replaceNoneWithEmptyString(authorLogin),
+                              _replaceNoneWithEmptyString(committerLogin)])
 
         output.writeToFile()
         responseFactory = ResponseFactory()
@@ -281,9 +284,9 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
             else:
                 committerLogin = None
 
-            output.addRecord([replaceNoneWithEmptyString(commitHash),
-                              replaceNoneWithEmptyString(authorLogin),
-                              replaceNoneWithEmptyString(committerLogin)])
+            output.addRecord([_replaceNoneWithEmptyString(commitHash),
+                              _replaceNoneWithEmptyString(authorLogin),
+                              _replaceNoneWithEmptyString(committerLogin)])
 
         output.writeToFile()
         responseFactory = ResponseFactory()
@@ -525,10 +528,9 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         contributors = [contributor for contributor in session.get_contributors()]
         for contributor in contributors:
             output.addRecord([
-                replaceNoneWithEmptyString(contributor.login),
-                replaceNoneWithEmptyString(contributor.name),
-                ';'.join([replaceNoneWithEmptyString(contributor.email)])
-
+                _replaceNoneWithEmptyString(contributor.login),
+                _replaceNoneWithEmptyString(contributor.name),
+                ';'.join([_replaceNoneWithEmptyString(contributor.email)])
             ])
 
         output.writeToFile()
@@ -556,8 +558,8 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         contributors = [contributor for contributor in session.get_contributors()]
         for contributor in contributors:
             output.addRecord([
-                replaceNoneWithEmptyString(contributor.username),
-                replaceNoneWithEmptyString(contributor.name),
+                _replaceNoneWithEmptyString(contributor.username),
+                _replaceNoneWithEmptyString(contributor.name),
                 ';'.join(contributor.emails.list())
 
             ])
