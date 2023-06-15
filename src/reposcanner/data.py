@@ -10,7 +10,7 @@ import yaml
 import pandas as pd
 from pathlib import Path
 import datetime
-from typing import List, Iterable, Dict, Callable, Optional, Any, Tuple, Union
+from typing import List, Iterable, Dict, Callable, Optional, Any, Tuple, Union, cast
 
 
 class DataEntityStore:
@@ -131,7 +131,7 @@ class ReposcannerDataEntity(ABC):
         self.setMetadataAttribute("executionid", executionid)
 
     def getReposcannerExecutionID(self) -> Optional[str]:
-        return self.getMetadataAttribute("executionid")
+        return cast(Optional[str], self.getMetadataAttribute("executionid"))
 
     def setDateCreated(self, dt: Optional[datetime.date]) -> None:
         """
@@ -140,7 +140,7 @@ class ReposcannerDataEntity(ABC):
         self.setMetadataAttribute("datecreated", dt)
 
     def getDateCreated(self) -> Optional[datetime.date]:
-        return self.getMetadataAttribute("datecreated")
+        return cast(Optional[datetime.date], self.getMetadataAttribute("datecreated"))
 
     def setCreator(self, creator: Optional[str]) -> None:
         """
@@ -150,7 +150,7 @@ class ReposcannerDataEntity(ABC):
         self.setMetadataAttribute("creator", creator)
 
     def getCreator(self) -> Optional[str]:
-        return self.getMetadataAttribute("creator")
+        return cast(Optional[str], self.getMetadataAttribute("creator"))
 
     def fileExists(self) -> bool:
         return os.path.exists(self._filePath)
@@ -265,7 +265,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
         self.setMetadataAttribute("projectid", projectid)
 
     def getProjectID(self) -> Optional[str]:
-        return self.getMetadataAttribute("projectid")
+        return cast(Optional[str], self.getMetadataAttribute("projectid"))
 
     def setProjectName(self, projectname: Optional[str]) -> None:
         """
@@ -275,7 +275,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
         self.setMetadataAttribute("projectname", projectname)
 
     def getProjectName(self) -> Optional[str]:
-        return self.getMetadataAttribute("projectname")
+        return cast(Optional[str], self.getMetadataAttribute("projectname"))
 
     def setURL(self, url: Optional[str]) -> None:
         """
@@ -285,10 +285,10 @@ class AnnotatedCSVData(ReposcannerDataEntity):
         self.setMetadataAttribute("url", url)
 
     def getURL(self) -> Optional[str]:
-        return self.getMetadataAttribute("url")
+        return cast(Optional[str], self.getMetadataAttribute("url"))
 
     def getColumnNames(self) -> List[str]:
-        return self.getMetadataAttribute("names")
+        return cast(List[str], self.getMetadataAttribute("names"))
 
     def setColumnNames(self, names: List[str]) -> None:
         """
@@ -298,7 +298,7 @@ class AnnotatedCSVData(ReposcannerDataEntity):
         self.setMetadataAttribute("names", names)
 
     def getColumnDatatypes(self) -> List[str]:
-        return self.getMetadataAttribute("datatypes")
+        return cast(List[str], self.getMetadataAttribute("datatypes"))
 
     def setColumnDatatypes(self, datatypes: List[str]) -> None:
         """

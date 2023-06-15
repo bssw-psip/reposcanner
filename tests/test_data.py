@@ -2,23 +2,24 @@ from pathlib import Path
 import pytest
 import reposcanner.data as data
 import datetime
+import pathlib
 
 
-def test_AnnotatedCSVData_isDirectlyConstructible():
+def test_AnnotatedCSVData_isDirectlyConstructible() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
 
 
-def test_AnnotatedCSVData_isConstructibleByFactory():
+def test_AnnotatedCSVData_isConstructibleByFactory() -> None:
     factory = data.DataEntityFactory()
     factory.createAnnotatedCSVData("test.csv")
 
 
-def test_AnnotatedCSVData_canGetFilePath():
+def test_AnnotatedCSVData_canGetFilePath() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     assert(dataEntity.getFilePath() == Path("test.csv"))
 
 
-def test_AnnotatedCSVData_canGetKeysForMetadataAfterConstruction():
+def test_AnnotatedCSVData_canGetKeysForMetadataAfterConstruction() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     keys = dataEntity.getAttributeKeys()
     assert("creator" in keys)
@@ -30,12 +31,12 @@ def test_AnnotatedCSVData_canGetKeysForMetadataAfterConstruction():
     assert("datatypes" in keys)
 
 
-def test_AnnotatedCSVData_validationOfMetadataFailsInitially():
+def test_AnnotatedCSVData_validationOfMetadataFailsInitially() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     assert(not dataEntity.validateMetadata())
 
 
-def test_AnnotatedCSVData_canStoreAndValidateMetadata():
+def test_AnnotatedCSVData_canStoreAndValidateMetadata() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     timestamp = datetime.date.today()
     columnNames = ["contributor", "numberOfCommits"]
@@ -62,12 +63,12 @@ def test_AnnotatedCSVData_canStoreAndValidateMetadata():
     assert(dataEntity.validateMetadata())
 
 
-def test_AnnotatedCSVData_initiallyHasNoRecords():
+def test_AnnotatedCSVData_initiallyHasNoRecords() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     assert(len(dataEntity.getRawRecords()) == 0)
 
 
-def test_AnnotatedCSVData_canProduceRecordDictionaries():
+def test_AnnotatedCSVData_canProduceRecordDictionaries() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     columnNames = ["contributor", "numberOfCommits"]
     dataEntity.setColumnNames(columnNames)
@@ -88,7 +89,7 @@ def test_AnnotatedCSVData_canProduceRecordDictionaries():
     assert(entry["numberOfCommits"] == 552)
 
 
-def test_AnnotatedCSVData_canConvertToDataFrame():
+def test_AnnotatedCSVData_canConvertToDataFrame() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     columnNames = ["contributor", "numberOfCommits"]
     dataEntity.setColumnNames(columnNames)
@@ -104,7 +105,7 @@ def test_AnnotatedCSVData_canConvertToDataFrame():
     assert(frame["numberOfCommits"][2] == 77)
 
 
-def test_AnnotatedCSVData_canConvertToDataFrameFromFileWithFirstRowHeader():
+def test_AnnotatedCSVData_canConvertToDataFrameFromFileWithFirstRowHeader() -> None:
     dataEntity = data.AnnotatedCSVData("test.csv")
     dataEntity.addRecord(["contributor", "numberOfCommits"])
     dataEntity.addRecord(["johnsmith", 552])
@@ -119,9 +120,8 @@ def test_AnnotatedCSVData_canConvertToDataFrameFromFileWithFirstRowHeader():
     assert(frame["numberOfCommits"][2] == 77)
 
 
-def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("csvtest.csv"))
+def test_AnnotatedCSVData_canStoreDataToDisk(tmp_path: pathlib.Path) -> None:
+    filePath = tmp_path / "csvtest.csv"
     dataEntity = data.AnnotatedCSVData(filePath)
     timestamp = datetime.date.today()
     columnNames = ["contributor", "numberOfCommits"]
@@ -156,23 +156,22 @@ def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
     assert(dataEntityB.validateMetadata())
 
 
-def test_YAMLData_isDirectlyConstructible():
+def test_YAMLData_isDirectlyConstructible() -> None:
     dataEntity = data.YAMLData("test.yaml")
 
 
-def test_AnnotatedYAMLData_isConstructibleByFactory():
+def test_AnnotatedYAMLData_isConstructibleByFactory() -> None:
     factory = data.DataEntityFactory()
     factory.createYAMLData("test.yaml")
 
 
-def test_YAMLData_initiallyHoldsNoData():
+def test_YAMLData_initiallyHoldsNoData() -> None:
     dataEntity = data.YAMLData("test.yaml")
     assert(len(dataEntity.getData()) == 0)
 
 
-def test_YAMLData_canReadDataFromDisk(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("test.yaml"))
+def test_YAMLData_canReadDataFromDisk(tmp_path: pathlib.Path) -> None:
+    filePath = tmp_path / "test.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """
@@ -193,9 +192,8 @@ def test_YAMLData_canReadDataFromDisk(tmpdir):
     assert('urls' in dataDict['ADTR02'] and len(dataDict['ADTR02']['urls']) == 3)
 
 
-def test_YAMLData_canStoreDataToDisk(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("test.yaml"))
+def test_YAMLData_canStoreDataToDisk(tmp_path: pathlib.Path) -> None:
+    filePath = tmp_path / "test.yaml"
     dataEntity = data.YAMLData(filePath)
     dataDict = {
         'ADTR02': {
@@ -216,9 +214,10 @@ def test_YAMLData_canStoreDataToDisk(tmpdir):
     assert('urls' in dataDictB['ADTR02'] and len(dataDictB['ADTR02']['urls']) == 3)
 
 
-def test_YAMLData_canSupportNestedParametersForMiningRoutineConfigurations(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("config.yaml"))
+def test_YAMLData_canSupportNestedParametersForMiningRoutineConfigurations(
+        tmp_path: pathlib.Path) -> None:
+    sub = tmp_path
+    filePath = sub / "config.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """
@@ -243,16 +242,16 @@ def test_YAMLData_canSupportNestedParametersForMiningRoutineConfigurations(tmpdi
     assert(dataDict['routines'][1]['ExternalToolRoutine']['verbose'] == False)
 
 
-def test_DataEntityStore_isDirectlyConstructible():
+def test_DataEntityStore_isDirectlyConstructible() -> None:
     store = data.DataEntityStore()
 
 
-def test_DataEntityStore_isInitiallyEmpty():
+def test_DataEntityStore_isInitiallyEmpty() -> None:
     store = data.DataEntityStore()
     assert(len(store) == 0)
 
 
-def test_DataEntityStore_canInsertAndRemoveEntities():
+def test_DataEntityStore_canInsertAndRemoveEntities() -> None:
     store = data.DataEntityStore()
 
     entityA = data.YAMLData("repositories.yaml")
@@ -275,7 +274,7 @@ def test_DataEntityStore_canInsertAndRemoveEntities():
     assert(len(store) == 0)
 
 
-def test_DataEntityStore_canReadOverAllEntities():
+def test_DataEntityStore_canReadOverAllEntities() -> None:
     store = data.DataEntityStore()
 
     for i in range(20):
@@ -283,12 +282,12 @@ def test_DataEntityStore_canReadOverAllEntities():
         store.insert(entity)
 
     numberOfEntitiesInStore = 0
-    for entity in store.read():
+    for _ in store.read():
         numberOfEntitiesInStore += 1
     assert(numberOfEntitiesInStore == 20)
 
 
-def test_DataEntityStore_canFilterByCriteria():
+def test_DataEntityStore_canFilterByCriteria() -> None:
     commitCountsA = data.AnnotatedCSVData("commitcounts_a.csv")
     commitCountsB = data.AnnotatedCSVData("commitcounts_b.csv")
     commitCountsC = data.AnnotatedCSVData("commitcounts_c.csv")
@@ -319,14 +318,15 @@ def test_DataEntityStore_canFilterByCriteria():
     store.insert(contributorListB)
     store.insert(contributorListC)
 
-    def criteria_OnlyCommitCounts(entity):
+    def criteria_OnlyCommitCounts(entity: data.ReposcannerDataEntity) -> bool:
         return entity.getCreator() == "CommitCountRoutine"
 
     onlyCommitCounts = store.getByCriteria(criteria_OnlyCommitCounts)
     assert(len(onlyCommitCounts) == 3)
 
-    def criteria_OnlyAdAstraRelated(entity):
-        return entity.getURL() == "https://bitbucket.com/Ligre/AdAstra"
+    def criteria_OnlyAdAstraRelated(entity: data.ReposcannerDataEntity) -> bool:
+        return (isinstance(entity, data.AnnotatedCSVData)
+            and entity.getURL() == "https://bitbucket.com/Ligre/AdAstra")
 
     onlyAdAstraRelated = store.getByCriteria(criteria_OnlyAdAstraRelated)
     assert(len(onlyAdAstraRelated) == 2)

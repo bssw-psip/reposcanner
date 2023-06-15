@@ -3,17 +3,24 @@ from reposcanner.git import GitEntityFactory
 import reposcanner.analyses as analyses
 import reposcanner.requests as requests
 import reposcanner.response as responses
+from typing import Any
 
 
-def test_DataAnalysis_isConstructibleWithMockImplementation(mocker):
+# mypy: disable-error-code="abstract,method-assign" 
+
+
+def test_DataAnalysis_isConstructibleWithMockImplementation(mocker: Any) -> None:
     mocker.patch.multiple(analyses.DataAnalysis, __abstractmethods__=set())
     genericAnalysis = analyses.DataAnalysis()
 
 
-def test_DataAnalysis_runCanReturnResponse(mocker):
+def test_DataAnalysis_runCanReturnResponse(mocker: Any) -> None:
     mocker.patch.multiple(analyses.DataAnalysis, __abstractmethods__=set())
 
-    def executeGeneratesResponse(self, request):
+    def executeGeneratesResponse(
+            self: analyses.DataAnalysis,
+            request: requests.BaseRequestModel,
+    ) -> responses.ResponseModel:
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse()
         return response
@@ -24,10 +31,13 @@ def test_DataAnalysis_runCanReturnResponse(mocker):
     assert(response.wasSuccessful())
 
 
-def test_DataAnalysis_exportCanAddAttachments(mocker):
+def test_DataAnalysis_exportCanAddAttachments(mocker: Any) -> None:
     mocker.patch.multiple(analyses.DataAnalysis, __abstractmethods__=set())
 
-    def executeGeneratesResponse(self, request):
+    def executeGeneratesResponse(
+            self: analyses.DataAnalysis,
+            request: requests.BaseRequestModel,
+    ) -> responses.ResponseModel:
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse(attachments=[])
         response.addAttachment("data")
@@ -42,7 +52,7 @@ def test_DataAnalysis_exportCanAddAttachments(mocker):
     assert(len(response.getAttachments()) == 1)
 
 
-def test_DataAnalysis_canSetConfigurationParameters(mocker):
+def test_DataAnalysis_canSetConfigurationParameters(mocker: Any) -> None:
     mocker.patch.multiple(analyses.DataAnalysis, __abstractmethods__=set())
     genericAnalysis = analyses.DataAnalysis()
     configurationParameters = {"verbose": True, "debug": False}

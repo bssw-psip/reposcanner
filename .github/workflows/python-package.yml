@@ -39,7 +39,7 @@ jobs:
     #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Check with Mypy
       run: |
-        MYPYPATH=src python -m mypy src tests
+        MYPYPATH=src python -m mypy --strict src tests
     - name: Test with pytest
       env:
         DUMMY_GITHUBAPI_TOKEN: ${{ secrets.DUMMY_WORKFLOW_GITHUB_TOKEN }}

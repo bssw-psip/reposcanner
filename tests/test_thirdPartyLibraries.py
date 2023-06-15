@@ -3,7 +3,7 @@ import subprocess
 import os
 
 
-def test_GraphViz_isAvailableOnCommandLine():
+def test_GraphViz_isAvailableOnCommandLine() -> None:
     """
     This tests whether we can get a version for Dot.
     The version info should look something like this:

@@ -6,23 +6,23 @@ from reposcanner.manager import ReposcannerManager
 import pytest
 
 
-def test_DummyOfflineRoutineRequest_isDirectlyConstructible():
+def test_DummyOfflineRoutineRequest_isDirectlyConstructible() -> None:
     request = dummy.DummyOfflineRoutineRequest(
         repositoryURL="https://github.com/owner/repo",
         outputDirectory="./",
         workspaceDirectory="./")
 
 
-def test_DummyOfflineRoutine_isDirectlyConstructible():
+def test_DummyOfflineRoutine_isDirectlyConstructible() -> None:
     routine = dummy.DummyOfflineRoutine()
 
 
-def test_DummyOfflineRoutine_hasMatchingRequestType():
+def test_DummyOfflineRoutine_hasMatchingRequestType() -> None:
     routine = dummy.DummyOfflineRoutine()
     assert(routine.getRequestType() == dummy.DummyOfflineRoutineRequest)
 
 
-def test_DummyOfflineRoutine_canHandleAppropriateRequest():
+def test_DummyOfflineRoutine_canHandleAppropriateRequest() -> None:
     request = dummy.DummyOfflineRoutineRequest(
         repositoryURL="https://github.com/owner/repo",
         outputDirectory="./",
@@ -32,7 +32,7 @@ def test_DummyOfflineRoutine_canHandleAppropriateRequest():
     assert(routine.canHandleRequest(request))
 
 
-def test_DummyOfflineRoutine_willRejectInAppropriateRequest():
+def test_DummyOfflineRoutine_willRejectInAppropriateRequest() -> None:
     request = reposcanner.requests.BaseRequestModel()
     routine = dummy.DummyOfflineRoutine()
     assert(not isinstance(request, routine.getRequestType()))
@@ -41,23 +41,23 @@ def test_DummyOfflineRoutine_willRejectInAppropriateRequest():
     assert(not routine.canHandleRequest(request))
 
 
-def test_DummyOnlineRoutineRequest_isDirectlyConstructible():
+def test_DummyOnlineRoutineRequest_isDirectlyConstructible() -> None:
     request = dummy.DummyOnlineRoutineRequest(
         repositoryURL="https://github.com/owner/repo",
         outputDirectory="./",
         token="ab5571mc1")
 
 
-def test_DummyOnlineRoutine_isDirectlyConstructible():
+def test_DummyOnlineRoutine_isDirectlyConstructible() -> None:
     routine = dummy.DummyOnlineRoutine()
 
 
-def test_DummyOnlineRoutine_hasMatchingRequestType():
+def test_DummyOnlineRoutine_hasMatchingRequestType() -> None:
     routine = dummy.DummyOnlineRoutine()
     assert(routine.getRequestType() == dummy.DummyOnlineRoutineRequest)
 
 
-def test_DummyOnlineRoutine_canHandleAppropriateRequest():
+def test_DummyOnlineRoutine_canHandleAppropriateRequest() -> None:
     request = dummy.DummyOnlineRoutineRequest(
         repositoryURL="https://github.com/owner/repo",
         outputDirectory="./",
@@ -67,7 +67,7 @@ def test_DummyOnlineRoutine_canHandleAppropriateRequest():
     assert(routine.canHandleRequest(request))
 
 
-def test_DummyOnlineRoutine_willRejectInAppropriateRequest():
+def test_DummyOnlineRoutine_willRejectInAppropriateRequest() -> None:
     request = reposcanner.requests.BaseRequestModel()
     routine = dummy.DummyOnlineRoutine()
     assert(not isinstance(request, routine.getRequestType()))
@@ -76,11 +76,11 @@ def test_DummyOnlineRoutine_willRejectInAppropriateRequest():
     assert(not routine.canHandleRequest(request))
 
 
-def test_DummyAnalysisRequest_isDirectlyConstructible():
+def test_DummyAnalysisRequest_isDirectlyConstructible() -> None:
     request = dummy.DummyAnalysisRequest()
 
 
-def test_DummyAnalysisRequest_criteriaFunctionExpectsDummyRoutineData():
+def test_DummyAnalysisRequest_criteriaFunctionExpectsDummyRoutineData() -> None:
     request = dummy.DummyAnalysisRequest()
     dataEntityFactory = data.DataEntityFactory()
     offlineData = dataEntityFactory.createAnnotatedCSVData(
@@ -94,10 +94,10 @@ def test_DummyAnalysisRequest_criteriaFunctionExpectsDummyRoutineData():
 
     assert(request.criteriaFunction(offlineData) is True)
     assert(request.criteriaFunction(onlineData) is True)
-    assert(request.criteriaFunction("garbage") is False)
+    assert(request.criteriaFunction("garbage") is False)  # type: ignore
 
 
-def test_DummyAnalysisRequest_canFetchDataFromStore():
+def test_DummyAnalysisRequest_canFetchDataFromStore() -> None:
     store = data.DataEntityStore()
     dataEntityFactory = data.DataEntityFactory()
     offlineData = dataEntityFactory.createAnnotatedCSVData(
@@ -115,18 +115,18 @@ def test_DummyAnalysisRequest_canFetchDataFromStore():
     assert(len(fetchedData) == 2)
 
 
-def test_DummyAnalysis_isDirectlyConstructible():
+def test_DummyAnalysis_isDirectlyConstructible() -> None:
     analysis = dummy.DummyAnalysis()
 
 
-def test_DummyAnalysis_canHandleAppropriateRequest():
+def test_DummyAnalysis_canHandleAppropriateRequest() -> None:
     analysis = dummy.DummyAnalysis()
     assert(analysis.getRequestType() == dummy.DummyAnalysisRequest)
     request = dummy.DummyAnalysisRequest()
     assert(analysis.canHandleRequest(request))
 
 
-def test_canCompleteDummyWorkflow():
+def test_canCompleteDummyWorkflow() -> None:
     dataEntityFactory = data.DataEntityFactory()
     # Imitate passing command-line arguments.
     args = type('', (), {})()

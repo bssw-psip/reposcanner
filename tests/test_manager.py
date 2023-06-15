@@ -1,10 +1,11 @@
 import reposcanner.manager as management
 import reposcanner.requests as requests
 import reposcanner.data as data
+import pathlib
 import pytest
 
 
-def test_ManagerRepositoryRoutineTask_isDirectlyConstructible():
+def test_ManagerRepositoryRoutineTask_isDirectlyConstructible() -> None:
     task = management.ManagerRepositoryRoutineTask(
         projectID="PROJID",
         projectName="SciKit",
@@ -14,7 +15,7 @@ def test_ManagerRepositoryRoutineTask_isDirectlyConstructible():
             outputDirectory="./"))
 
 
-def test_ManagerRepositoryRoutineTask_isConstructibleByFactory():
+def test_ManagerRepositoryRoutineTask_isConstructibleByFactory() -> None:
     factory = management.TaskFactory()
     task = factory.createManagerRepositoryRoutineTask(
         projectID="PROJID",
@@ -25,16 +26,16 @@ def test_ManagerRepositoryRoutineTask_isConstructibleByFactory():
             outputDirectory="./"))
 
 
-def test_ManagerAnalysisTask_isDirectlyConstructible():
+def test_ManagerAnalysisTask_isDirectlyConstructible() -> None:
     task = management.ManagerAnalysisTask(request=requests.AnalysisRequestModel())
 
 
-def test_ManagerAnalysisTask_isConstructibleByFactory():
+def test_ManagerAnalysisTask_isConstructibleByFactory() -> None:
     factory = management.TaskFactory()
     task = factory.createManagerAnalysisTask(request=requests.AnalysisRequestModel())
 
 
-def test_ReposcannerManager_isDirectlyConstructible():
+def test_ReposcannerManager_isDirectlyConstructible() -> None:
     args = type('', (), {})()
     args.outputDirectory = "./"
     args.workspaceDirectory = "./"
@@ -46,39 +47,31 @@ def test_ReposcannerManager_isDirectlyConstructible():
         gui=args.gui)
 
 
-def test_ReposcannerManager_GUIModeIsDisabledByDefault():
-    manager = management.ReposcannerManager(
-        notebook=None, outputDirectory=None, workspaceDirectory=None)
+def test_ReposcannerManager_GUIModeIsDisabledByDefault() -> None:
+    manager = management.ReposcannerManager(notebook=None)
     assert(not manager.isGUIModeEnabled())
 
 
-def test_ReposcannerManager_GUIModeCanBeEnabledAtConstructionTime():
+def test_ReposcannerManager_GUIModeCanBeEnabledAtConstructionTime() -> None:
     manager = management.ReposcannerManager(
         notebook=None,
-        outputDirectory=None,
-        workspaceDirectory=None,
         gui=True)
     assert(manager.isGUIModeEnabled())
 
 
-def test_ReposcannerManager_initiallyHasNoRoutinesOrAnalyses():
+def test_ReposcannerManager_initiallyHasNoRoutinesOrAnalyses() -> None:
     manager = management.ReposcannerManager(
         notebook=None,
-        outputDirectory=None,
-        workspaceDirectory=None,
         gui=True)
     assert(len(manager.getRoutines()) == 0)
     assert(len(manager.getAnalyses()) == 0)
 
 
-def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmpdir):
+def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmp_path: pathlib.Path) -> None:
     manager = management.ReposcannerManager(
         notebook=None,
-        outputDirectory=None,
-        workspaceDirectory=None,
         gui=True)
-    sub = tmpdir.mkdir("managertest")
-    filePath = str(sub.join("config.yaml"))
+    filePath = tmp_path / "config.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """
@@ -107,14 +100,11 @@ def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmpdir):
     assert(analyses[1].__class__.__name__ == "GambitCommitAuthorshipInferenceAnalysis")
 
 
-def test_ReposcannerManager_missingRoutinesInConfigCausesValueError(tmpdir):
+def test_ReposcannerManager_missingRoutinesInConfigCausesValueError(tmp_path: pathlib.Path) -> None:
     manager = management.ReposcannerManager(
         notebook=None,
-        outputDirectory=None,
-        workspaceDirectory=None,
         gui=True)
-    sub = tmpdir.mkdir("managertest")
-    filePath = str(sub.join("config.yaml"))
+    filePath = tmp_path / "config.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """

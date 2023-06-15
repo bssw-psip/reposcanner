@@ -4,15 +4,20 @@ import datetime
 import reposcanner.provenance as provenance
 import reposcanner.contrib as contributionRoutines
 import reposcanner.manager as manager
+import reposcanner.requests as requests
 import reposcanner.response as responses
 import reposcanner.data as dataEntities
+import reposcanner.routines as routines
 
 
-def test_ReposcannerRunInformant_isDirectlyConstructible():
+# mypy: disable-error-code="method-assign" 
+
+
+def test_ReposcannerRunInformant_isDirectlyConstructible() -> None:
     informant = provenance.ReposcannerRunInformant()
 
 
-def test_ReposcannerRunInformant_differentInstancesProvideTheSameExecutionID():
+def test_ReposcannerRunInformant_differentInstancesProvideTheSameExecutionID() -> None:
     informantA = provenance.ReposcannerRunInformant()
     informantB = provenance.ReposcannerRunInformant()
 
@@ -22,7 +27,7 @@ def test_ReposcannerRunInformant_differentInstancesProvideTheSameExecutionID():
     assert(executionIDA == executionIDB)
 
 
-def test_ReposcannerRunInformant_differentInstancesProvideTheSameVersionInfo():
+def test_ReposcannerRunInformant_differentInstancesProvideTheSameVersionInfo() -> None:
     informantA = provenance.ReposcannerRunInformant()
     informantB = provenance.ReposcannerRunInformant()
 
@@ -32,11 +37,11 @@ def test_ReposcannerRunInformant_differentInstancesProvideTheSameVersionInfo():
     assert(versionInfoA == versionInfoB)
 
 
-def test_ReposcannerLabNotebook_isDirectlyConstructible():
+def test_ReposcannerLabNotebook_isDirectlyConstructible() -> None:
     notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
 
 
-def test_ReposcannerLabNotebook_canLogArgsOnStartup():
+def test_ReposcannerLabNotebook_canLogArgsOnStartup() -> None:
     notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
     args = type('', (), {})()
     args.repositories = "repositories.yaml"
@@ -53,7 +58,7 @@ def test_ReposcannerLabNotebook_canLogArgsOnStartup():
     assert(jsonDocument['entity']['rs:config']['rs:path'] == 'config.yaml')
 
 
-def test_ReposcannerLabNotebook_canLogCreatedRoutines():
+def test_ReposcannerLabNotebook_canLogCreatedRoutines() -> None:
     routine = contributionRoutines.ContributorAccountListRoutine()
     notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
     notebook.onRoutineCreation(routine)
@@ -67,12 +72,12 @@ def test_ReposcannerLabNotebook_canLogCreatedRoutines():
     assert(relationExistsBetweenManagerAndRoutine)
 
 
-def test_ReposcannerLabNotebook_canLogCreatedAnalyses():
+def test_ReposcannerLabNotebook_canLogCreatedAnalyses() -> None:
     # TODO: We need to define what analyses are before we can deal with logging them.
     pass
 
 
-def test_ReposcannerLabNotebook_canLogCreatedTasks():
+def test_ReposcannerLabNotebook_canLogCreatedTasks() -> None:
     request = contributionRoutines.ContributorAccountListRoutineRequest(
         repositoryURL="https://github.com/scikit/scikit", outputDirectory="./", token="ab5571mc1")
     task = manager.ManagerRepositoryRoutineTask(
@@ -100,7 +105,7 @@ def test_ReposcannerLabNotebook_canLogCreatedTasks():
     assert(relationExistsBetweenManagerAndTask)
 
 
-def test_ReposcannerLabNotebook_canLogStartOfTask():
+def test_ReposcannerLabNotebook_canLogStartOfTask() -> None:
 
     notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory="./")
 
@@ -133,12 +138,12 @@ def test_ReposcannerLabNotebook_canLogStartOfTask():
     print(jsonDocument)
 
 
-def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
+def test_ReposcannerLabNotebook_canLogCompletionOfTask() -> None:
     # Overwriting methods of ContributorAccountListRoutine to return a
     # predetermined response.
     path = pathlib.Path("loggedentitytest.csv")
 
-    def generateCSVDataFile(tmpdir):
+    def generateCSVDataFile() -> None:
         informant = provenance.ReposcannerRunInformant()
         dataEntity = dataEntities.AnnotatedCSVData(str(path))
         timestamp = datetime.date.today()
@@ -159,13 +164,13 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
         dataEntity.addRecord(["alicejones", "Alice Jones", "alice@llnl.gov"])
         dataEntity.writeToFile()
 
-    generateCSVDataFile(tmpdir)
+    generateCSVDataFile()
 
-    def executeGeneratesResponse(self, request):
+    def executeGeneratesResponse(self: routines.DataMiningRoutine, request: requests.BaseRequestModel) -> responses.ResponseModel:
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse(attachments=[])
-        factory = dataEntities.DataEntityFactory()
-        csvDataEntity = factory.createAnnotatedCSVData(filePath=str(path))
+        factory2 = dataEntities.DataEntityFactory()
+        csvDataEntity = factory2.createAnnotatedCSVData(filePath=str(path))
         csvDataEntity.readFromFile()
         response.addAttachment(csvDataEntity)
         return response
@@ -220,13 +225,15 @@ def test_ReposcannerLabNotebook_canLogCompletionOfTask(tmpdir):
     assert(relationExistsBetweenTaskAndFile)
 
 
-def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpdir):
-    def executeGeneratesResponse(self, request):
+def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask() -> None:
+    def executeGeneratesResponse(
+            self: routines.DataMiningRoutine,
+            request: requests.BaseRequestModel,
+    ) -> responses.ResponseModel:
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse(attachments=[])
-        factory = dataEntities.DataEntityFactory()
         nonstandardData = {"a": 5, "b": 255}
-        response.addAttachment(nonstandardData)
+        response.addAttachment(nonstandardData)  # type: ignore
         return response
 
     contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
@@ -269,10 +276,10 @@ def test_ReposcannerLabNotebook_canLogNonstandardDataDuringCompletionOfTask(tmpd
     assert(relationExistsBetweenTaskAndFile)
 
 
-def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
+def test_ReposcannerLabNotebook_canPublishResults(tmp_path: pathlib.Path) -> None:
     path = pathlib.Path("loggedentitytest.csv")
 
-    def generateCSVDataFile():
+    def generateCSVDataFile() -> None:
         informant = provenance.ReposcannerRunInformant()
         dataEntity = dataEntities.AnnotatedCSVData(str(path))
         timestamp = datetime.date.today()
@@ -295,20 +302,20 @@ def test_ReposcannerLabNotebook_canPublishResults(tmpdir):
 
     generateCSVDataFile()
 
-    def executeGeneratesResponse(self, request):
+    def executeGeneratesResponse(self: routines.DataMiningRoutine, request: requests.BaseRequestModel) -> responses.ResponseModel:
         factory = responses.ResponseFactory()
         response = factory.createSuccessResponse(attachments=[])
         return response
-
-    def exportAddsAnAttachment(self, request, response):
-        factory = dataEntities.DataEntityFactory()
-        csvDataEntity = factory.createAnnotatedCSVData(filePath=path.name)
-        csvDataEntity.readFromFile()
-        response.addAttachment(csvDataEntity)
     contributionRoutines.ContributorAccountListRoutine.execute = executeGeneratesResponse
-    contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
 
-    outputDir = tmpdir.mkdir("notebookOutput/")
+    # def exportAddsAnAttachment(self: routines.DataMiningRoutine, request: requests.BaseRequestModel) -> responses.ResponseModel:
+    #     factory = dataEntities.DataEntityFactory()
+    #     csvDataEntity = factory.createAnnotatedCSVData(filePath=path.name)
+    #     csvDataEntity.readFromFile()
+    #     response.addAttachment(csvDataEntity)
+    # contributionRoutines.ContributorAccountListRoutine.export = exportAddsAnAttachment
+
+    outputDir = tmp_path
     notebook = provenance.ReposcannerLabNotebook(notebookOutputDirectory=outputDir)
 
     request = contributionRoutines.ContributorAccountListRoutineRequest(

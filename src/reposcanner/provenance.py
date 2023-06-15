@@ -26,6 +26,7 @@ from abc import ABC, abstractmethod
 import argparse
 import datetime
 import json
+import pathlib
 import uuid
 import sys
 import subprocess
@@ -36,6 +37,7 @@ from reposcanner.requests import RepositoryRoutineRequestModel, AnalysisRequestM
 from reposcanner.routines import DataMiningRoutine, RepositoryRoutine
 from reposcanner.analyses import DataAnalysis
 from reposcanner.manager import ManagerRepositoryRoutineTask, ManagerTask
+from reposcanner.util import expect_type
 
 """
 trungdong/prov, a W3C-compliant provenance Data Model
@@ -176,7 +178,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
     class.
     """
 
-    def __init__(self, notebookOutputDirectory: str) -> None:
+    def __init__(self, notebookOutputDirectory: Union[str, pathlib.Path]) -> None:
         """
         notebookOutputDirectory: The directory where provenance files should be stored when calling
         publishNotebook().
@@ -209,7 +211,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         """
         Returns the underlying Prov document in PROV-N form for testing purposes.
         """
-        return self._document.get_provn()
+        return expect_type(str, self._document.get_provn())
 
     def onStartup(self, args: argparse.Namespace) -> None:
         """

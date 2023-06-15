@@ -7,6 +7,8 @@ from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRouti
 from reposcanner.requests import BaseRequestModel, AnalysisRequestModel, ExternalCommandLineToolRoutineRequest, RepositoryRoutineRequestModel, OnlineRoutineRequest
 from reposcanner.analyses import DataAnalysis
 import logging
+import warnings
+import importlib
 import curses
 import sys
 from typing import Sequence, Union, Optional, List, Iterable, Dict, Any, Tuple, cast, TYPE_CHECKING
@@ -259,7 +261,7 @@ class ReposcannerManager:
             return getattr(module, objectName)
 
 
-    def initializeRoutinesAndAnalyses(self, configData):
+    def initializeRoutinesAndAnalyses(self, configData: Dict[str, Any]) -> None:
         """Constructs RepositoryRoutine and DataAnalysis objects that belong to the manager."""
 
         for routineEntry in configData.get('routines', []):

@@ -8,7 +8,7 @@ from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory, ReposcannerDataEntity, AnnotatedCSVData
 from reposcanner.util import replaceNoneWithEmptyString as _replaceNoneWithEmptyString
 from reposcanner.git import Session
-from typing import Dict, Type, List
+from typing import Dict, Type, List, Any
 import pygit2  # type: ignore
 
 from pathlib import Path
@@ -23,6 +23,9 @@ import numpy as np
 #import seaborn as sns
 
 ########################################
+
+
+Commit = Any  # type placeholder
 
 
 class CommitInfoMiningRoutineRequest(OfflineRoutineRequest):
@@ -81,7 +84,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             ["list"] +
             ["str"])
 
-        def _getFilesTouched(commit) -> List[str]:
+        def _getFilesTouched(commit: Commit) -> List[str]:
             # TODO: Go back and check this method. Are we correctly interpreting the semantics of
             # the deltas we receive from pygit2?
             changes = []
@@ -110,7 +113,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             # Also get rid of commas, as commas are our default delimiter.
             return re.sub('\\s+', ' ', s).replace(',', ' ')
 
-        def _getStats(commit) -> Dict[str, int]:
+        def _getStats(commit: Commit) -> Dict[str, int]:
             changes = {'ins': 0, 'del': 0, 'files': 0}
             if len(commit.parents) == 0:
                 diff = commit.tree.diff_to_tree()
@@ -202,7 +205,7 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
     with GitHub/Gitlab/Bitbucket account information.
     """
 
-    def getRequestType(self):
+    def getRequestType(self) -> Type[BaseRequestModel]:
         return OnlineCommitAuthorshipRoutineRequest
 
     def githubImplementation(self, request: BaseRequestModel, session: Session) -> ResponseModel:

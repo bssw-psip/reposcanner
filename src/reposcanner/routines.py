@@ -126,6 +126,9 @@ class ExternalCommandLineToolRoutine(DataMiningRoutine):
                         etype=type(e)), attachments=[e])
 
 
+Remote = Any  # placeholder type alias
+
+
 class OfflineRepositoryRoutine(RepositoryRoutine):
     """
     Class that encapsulates the stages of a PyGit2-based analysis procedure operating on a clone of a repository.
@@ -148,7 +151,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
         else:
             try:
                 if not os.path.exists(request.getCloneDirectory()):
-                    def init_remote(repo, name: str, url: str):
+                    def init_remote(repo: Session, name: str, url: str) -> Remote:
                         # Create the remote with a mirroring url
                         remote = repo.remotes.create(
                             name, url, "+refs/heads/*:refs/heads/*")

@@ -1,25 +1,26 @@
 import pytest
 import reposcanner.git as gitEntities
+from typing import Dict, List
 
 
-def test_RepositoryLocation_isConstructibleByFactory():
+def test_RepositoryLocation_isConstructibleByFactory() -> None:
     factory = gitEntities.GitEntityFactory()
     repositoryLocation = factory.createRepositoryLocation(
         url="github.com/owner/repository")
 
 
-def test_RepositoryLocation_isDirectlyConstructible():
+def test_RepositoryLocation_isDirectlyConstructible() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="github.com/owner/repository")
 
 
-def test_RepositoryLocation_canStoreURL():
+def test_RepositoryLocation_canStoreURL() -> None:
     url = "arbitrary.edu/repo/name"
     repositoryLocation = gitEntities.RepositoryLocation(url="arbitrary.edu/repo/name")
     assert(repositoryLocation.getURL() == url)
 
 
-def test_RepositoryLocation_canIdentifyGitHubURLs():
+def test_RepositoryLocation_canIdentifyGitHubURLs() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://github.com/Parallel-NetCDF/PnetCDF")
     assert(repositoryLocation.getVersionControlPlatform() ==
@@ -28,7 +29,7 @@ def test_RepositoryLocation_canIdentifyGitHubURLs():
            gitEntities.RepositoryLocation.HostType.OFFICIAL)
 
 
-def test_RepositoryLocation_canIdentifyGitlabURLs():
+def test_RepositoryLocation_canIdentifyGitlabURLs() -> None:
     repositoryLocationOfficial = gitEntities.RepositoryLocation(
         url="https://gitlab.com/exaalt/parsplice")
     assert(repositoryLocationOfficial.getVersionControlPlatform() ==
@@ -44,7 +45,7 @@ def test_RepositoryLocation_canIdentifyGitlabURLs():
            == gitEntities.RepositoryLocation.HostType.SELFHOSTED)
 
 
-def test_RepositoryLocation_canIdentifyBitbucketURLs():
+def test_RepositoryLocation_canIdentifyBitbucketURLs() -> None:
     repositoryLocationOfficial = gitEntities.RepositoryLocation(
         url="https://bitbucket.org/berkeleylab/picsar")
     assert(repositoryLocationOfficial.getVersionControlPlatform() ==
@@ -60,7 +61,7 @@ def test_RepositoryLocation_canIdentifyBitbucketURLs():
            == gitEntities.RepositoryLocation.HostType.SELFHOSTED)
 
 
-def test_RepositoryLocation_unrecognizedURLsAreUnknown():
+def test_RepositoryLocation_unrecognizedURLsAreUnknown() -> None:
     repositoryLocationA = gitEntities.RepositoryLocation(
         url="http://flash.uchicago.edu/site/flashcode/coderequest/")
     assert(repositoryLocationA.getVersionControlPlatform() ==
@@ -76,7 +77,7 @@ def test_RepositoryLocation_unrecognizedURLsAreUnknown():
            gitEntities.RepositoryLocation.HostType.UNKNOWN)
 
 
-def test_RepositoryLocation_expectedPlatformOverridesActualPlatform():
+def test_RepositoryLocation_expectedPlatformOverridesActualPlatform() -> None:
     repositoryLocationA = gitEntities.RepositoryLocation(
         url="https://code-int.ornl.gov/exnihilo/Exnihilo",
         expectedPlatform=gitEntities.RepositoryLocation.VersionControlPlatform.GITLAB)
@@ -90,7 +91,7 @@ def test_RepositoryLocation_expectedPlatformOverridesActualPlatform():
            gitEntities.RepositoryLocation.VersionControlPlatform.BITBUCKET)
 
 
-def test_RepositoryLocation_providingPlatformButNotHostTypeMakesItUnknown():
+def test_RepositoryLocation_providingPlatformButNotHostTypeMakesItUnknown() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://code-int.ornl.gov/exnihilo/Exnihilo",
         expectedPlatform=gitEntities.RepositoryLocation.VersionControlPlatform.GITLAB)
@@ -98,7 +99,7 @@ def test_RepositoryLocation_providingPlatformButNotHostTypeMakesItUnknown():
            gitEntities.RepositoryLocation.HostType.UNKNOWN)
 
 
-def test_RepositoryLocation_providingBothPlatformAndHostTypeRespectsBothChoices():
+def test_RepositoryLocation_providingBothPlatformAndHostTypeRespectsBothChoices() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://code-int.ornl.gov/exnihilo/Exnihilo",
         expectedPlatform=gitEntities.RepositoryLocation.VersionControlPlatform.GITLAB,
@@ -109,7 +110,7 @@ def test_RepositoryLocation_providingBothPlatformAndHostTypeRespectsBothChoices(
            gitEntities.RepositoryLocation.HostType.SELFHOSTED)
 
 
-def test_RepositoryLocation_providingBothOwnerAndRepositoryNameRespectsBothChoices():
+def test_RepositoryLocation_providingBothOwnerAndRepositoryNameRespectsBothChoices() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://bitbucket.hdfgroup.org/scm/hdffv/hdf5",
         expectedOwner="hdffv",
@@ -118,49 +119,49 @@ def test_RepositoryLocation_providingBothOwnerAndRepositoryNameRespectsBothChoic
     assert(repositoryLocation.getRepositoryName() == "hdf5")
 
 
-def test_RepositoryLocation_canParseOwnerAndNameOfGitHubRepository():
+def test_RepositoryLocation_canParseOwnerAndNameOfGitHubRepository() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://github.com/Parallel-NetCDF/PnetCDF")
     assert(repositoryLocation.getOwner() == "Parallel-NetCDF")
     assert(repositoryLocation.getRepositoryName() == "PnetCDF")
 
 
-def test_RepositoryLocation_canParseOwnerAndNameOfOfficialGitlabRepository():
+def test_RepositoryLocation_canParseOwnerAndNameOfOfficialGitlabRepository() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://gitlab.com/exaalt/parsplice")
     assert(repositoryLocation.getOwner() == "exaalt")
     assert(repositoryLocation.getRepositoryName() == "parsplice")
 
 
-def test_RepositoryLocation_canParseOwnerAndNameOfSelfHostedGitlabRepository():
+def test_RepositoryLocation_canParseOwnerAndNameOfSelfHostedGitlabRepository() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://xgitlab.cels.anl.gov/darshan/darshancode")
     assert(repositoryLocation.getOwner() == "darshan")
     assert(repositoryLocation.getRepositoryName() == "darshancode")
 
 
-def test_RepositoryLocation_canParseOwnerAndNameOfOfficialBitbucketRepository():
+def test_RepositoryLocation_canParseOwnerAndNameOfOfficialBitbucketRepository() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://bitbucket.org/berkeleylab/picsar")
     assert(repositoryLocation.getOwner() == "berkeleylab")
     assert(repositoryLocation.getRepositoryName() == "picsar")
 
 
-def test_RepositoryLocation_canParseOwnerAndNameOfSelfHostedBitbucketRepository():
+def test_RepositoryLocation_canParseOwnerAndNameOfSelfHostedBitbucketRepository() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="bitbucket.snl.gov/project/repo")
     assert(repositoryLocation.getOwner() == "project")
     assert(repositoryLocation.getRepositoryName() == "repo")
 
 
-def test_RepositoryLocation_canParseOwnerAndNameOfUnknownRepository():
+def test_RepositoryLocation_canParseOwnerAndNameOfUnknownRepository() -> None:
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://code-int.ornl.gov/exnihilo/Exnihilo")
     assert(repositoryLocation.getOwner() == "exnihilo")
     assert(repositoryLocation.getRepositoryName() == "Exnihilo")
 
 
-def test_RepositoryLocation_AllOrNothingForPartialMatchesOnOwnerAndRepo():
+def test_RepositoryLocation_AllOrNothingForPartialMatchesOnOwnerAndRepo() -> None:
     repositoryLocationA = gitEntities.RepositoryLocation(
         url="https://github.com/Parallel-NetCDF/")
     assert(repositoryLocationA.getOwner() is None)
@@ -192,18 +193,18 @@ def test_RepositoryLocation_AllOrNothingForPartialMatchesOnOwnerAndRepo():
     assert(repositoryLocationE.getRepositoryName() is None)
 
 
-def test_VersionControlPlatformCredentials_isConstructibleByFactory():
+def test_VersionControlPlatformCredentials_isConstructibleByFactory() -> None:
     factory = gitEntities.GitEntityFactory()
     credentials = factory.createVersionControlPlatformCredentials(
         username="name", password="password", token="token")
 
 
-def test_VersionControlPlatformCredentials_isDirectlyConstructible():
+def test_VersionControlPlatformCredentials_isDirectlyConstructible() -> None:
     credentials = gitEntities.VersionControlPlatformCredentials(
         username="name", password="password", token="token")
 
 
-def test_VersionControlPlatformCredentials_canStoreCredentialValues():
+def test_VersionControlPlatformCredentials_canStoreCredentialValues() -> None:
     credentials = gitEntities.VersionControlPlatformCredentials(
         username="name", password="password", token="token")
     assert(credentials.getUsername() == "name")
@@ -211,41 +212,41 @@ def test_VersionControlPlatformCredentials_canStoreCredentialValues():
     assert(credentials.getToken() == "token")
 
 
-def test_VersionControlPlatformCredentials_allowsUsernameAndPasswordComboInConstructor():
+def test_VersionControlPlatformCredentials_allowsUsernameAndPasswordComboInConstructor() -> None:
     credentials = gitEntities.VersionControlPlatformCredentials(
         username="name", password="password")
     assert(credentials.hasUsernameAndPasswordAvailable())
     assert(not credentials.hasTokenAvailable())
 
 
-def test_VersionControlPlatformCredentials_allowsJustTokenInConstructor():
+def test_VersionControlPlatformCredentials_allowsJustTokenInConstructor() -> None:
     credentials = gitEntities.VersionControlPlatformCredentials(token="token")
     assert(not credentials.hasUsernameAndPasswordAvailable())
     assert(credentials.hasTokenAvailable())
 
 
-def test_VersionControlPlatformCredentials_allDefaultParametersInConstructorIsError():
+def test_VersionControlPlatformCredentials_allDefaultParametersInConstructorIsError() -> None:
     with pytest.raises(ValueError):
         credentials = gitEntities.VersionControlPlatformCredentials()
 
 
-def test_VersionControlPlatformCredentials_providingOnlyUsernameWithoutPasswordOrViceVersaIsError():
+def test_VersionControlPlatformCredentials_providingOnlyUsernameWithoutPasswordOrViceVersaIsError() -> None:
     with pytest.raises(ValueError):
         credentials = gitEntities.VersionControlPlatformCredentials(username="name")
     with pytest.raises(ValueError):
         credentials = gitEntities.VersionControlPlatformCredentials(password="password")
 
 
-def test_CredentialKeychain_canConstructEmptyKeychain():
+def test_CredentialKeychain_canConstructEmptyKeychain() -> None:
     keychain = gitEntities.CredentialKeychain(credentialsDictionary={})
 
 
-def test_CredentialKeychain_anEmptyKeychainHasLengthOfZero():
+def test_CredentialKeychain_anEmptyKeychainHasLengthOfZero() -> None:
     keychain = gitEntities.CredentialKeychain(credentialsDictionary={})
     assert(len(keychain) == 0)
 
 
-def test_CredentialKeychain_canStoreValidCredentials():
+def test_CredentialKeychain_canStoreValidCredentials() -> None:
     credentialsDictionary = {}
     entry = {"url": "https://github.com/", "token": "ab341m32"}
     credentialsDictionary["githubplatform"] = entry
@@ -254,14 +255,14 @@ def test_CredentialKeychain_canStoreValidCredentials():
     assert(len(keychain) == 1)
 
 
-def test_CredentialKeychain_credentialsMustBeInDictionary():
-    credentialsDictionary = []
+def test_CredentialKeychain_credentialsMustBeInDictionary() -> None:
+    credentialsDictionary: List[int] = []
     with pytest.raises(TypeError):
         keychain = gitEntities.CredentialKeychain(
-            credentialsDictionary=credentialsDictionary)
+            credentialsDictionary=credentialsDictionary)  # type: ignore
 
 
-def test_CredentialKeychain_thereCanOnlyBeOneCredentialObjectForEachUniqueURL():
+def test_CredentialKeychain_thereCanOnlyBeOneCredentialObjectForEachUniqueURL() -> None:
     credentialsDictionary = {}
     entryA = {"url": "https://github.com/", "token": "ab341m32"}
     entryB = {"url": "https://github.com/", "token": "cak13113"}
@@ -272,7 +273,7 @@ def test_CredentialKeychain_thereCanOnlyBeOneCredentialObjectForEachUniqueURL():
     assert(len(keychain) == 1)
 
 
-def test_CredentialKeychain_canMatchRepositoryLocationWithCredentials():
+def test_CredentialKeychain_canMatchRepositoryLocationWithCredentials() -> None:
     credentialsDictionary = {}
     entry = {"url": "https://github.com/", "token": "ab341m32"}
     credentialsDictionary["githubplatform"] = entry
@@ -289,7 +290,7 @@ def test_CredentialKeychain_canMatchRepositoryLocationWithCredentials():
     assert(lookupResult.getToken() == "ab341m32")
 
 
-def test_CredentialKeychain_canFailToFindCredentials():
+def test_CredentialKeychain_canFailToFindCredentials() -> None:
     credentialsDictionary = {}
     entry = {"url": "https://github.com/", "token": "ab341m32"}
     credentialsDictionary["githubplatform"] = entry
@@ -303,7 +304,7 @@ def test_CredentialKeychain_canFailToFindCredentials():
     assert(lookupResult is None)
 
 
-def test_CredentialKeychain_ifMultipleEntriesMatchLongestIsChosen():
+def test_CredentialKeychain_ifMultipleEntriesMatchLongestIsChosen() -> None:
     credentialsDictionary = {}
     entryA = {"url": "https://github.com/", "token": "ab341m32"}
     entryB = {"url": "https://github.com/Parallel-NetCDF", "token": "q198krq13"}
@@ -326,23 +327,23 @@ def test_CredentialKeychain_ifMultipleEntriesMatchLongestIsChosen():
     assert(lookupResult.getToken() == "14l1mn8a")
 
 
-def test_GitHubAPISessionCreator_isConstructibleByFactory():
+def test_GitHubAPISessionCreator_isConstructibleByFactory() -> None:
     factory = gitEntities.GitEntityFactory()
     githubCreator = factory.createGitHubAPISessionCreator()
 
 
-def test_GitHubAPISessionCreator_isDirectlyConstructible():
+def test_GitHubAPISessionCreator_isDirectlyConstructible() -> None:
     githubCreator = gitEntities.GitHubAPISessionCreator()
 
 
-def test_GitHubAPISessionCreator_canHandleAppropriateRepository():
+def test_GitHubAPISessionCreator_canHandleAppropriateRepository() -> None:
     githubCreator = gitEntities.GitHubAPISessionCreator()
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://github.com/Parallel-NetCDF/PnetCDF")
     assert(githubCreator.canHandleRepository(repositoryLocation))
 
 
-def test_GitHubAPISessionCreator_rejectsInappropriateRepositories():
+def test_GitHubAPISessionCreator_rejectsInappropriateRepositories() -> None:
     githubCreator = gitEntities.GitHubAPISessionCreator()
     repositoryLocationGitlab = gitEntities.RepositoryLocation(
         url="https://gitlab.com/exaalt/parsplice")
@@ -354,28 +355,28 @@ def test_GitHubAPISessionCreator_rejectsInappropriateRepositories():
     assert(not githubCreator.canHandleRepository(repositoryLocationGarbage))
 
 
-def test_VCSAPISessionCompositeCreator_isConstructibleByFactory():
+def test_VCSAPISessionCompositeCreator_isConstructibleByFactory() -> None:
     factory = gitEntities.GitEntityFactory()
     githubCreator = factory.createVCSAPISessionCompositeCreator()
 
 
-def test_VCSAPISessionCompositeCreator_isDirectlyConstructible():
+def test_VCSAPISessionCompositeCreator_isDirectlyConstructible() -> None:
     compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
 
 
-def test_VCSAPISessionCompositeCreator_InitiallyHasNoChildren():
+def test_VCSAPISessionCompositeCreator_InitiallyHasNoChildren() -> None:
     compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
     assert (compositeCreator.getNumberOfChildren() == 0)
 
 
-def test_VCSAPISessionCompositeCreator_CantFulfillRequestsWithoutChildren():
+def test_VCSAPISessionCompositeCreator_CantFulfillRequestsWithoutChildren() -> None:
     compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://github.com/Parallel-NetCDF/PnetCDF")
     assert (compositeCreator.canHandleRepository(repositoryLocation) == False)
 
 
-def test_VCSAPISessionCompositeCreator_CanStoreChildren():
+def test_VCSAPISessionCompositeCreator_CanStoreChildren() -> None:
     compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
     githubCreator = gitEntities.GitHubAPISessionCreator()
     compositeCreator.addChild(githubCreator)
@@ -383,7 +384,7 @@ def test_VCSAPISessionCompositeCreator_CanStoreChildren():
     assert(compositeCreator.getNumberOfChildren() == 1)
 
 
-def test_VCSAPISessionCompositeCreator_CanRemoveChildren():
+def test_VCSAPISessionCompositeCreator_CanRemoveChildren() -> None:
     compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
     githubCreator = gitEntities.GitHubAPISessionCreator()
     compositeCreator.addChild(githubCreator)
@@ -391,7 +392,7 @@ def test_VCSAPISessionCompositeCreator_CanRemoveChildren():
     assert(not compositeCreator.hasChild(githubCreator))
 
 
-def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCan():
+def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCan() -> None:
     compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
     githubCreator = gitEntities.GitHubAPISessionCreator()
     compositeCreator.addChild(githubCreator)
@@ -400,7 +401,7 @@ def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCan():
     assert(compositeCreator.canHandleRepository(repositoryLocation))
 
 
-def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCant():
+def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCant() -> None:
     compositeCreator = gitEntities.VCSAPISessionCompositeCreator()
     githubCreator = gitEntities.GitHubAPISessionCreator()
     compositeCreator.addChild(githubCreator)
@@ -409,23 +410,23 @@ def test_VCSAPISessionCompositeCreator_CanFulfillRequestIfChildCant():
     assert(not compositeCreator.canHandleRepository(repositoryLocation))
 
 
-def test_GitlabAPISessionCreator_isConstructibleByFactory():
+def test_GitlabAPISessionCreator_isConstructibleByFactory() -> None:
     factory = gitEntities.GitEntityFactory()
     githubCreator = factory.createGitlabAPISessionCreator()
 
 
-def test_GitlabAPISessionCreator_isDirectlyConstructible():
+def test_GitlabAPISessionCreator_isDirectlyConstructible() -> None:
     gitlabCreator = gitEntities.GitlabAPISessionCreator()
 
 
-def test_GitlabAPISessionCreator_canHandleAppropriateRepository():
+def test_GitlabAPISessionCreator_canHandleAppropriateRepository() -> None:
     gitlabCreator = gitEntities.GitlabAPISessionCreator()
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://gitlab.com/exaalt/parsplice")
     assert(gitlabCreator.canHandleRepository(repositoryLocation))
 
 
-def test_GitlabAPISessionCreator_rejectsInappropriateRepositories():
+def test_GitlabAPISessionCreator_rejectsInappropriateRepositories() -> None:
     gitlabCreator = gitEntities.GitlabAPISessionCreator()
     repositoryLocationGitlab = gitEntities.RepositoryLocation(
         url="https://github.com/Parallel-NetCDF/PnetCDF")
@@ -437,7 +438,7 @@ def test_GitlabAPISessionCreator_rejectsInappropriateRepositories():
     assert(not gitlabCreator.canHandleRepository(repositoryLocationGarbage))
 
 
-def test_GitlabAPISessionCreator_usernameAndPasswordComboWillTriggerRuntimeError():
+def test_GitlabAPISessionCreator_usernameAndPasswordComboWillTriggerRuntimeError() -> None:
     gitlabCreator = gitEntities.GitlabAPISessionCreator()
     repositoryLocation = gitEntities.RepositoryLocation(
         url="https://gitlab.com/repo/owner")
