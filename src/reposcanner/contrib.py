@@ -4,6 +4,7 @@ from reposcanner.requests import OfflineRoutineRequest, OnlineRoutineRequest, An
 from reposcanner.response import ResponseFactory
 from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory
+from reposcanner.util import replaceNoneWithEmptyString as _replaceNoneWithEmptyString
 import pygit2
 
 from pathlib import Path
@@ -21,8 +22,7 @@ import numpy as np
 
 
 class CommitInfoMiningRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
@@ -30,9 +30,6 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
     This routine clones a repository and extracts information about each commit, including
     authorship information, the commit message, and which files were interacted with.
     """
-
-    def getRequestType(self):
-        return CommitInfoMiningRoutineRequest
 
     def offlineImplementation(self, request, session):
 
@@ -126,16 +123,8 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                     changes['files'] += diff.stats.files_changed
             return changes
 
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
         for commit in session.walk(session.head.target,
                                    pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL):
-            extractedCommitData = {}
-
             # The person who originally made the change and when they made it, a
             # pygit2.Signature.
             author = commit.author
@@ -200,21 +189,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
 
 
 class OnlineCommitAuthorshipRoutineRequest(OnlineRoutineRequest):
-    def __init__(
-            self,
-            repositoryURL,
-            outputDirectory,
-            username=None,
-            password=None,
-            token=None,
-            keychain=None):
-        super().__init__(
-            repositoryURL,
-            outputDirectory,
-            username=username,
-            password=password,
-            token=token,
-            keychain=keychain)
+    pass
 
 
 class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
@@ -225,13 +200,6 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
         return OnlineCommitAuthorshipRoutineRequest
-
-    def githubImplementation(self, request, session):
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
 
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
@@ -270,12 +238,6 @@ class OnlineCommitAuthorshipRoutine(OnlineRepositoryRoutine):
             message="OnlineCommitAuthorshipRoutine completed!", attachments=output)
 
     def gitlabImplementation(self, request, session):
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
         factory = DataEntityFactory()
         output = factory.createAnnotatedCSVData(
             "{outputDirectory}/{repoName}_OnlineCommitAuthorship.csv".format(
@@ -370,10 +332,8 @@ class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
         try:
             import gambit
         except ImportError:
-            self.gambitIsAvailable = False
             self.gambitImportRef = None
         else:
-            self.gambitIsAvailable = True
             self.gambitImportRef = gambit
 
     def getRequestType(self):
@@ -385,7 +345,7 @@ class GambitCommitAuthorshipInferenceAnalysis(DataAnalysis):
     def execute(self, request):
 
         responseFactory = ResponseFactory()
-        if not self.gambitIsAvailable:
+        if not self.gambitImportRef is not None:
             return responseFactory.createFailureResponse(message="Gambit is not \
             installed, halting execution.")
 
@@ -479,8 +439,7 @@ class VerifiedCommitAuthorshipAnalysis(DataAnalysis):
 
 
 class OfflineCommitCountsRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
@@ -527,21 +486,7 @@ class OfflineCommitCountsRoutine(OfflineRepositoryRoutine):
 
 
 class ContributorAccountListRoutineRequest(OnlineRoutineRequest):
-    def __init__(
-            self,
-            repositoryURL,
-            outputDirectory,
-            username=None,
-            password=None,
-            token=None,
-            keychain=None):
-        super().__init__(
-            repositoryURL,
-            outputDirectory,
-            username=username,
-            password=password,
-            token=token,
-            keychain=keychain)
+    pass
 
 
 class ContributorAccountListRoutine(OnlineRepositoryRoutine):
@@ -553,12 +498,6 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
 
     def getRequestType(self):
         return ContributorAccountListRoutineRequest
-
-    def _replaceNoneWithEmptyString(self, value):
-        if value is None:
-            return ""
-        else:
-            return value
 
     def githubImplementation(self, request, session):
         factory = DataEntityFactory()
@@ -578,9 +517,9 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         contributors = [contributor for contributor in session.get_contributors()]
         for contributor in contributors:
             output.addRecord([
-                self._replaceNoneWithEmptyString(contributor.login),
-                self._replaceNoneWithEmptyString(contributor.name),
-                ';'.join([self._replaceNoneWithEmptyString(contributor.email)])
+                _replaceNoneWithEmptyString(contributor.login),
+                _replaceNoneWithEmptyString(contributor.name),
+                ';'.join([_replaceNoneWithEmptyString(contributor.email)])
 
             ])
 
@@ -607,8 +546,8 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
         contributors = [contributor for contributor in session.get_contributors()]
         for contributor in contributors:
             output.addRecord([
-                self._replaceNoneWithEmptyString(contributor.username),
-                self._replaceNoneWithEmptyString(contributor.name),
+                _replaceNoneWithEmptyString(contributor.username),
+                _replaceNoneWithEmptyString(contributor.name),
                 ';'.join(contributor.emails.list())
 
             ])
@@ -619,8 +558,7 @@ class ContributorAccountListRoutine(OnlineRepositoryRoutine):
 
 
 class FileInteractionRoutineRequest(OfflineRoutineRequest):
-    def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
-        super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
+    pass
 
 
 class FileInteractionRoutine(OfflineRepositoryRoutine):

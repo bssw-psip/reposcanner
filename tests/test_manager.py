@@ -83,6 +83,10 @@ def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmp_path)
         contents = """
                 routines:
                   - ContributorAccountListRoutine
+                  - reposcanner.contrib:ContributorAccountListRoutine
+                analyses:
+                  - GambitCommitAuthorshipInferenceAnalysis
+                  - reposcanner.contrib:GambitCommitAuthorshipInferenceAnalysis
                 """
         outfile.write(contents)
 
@@ -90,10 +94,16 @@ def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmp_path)
     configEntity.readFromFile()
     configDict = configEntity.getData()
 
-    manager.initializeRoutinesAndAnalyses(configDict)
+    with pytest.deprecated_call():
+        manager.initializeRoutinesAndAnalyses(configDict)
     routines = manager.getRoutines()
-    assert(len(routines) == 1)
+    assert(len(routines) == 2)
     assert(routines[0].__class__.__name__ == "ContributorAccountListRoutine")
+    assert(routines[1].__class__.__name__ == "ContributorAccountListRoutine")
+    analyses = manager.getAnalyses()
+    assert(len(analyses) == 2)
+    assert(analyses[0].__class__.__name__ == "GambitCommitAuthorshipInferenceAnalysis")
+    assert(analyses[1].__class__.__name__ == "GambitCommitAuthorshipInferenceAnalysis")
 
 
 def test_ReposcannerManager_missingRoutinesInConfigCausesValueError(tmp_path):
@@ -117,5 +127,5 @@ def test_ReposcannerManager_missingRoutinesInConfigCausesValueError(tmp_path):
     configDict = configEntity.getData()
 
     # Attempting to find and initialize NonexistentRoutine will trigger a ValueError.
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError), pytest.deprecated_call():
         manager.initializeRoutinesAndAnalyses(configDict)

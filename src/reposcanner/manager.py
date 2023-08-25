@@ -1,10 +1,11 @@
-from reposcanner.contrib import ContributorAccountListRoutine, OfflineCommitCountsRoutine, GambitCommitAuthorshipInferenceAnalysis
-from reposcanner.contrib import CommitInfoMiningRoutine, OnlineCommitAuthorshipRoutine
-from reposcanner.dummy import DummyOfflineRoutine, DummyOnlineRoutine, DummyAnalysis
 from reposcanner.git import CredentialKeychain
 from reposcanner.data import DataEntityStore
 from reposcanner.response import ResponseFactory
+from reposcanner.requests import AnalysisRequestModel, ExternalCommandLineToolRoutineRequest, OnlineRoutineRequest, RepositoryRoutineRequestModel
 from reposcanner.routines import RepositoryRoutine, ExternalCommandLineToolRoutine
+from reposcanner.analyses import DataAnalysis
+import warnings
+import importlib
 import datetime
 import logging
 import curses
@@ -63,7 +64,7 @@ class ManagerTask(ABC):
         if selectedAgent is not None:
             if notebook is not None:
                 notebook.onTaskStart(self, store, selectedAgent)
-            if self._request.isAnalysisRequestType():
+            if isinstance(self._request, AnalysisRequestModel):
                 self._request.fetchDataFromStore(store)
             self._response = selectedAgent.run(self._request)
             if notebook is not None:
@@ -73,7 +74,7 @@ class ManagerTask(ABC):
             self._response = responseFactory.createFailureResponse(
                 message="No routine/analysis was found that could \
                                 execute the request ({requestType}).".format(
-                    requestType=type(request)))
+                    requestType=type(self._request)))
 
     @abstractmethod
     def getResponseDescription(self):
@@ -209,57 +210,90 @@ class ReposcannerManager:
         self._guiModeEnabled = gui
         self._store = DataEntityStore()
 
+    @staticmethod
+    def dynamicallyImportFrom(name):
+        if ":" not in name:
+            warnings.warn(
+                "Unqualified routine names ({}) are deprecated. "
+                "Use <module>.<RoutineClassName> or <package>.<module>:<RoutineClassName>."
+                .format(name),
+                DeprecationWarning,
+            )
+            import reposcanner.contrib, reposcanner.dummy
+            if hasattr(reposcanner.contrib, name):
+                return getattr(reposcanner.contrib, name)
+            elif hasattr(reposcanner.dummy, name):
+                return getattr(reposcanner.dummy, name)
+            elif name in globals():
+                return globals()[name]
+            else:
+                raise ValueError(
+                    "{} not found in the default search locations."
+                    .format(name)
+                )
+        else:
+            importName, _, objectName = name.partition(":")
+            module = importlib.import_module(importName)
+            return getattr(module, objectName)
+
+
     def initializeRoutinesAndAnalyses(self, configData):
         """Constructs RepositoryRoutine and DataAnalysis objects that belong to the manager."""
 
-        if 'routines' in configData:
-            for routineEntry in configData['routines']:
-                if isinstance(routineEntry, dict):
-                    # The routineEntry is a dictionary, implying it
-                    # has parameters we need to pass to the
-                    # constructor. Otherwise it'll just be a plain string.
-                    routineName = list(routineEntry.keys())[0]
-                    configParameters = routineEntry[routineName]
-                else:
-                    routineName = routineEntry
-                    configParameters = None
-                try:
-                    routineClazz = getattr(sys.modules[__name__], routineName)
-                    routineInstance = routineClazz()
-                    routineInstance.setConfigurationParameters(configParameters)
+        for routineEntry in configData.get('routines', []):
+            if isinstance(routineEntry, dict):
+                # The routineEntry is a dictionary, implying it
+                # has parameters we need to pass to the
+                # constructor. Otherwise it'll just be a plain string.
+                routineName = list(routineEntry.keys())[0]
+                configParameters = routineEntry[routineName]
+            elif isinstance(routineEntry, str):
+                routineName = routineEntry
+                configParameters = None
+            else:
+                raise TypeError("Invalid routine: {} ({})"
+                                .format(routineEntry, type(routineEntry)))
 
-                    if isinstance(routineInstance, RepositoryRoutine):
-                        self._repositoryRoutines.append(routineInstance)
-                    elif isinstance(routineInstance, ExternalCommandLineToolRoutine):
-                        self._externalCommandLineToolRoutines.append(routineInstance)
-                    else:
-                        raise TypeError("ReposcannerManager does not know how to \
-                                                handle this routine type: {routineType}".format(type(routineInstance)))
-                except BaseException:
-                    raise ValueError(
-                        "Failed to instantiate routine matching name {name}".format(
-                            name=routineName))
+            routineClazz = self.dynamicallyImportFrom(routineName)
+            routineInstance = routineClazz()
+            routineInstance.setConfigurationParameters(configParameters)
 
-        if 'analyses' in configData:
-            for analysisEntry in configData['analyses']:
-                if isinstance(routineEntry, dict):
-                    # The analysisEntry is a dictionary, implying it
-                    # has parameters we need to pass to the
-                    # constructor. Otherwise it'll just be a plain string.
-                    analysisName = list(analysisEntry.keys())[0]
-                    configParameters = analysisEntry[analysisName]
-                else:
-                    analysisName = analysisEntry
-                    configParameters = None
-                try:
-                    analysisClazz = getattr(sys.modules[__name__], analysisName)
-                    analysisInstance = analysisClazz()
-                    analysisInstance.setConfigurationParameters(configParameters)
-                    self._analyses.append(analysisInstance)
-                except BaseException:
-                    raise ValueError(
-                        "Failed to instantiate analysis matching name {name}".format(
-                            name=analysisName))
+            if isinstance(routineInstance, RepositoryRoutine):
+                self._repositoryRoutines.append(routineInstance)
+            elif isinstance(routineInstance, ExternalCommandLineToolRoutine):
+                self._externalCommandLineToolRoutines.append(routineInstance)
+            else:
+                raise TypeError(
+                    "ReposcannerManager does not know how to handle this "
+                    "routine type: {}"
+                    .format(type(routineInstance))
+                )
+
+        for analysisEntry in configData.get('analyses', []):
+            if isinstance(analysisEntry, dict):
+                # The analysisEntry is a dictionary, implying it
+                # has parameters we need to pass to the
+                # constructor. Otherwise it'll just be a plain string.
+                analysisName = list(analysisEntry.keys())[0]
+                configParameters = analysisEntry[analysisName]
+            elif isinstance(analysisEntry, str):
+                analysisName = analysisEntry
+                configParameters = None
+            else:
+                raise TypeError("Invalid analysis: {} ({})"
+                                .format(analysisName, type(analysisName)))
+            analysisClazz = self.dynamicallyImportFrom(analysisName)
+            analysisInstance = analysisClazz()
+            analysisInstance.setConfigurationParameters(configParameters)
+
+            if isinstance(analysisInstance, DataAnalysis):
+                self._analyses.append(analysisInstance)
+            else:
+                raise TypeError(
+                    "ReposcannerManager does not know how to handle this "
+                    "analysis type: {}"
+                    .format(type(analysisInstance))
+                )
 
         for routine in self._repositoryRoutines:
             if self._notebook is not None:
@@ -315,27 +349,28 @@ class ReposcannerManager:
     def buildTask(self, projectID, projectName, url, routineOrAnalysis):
         """Constructs a task to hold a request/response pair."""
         requestType = routineOrAnalysis.getRequestType()
-        if requestType.isRoutineRequestType():
-            if requestType.isExternalCommandLineToolRequestType():
-                request = requestType(outputDirectory=self._outputDirectory)
-                task = ManagerExternalCommandLineToolTask(request)
-                return task
-            else:
-                if requestType.requiresOnlineAPIAccess():
-                    request = requestType(repositoryURL=url,
-                                          outputDirectory=self._outputDirectory,
-                                          keychain=self._keychain)
-                else:
-                    request = requestType(repositoryURL=url,
-                                          outputDirectory=self._outputDirectory,
-                                          workspaceDirectory=self._workspaceDirectory)
-                task = ManagerRepositoryRoutineTask(
-                    projectID=projectID, projectName=projectName, url=url, request=request)
-                return task
-        elif requestType.isAnalysisRequestType():
-            request = requestType()
-            task = ManagerAnalysisTask(request)
-            return task
+        if issubclass(requestType, ExternalCommandLineToolRoutineRequest):
+            cmd_request = requestType(outputDirectory=self._outputDirectory)
+            cmd_task = ManagerExternalCommandLineToolTask(cmd_request)
+            return cmd_task
+        elif issubclass(requestType, OnlineRoutineRequest):
+            online_request = requestType(repositoryURL=url,
+                                  outputDirectory=self._outputDirectory,
+                                  keychain=self._keychain)
+            online_task = ManagerRepositoryRoutineTask(
+                projectID=projectID, projectName=projectName, url=url, request=online_request)
+            return online_task
+        elif issubclass(requestType, RepositoryRoutineRequestModel):
+            repo_request = requestType(repositoryURL=url,
+                                  outputDirectory=self._outputDirectory,
+                                  workspaceDirectory=self._workspaceDirectory)
+            repo_task = ManagerRepositoryRoutineTask(
+                projectID=projectID, projectName=projectName, url=url, request=repo_request)
+            return repo_task
+        elif issubclass(requestType, AnalysisRequestModel):
+            analysis_request = requestType()
+            analysis_task = ManagerAnalysisTask(analysis_request)
+            return analysis_task
         else:
             raise TypeError(
                 "Encountered unrecognized request type when building task: {requestType}.".format(

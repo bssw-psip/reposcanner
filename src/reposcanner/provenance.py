@@ -30,6 +30,8 @@ import sys
 import subprocess
 import os
 import reposcanner.data as dataEntities
+from reposcanner.manager import ManagerRepositoryRoutineTask
+from reposcanner.requests import AnalysisRequestModel
 
 """
 trungdong/prov, a W3C-compliant provenance Data Model
@@ -265,8 +267,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
 
         task: The ManagerTask object.
         """
-        request = task.getRequest()
-        if request.isRoutineRequestType():
+        if isinstance(task, ManagerRepositoryRoutineTask):
             task = self._document.activity("rs:task{taskid}".format(taskid=id(task)), other_attributes=(
                 ('rs:requestType', task.getRequestClassName()),
                 ('rs:projectID', task.getProjectID()),
@@ -300,7 +301,7 @@ class ReposcannerLabNotebook(AbstractLabNotebook):
         # If the request is an analysis request, we can probe the request to see which
         # files it intends to grab from the data store.
         request = task.getRequest()
-        if request.isAnalysisRequestType():
+        if isinstance(request, AnalysisRequestModel):
             filesToBeUsedInAnalysis = store.getByCriteria(request.getDataCriteria())
             for entity in filesToBeUsedInAnalysis:
                 entityID = None

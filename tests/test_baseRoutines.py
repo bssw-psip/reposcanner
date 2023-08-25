@@ -136,8 +136,8 @@ def test_OfflineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker
     routines.OfflineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
     genericRoutine = routines.OfflineRepositoryRoutine()
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
-        repositoryURL="https://github.com/owner/repo", outputDirectory="./")
+    genericRequest = requests.OfflineRoutineRequest(
+        repositoryURL="https://github.com/owner/repo", outputDirectory="./out", workspaceDirectory="./workspace")
     genericRequest.addError(message="Something has gone horribly wrong.")
     response = genericRoutine.run(genericRequest)
     assert(not response.wasSuccessful())
@@ -161,8 +161,8 @@ def test_OnlineRepositoryRoutine_inabilityToHandleRequestResultsInFailureRespons
     routines.OnlineRepositoryRoutine.canHandleRequest = canNeverHandleRequest
     genericRoutine = routines.OnlineRepositoryRoutine()
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
-        repositoryURL="https://github.com/owner/repo", outputDirectory="./")
+    genericRequest = requests.OnlineRoutineRequest(
+        repositoryURL="https://github.com/owner/repo", outputDirectory="./out")
     response = genericRoutine.run(genericRequest)
     assert(not response.wasSuccessful())
     assert(response.hasMessage())
@@ -179,7 +179,7 @@ def test_OnlineRepositoryRoutine_errorsInRequestResultsInFailureResponse(mocker)
     routines.OnlineRepositoryRoutine.canHandleRequest = canAlwaysHandleRequest
     genericRoutine = routines.OnlineRepositoryRoutine()
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
+    genericRequest = requests.OnlineRoutineRequest(
         repositoryURL="https://github.com/owner/repo", outputDirectory="./")
     genericRequest.addError(message="Something has gone horribly wrong.")
     response = genericRoutine.run(genericRequest)
@@ -203,8 +203,8 @@ def test_OnlineRepositoryRoutine_inabilityOfSessionCreatorToHandleRepositoryResu
     emptyAPICreator = gitEntityFactory.createVCSAPISessionCompositeCreator()
     genericRoutine.sessionCreator = emptyAPICreator
 
-    genericRequest = requests.RepositoryRoutineRequestModel(
-        repositoryURL="https://github.com/owner/repo", outputDirectory="./")
+    genericRequest = requests.OnlineRoutineRequest(
+        repositoryURL="https://github.com/owner/repo", outputDirectory="./", username="foo", password="bar")
     response = genericRoutine.run(genericRequest)
     assert(not response.wasSuccessful())
     assert(response.hasMessage())
