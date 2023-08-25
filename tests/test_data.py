@@ -118,9 +118,8 @@ def test_AnnotatedCSVData_canConvertToDataFrameFromFileWithFirstRowHeader():
     assert(frame["numberOfCommits"][2] == 77)
 
 
-def test_AnnotatedCSVData_canStoreDataToDisk(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("csvtest.csv"))
+def test_AnnotatedCSVData_canStoreDataToDisk(tmp_path):
+    filePath = tmp_path / "csvtest.csv"
     dataEntity = data.AnnotatedCSVData(filePath)
     timestamp = datetime.date.today()
     columnNames = ["contributor", "numberOfCommits"]
@@ -159,7 +158,7 @@ def test_YAMLData_isDirectlyConstructible():
     dataEntity = data.YAMLData("test.yaml")
 
 
-def test_AnnotatedCSVData_isConstructibleByFactory():
+def test_AnnotatedYAMLData_isConstructibleByFactory():
     factory = data.DataEntityFactory()
     factory.createYAMLData("test.yaml")
 
@@ -169,9 +168,8 @@ def test_YAMLData_initiallyHoldsNoData():
     assert(len(dataEntity.getData()) == 0)
 
 
-def test_YAMLData_canReadDataFromDisk(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("test.yaml"))
+def test_YAMLData_canReadDataFromDisk(tmp_path):
+    filePath = tmp_path / "test.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """
@@ -192,9 +190,8 @@ def test_YAMLData_canReadDataFromDisk(tmpdir):
     assert('urls' in dataDict['ADTR02'] and len(dataDict['ADTR02']['urls']) == 3)
 
 
-def test_YAMLData_canStoreDataToDisk(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("test.yaml"))
+def test_YAMLData_canStoreDataToDisk(tmp_path):
+    filePath = tmp_path / "test.yaml"
     dataEntity = data.YAMLData(filePath)
     dataDict = {
         'ADTR02': {
@@ -215,9 +212,9 @@ def test_YAMLData_canStoreDataToDisk(tmpdir):
     assert('urls' in dataDictB['ADTR02'] and len(dataDictB['ADTR02']['urls']) == 3)
 
 
-def test_YAMLData_canSupportNestedParametersForMiningRoutineConfigurations(tmpdir):
-    sub = tmpdir.mkdir("datatest")
-    filePath = str(sub.join("config.yaml"))
+def test_YAMLData_canSupportNestedParametersForMiningRoutineConfigurations(
+        tmp_path):
+    filePath = tmp_path / "config.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """

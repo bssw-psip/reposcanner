@@ -29,7 +29,7 @@ def test_ManagerAnalysisTask_isDirectlyConstructible():
     task = management.ManagerAnalysisTask(request=requests.AnalysisRequestModel())
 
 
-def test_ManagerRepositoryRoutineTask_isConstructibleByFactory():
+def test_ManagerAnalysisTask_isConstructibleByFactory():
     factory = management.TaskFactory()
     task = factory.createManagerAnalysisTask(request=requests.AnalysisRequestModel())
 
@@ -71,14 +71,13 @@ def test_ReposcannerManager_initiallyHasNoRoutinesOrAnalyses():
     assert(len(manager.getAnalyses()) == 0)
 
 
-def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmpdir):
+def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmp_path):
     manager = management.ReposcannerManager(
         notebook=None,
         outputDirectory=None,
         workspaceDirectory=None,
         gui=True)
-    sub = tmpdir.mkdir("managertest")
-    filePath = str(sub.join("config.yaml"))
+    filePath = tmp_path / "config.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """
@@ -97,14 +96,13 @@ def test_ReposcannerManager_CanParseConfigYAMLFileAndConstructRoutines(tmpdir):
     assert(routines[0].__class__.__name__ == "ContributorAccountListRoutine")
 
 
-def test_ReposcannerManager_missingRoutinesInConfigCausesValueError(tmpdir):
+def test_ReposcannerManager_missingRoutinesInConfigCausesValueError(tmp_path):
     manager = management.ReposcannerManager(
         notebook=None,
         outputDirectory=None,
         workspaceDirectory=None,
         gui=True)
-    sub = tmpdir.mkdir("managertest")
-    filePath = str(sub.join("config.yaml"))
+    filePath = tmp_path / "config.yaml"
 
     with open(filePath, 'w') as outfile:
         contents = """
