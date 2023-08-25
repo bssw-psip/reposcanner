@@ -1,0 +1,10 @@
+#executionid 346611c80a3511ee91b254e1adc488c5
+#creator ContributorAccountListRoutine
+#datecreated 2023-06-13
+#projectid PROJID
+#projectname SciKit
+#url https://github.com/scikit/scikit
+#names Login Name;Actual Name;Email(s)
+#datatypes str;str;str
+johnsmith,John Smith,jsmith@gmail.com
+alicejones,Alice Jones,alice@llnl.gov
