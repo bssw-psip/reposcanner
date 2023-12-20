@@ -12,7 +12,6 @@ import sys
 from tqdm import tqdm  # For progress checking in non-GUI mode.
 from abc import ABC, abstractmethod
 
-
 class TaskFactory:
     def createManagerRepositoryRoutineTask(self, projectID, projectName, url, request):
         return ManagerRepositoryRoutineTask(projectID, projectName, url, request)
@@ -226,7 +225,8 @@ class ReposcannerManager:
                 try:
                     routineClazz = getattr(sys.modules[__name__], routineName)
                     routineInstance = routineClazz()
-                    routineInstance.setConfigurationParameters(configParameters)
+                    if configParameters is not None:
+                        routineInstance.setConfigurationParameters(configParameters)
 
                     if isinstance(routineInstance, RepositoryRoutine):
                         self._repositoryRoutines.append(routineInstance)
