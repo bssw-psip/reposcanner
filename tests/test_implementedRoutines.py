@@ -31,6 +31,42 @@ def test_CommitInfoMiningRoutine_willRejectInAppropriateRequest():
 
     assert(not isinstance(request, routine.getRequestType()))
     assert(not routine.canHandleRequest(request))
+    
+
+def test_CommitInfoMiningRoutine_hasDefaultConfigurationParameters():
+    routine = contributionRoutines.CommitInfoMiningRoutine()
+    assert(routine.hasConfigurationParameters())
+    
+def test_CommitInfoMiningRoutine_canSetConfigurationParametersUsingConstructor():
+    configParameters = {
+        "parallel" : True,
+        "numberOfProcesses" : 5
+    }
+    routine = contributionRoutines.CommitInfoMiningRoutine(configParameters=configParameters)
+    assert(routine.hasConfigurationParameters())
+    configuration = routine.getConfigurationParameters()
+    assert("parallel" in configuration and configuration["parallel"] == True)
+    assert("numberOfProcesses" in configuration and configuration["numberOfProcesses"] == 5)
+    
+def test_CommitInfoMiningRoutine_canSetConfigurationParametersAfterConstruction():
+    configParameters = {
+        "parallel" : True,
+        "numberOfProcesses" : 5
+    }
+    routine = contributionRoutines.CommitInfoMiningRoutine()
+    routine.setConfigurationParameters(configParameters)
+    configuration = routine.getConfigurationParameters()
+    assert("parallel" in configuration and configuration["parallel"] == True)
+    assert("numberOfProcesses" in configuration and configuration["numberOfProcesses"] == 5)
+        
+    
+    
+def test_CommitInfoMiningRoutine_defaultConfigParametersDisablesParallelExecution():
+    routine = contributionRoutines.CommitInfoMiningRoutine()
+    configuration = routine.getConfigurationParameters()
+    assert("parallel" in configuration and configuration["parallel"] == False)
+    assert("numberOfProcesses" in configuration and configuration["numberOfProcesses"] == 0)
+    
 
 
 

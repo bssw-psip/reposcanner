@@ -24,17 +24,29 @@ class CommitInfoMiningRoutineRequest(OfflineRoutineRequest):
     def __init__(self, repositoryURL, outputDirectory, workspaceDirectory):
         super().__init__(repositoryURL, outputDirectory, workspaceDirectory)
 
-
 class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
     """
     This routine clones a repository and extracts information about each commit, including
     authorship information, the commit message, and which files were interacted with.
     """
+    
+    def __init__(self,configParameters=None):
+        super().__init__()
+        if configParameters is not None:
+            self.setConfigurationParameters(configParameters)
+        else:
+            defaultConfigParameters = {
+                "parallel" : False, #If set to true, this routine will spawn processes to divide up the work of scanning the commit data. 
+                "numberOfProcesses" : 0, #The number of processes to spawn for parallel execution. Ignored if parallel==False.
+            }
+            self.setConfigurationParameters(defaultConfigParameters)
+        
 
     def getRequestType(self):
         return CommitInfoMiningRoutineRequest
 
     def offlineImplementation(self, request, session):
+        configuration = getConfigurationParameters()
 
         factory = DataEntityFactory()
         fout = Path(request.getOutputDirectory()) \
@@ -43,6 +55,7 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             repoName=request.getRepositoryLocation().getRepositoryName())
 
         output = factory.createAnnotatedCSVData(fout)
+        
 
         responseFactory = ResponseFactory()
         if output.fileExists():
