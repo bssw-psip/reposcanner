@@ -4,6 +4,7 @@ import os
 import pygit2
 from reposcanner.git import GitEntityFactory, RepositoryLocation
 from reposcanner.response import ResponseFactory
+import traceback
 
 
 class DataMiningRoutine(ABC):
@@ -154,6 +155,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
         else:
             try:
                 if not os.path.exists(request.getCloneDirectory()):
+                    """
                     def init_remote(repo, name, url):
                         # Create the remote with a mirroring url
                         remote = repo.remotes.create(
@@ -163,11 +165,12 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                         #repo.config[mirror_var] = True
                         # Return the remote, which pygit2 will use to perform the clone
                         return remote
+                    """
                     session = pygit2.clone_repository(
                         request.getRepositoryLocation().getURL(),
                         request.getCloneDirectory(),
-                        bare=True,
-                        remote=init_remote)
+                        bare=True)
+                        #remote=init_remote)
                 else:
                     session = pygit2.Repository(request.getCloneDirectory())
 
@@ -177,6 +180,7 @@ class OfflineRepositoryRoutine(RepositoryRoutine):
                 return responseFactory.createFailureResponse(
                     message="OfflineRepositoryRoutine Encountered an unexpected exception ({etype}).".format(
                         etype=type(e)), attachments=[e])
+                        
 
     def offlineImplementation(self, request, session):
         """
