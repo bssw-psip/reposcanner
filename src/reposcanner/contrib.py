@@ -5,6 +5,7 @@ from reposcanner.response import ResponseFactory
 from reposcanner.provenance import ReposcannerRunInformant
 from reposcanner.data import DataEntityFactory
 import pygit2
+#from multiprocessing import 
 
 from pathlib import Path
 import time
@@ -13,9 +14,8 @@ import re
 import csv
 import pandas as pd
 import numpy as np
-
-#import matplotlib.pyplot as plt
-#import seaborn as sns
+from multiprocessing import Pool
+from tqdm import tqdm
 
 ########################################
 
@@ -40,13 +40,147 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
                 "numberOfProcesses" : 0, #The number of processes to spawn for parallel execution. Ignored if parallel==False.
             }
             self.setConfigurationParameters(defaultConfigParameters)
+            assert(self.hasConfigurationParameters() == True)
         
 
     def getRequestType(self):
         return CommitInfoMiningRoutineRequest
+        
+    @staticmethod
+    def _getFilesTouched(commit):
+        # TODO: Go back and check this method. Are we correctly interpreting the semantics of
+        # the deltas we receive from pygit2?
+        changes = []
+        if len(commit.parents) == 0:
+            diff = commit.tree.diff_to_tree()
+            # consider using "for fname in list(diff): (fname.delta.new_file.path,
+            # fname.line_stats)"
+            for delta in diff.deltas:
+                if delta.old_file.path not in changes and delta.old_file.path is not None:
+                    changes.append(delta.old_file.path)
+                if delta.new_file.path not in changes and delta.new_file.path is not None:
+                    changes.append(delta.new_file.path)
+        else:
+            for parent in commit.parents:
+                diff = parent.tree.diff_to_tree(commit.tree)
+                for delta in diff.deltas:
+                    if delta.old_file.path not in changes and delta.old_file.path is not None:
+                        changes.append(delta.old_file.path)
+                    if delta.new_file.path not in changes and delta.new_file.path is not None:
+                        changes.append(delta.new_file.path)
+        return changes
+
+    @staticmethod
+    def _cleanCommitMessage(s):
+        # This replaces all sequences of whitespace characters
+        # with a single space, eliminating tabs, newlines, etc.
+        # Also get rid of commas, as commas are our default delimiter.
+        return re.sub('\\s+', ' ', s).replace(',', ' ')
+
+    @staticmethod
+    def _getStats(commit):
+        changes = {'ins': 0, 'del': 0, 'files': 0}
+        if len(commit.parents) == 0:
+            diff = commit.tree.diff_to_tree()
+            diff.find_similar()  # handle renamed files
+            changes['ins'] += diff.stats.insertions
+            changes['del'] += diff.stats.deletions
+            changes['files'] += diff.stats.files_changed
+        else:
+            for parent in commit.parents:
+                diff = parent.tree.diff_to_tree(commit.tree)
+                diff.find_similar()
+                changes['ins'] += diff.stats.insertions
+                changes['del'] += diff.stats.deletions
+                changes['files'] += diff.stats.files_changed
+        return changes
+
+    @staticmethod
+    def _replaceNoneWithEmptyString(value):
+        if value is None:
+            return ""
+        else:
+            return value
+    
+    @staticmethod
+    def _extractCommitData(commit):
+        extractedCommitData = {}
+
+        # The person who originally made the change and when they made it, a
+        # pygit2.Signature.
+        author = commit.author
+        extractedCommitData["authorEmail"] = author.email
+        extractedCommitData["authorName"] = author.name
+        # Unix timestamp, as in the number of seconds since midnight, 1 January
+        # 1970.
+        extractedCommitData["authorTime"] = author.time
+
+        # The person who submitted the commit and when they did so, a
+        # pygit2.Signature (can be different than author!).
+        committer = commit.committer
+        extractedCommitData["committerEmail"] = committer.email
+        extractedCommitData["committerName"] = committer.name
+        # Unix timestamp, as in the number of seconds since midnight, 1 January
+        # 1970.
+        extractedCommitData["committerTime"] = committer.time
+
+        # The SHA hash of the commit, a string. This is guaranteed to be unique for any commit in a given repo.
+        # It is not guaranteed to be unique across commits from different repos, but in practice
+        # hash collisions are *extremely* rare.
+        extractedCommitData["commitHash"] = commit.hex
+
+        # The time when the commit was applied to the repo, which should be the
+        # same as the committer's timestamp (?).
+        extractedCommitData["commitTime"] = commit.commit_time
+
+        # A message describing what changes were made to the repo by the commit, a string.
+        # parse lines like:
+        # Co-authored-by: Mystery Committer <mystery@predictivestatmech.org>
+        extractedCommitData["commitMessage"] = commit.message
+
+        extractedCommitData["coAuthors"] = []
+        for line in commit.message.split('\n'):
+            m = re.match("\\s*Co-authored-by: (.*)", line)
+            if m is not None:
+                extractedCommitData["coAuthors"].append(m[1].strip())
+
+        # All the files interacted with according to the tree associated with the commit.
+        #filesTouched = _getFilesTouched(commit)
+        extractedCommitData["changes"] = CommitInfoMiningRoutine._getStats(commit)
+        
+        extractedCommitData["filesTouched"] = CommitInfoMiningRoutine._getFilesTouched(commit)
+        commitRecord = [CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["commitHash"]),
+            CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["commitTime"]),
+            CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["authorEmail"]),
+            CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["authorName"]),
+            CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["authorTime"]),
+            CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["committerEmail"]),
+            CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["committerName"]),
+            CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["committerTime"]),
+            ";".join(extractedCommitData["coAuthors"]),
+            extractedCommitData["changes"]['ins'], extractedCommitData["changes"]['del'], extractedCommitData["changes"]['files'],
+            ';'.join(extractedCommitData["filesTouched"]),
+            CommitInfoMiningRoutine._cleanCommitMessage(CommitInfoMiningRoutine._replaceNoneWithEmptyString(extractedCommitData["commitMessage"]))]
+        
+        return commitRecord
+        
+    parallelSession = None
+    @staticmethod
+    def _parallelExtractCommit(cloneDirectory,commitHash):
+        if CommitInfoMiningRoutine.parallelSession is None:
+            CommitInfoMiningRoutine.parallelSession = pygit2.Repository(cloneDirectory)
+        commit = CommitInfoMiningRoutine.parallelSession.get(commitHash)
+        return CommitInfoMiningRoutine._extractCommitData(commit)
+        
 
     def offlineImplementation(self, request, session):
-        configuration = getConfigurationParameters()
+        configuration = self.getConfigurationParameters()
+        """
+        TMP: Temporarily overriding the default configuration parameters to make this routine parallel.
+        We'll test out passing these parameters in the config.yaml file later... 
+        """
+        configuration["parallel"] = True
+        configuration["numberOfProcesses"] = 5
 
         factory = DataEntityFactory()
         fout = Path(request.getOutputDirectory()) \
@@ -55,7 +189,6 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             repoName=request.getRepositoryLocation().getRepositoryName())
 
         output = factory.createAnnotatedCSVData(fout)
-        
 
         responseFactory = ResponseFactory()
         if output.fileExists():
@@ -92,124 +225,26 @@ class CommitInfoMiningRoutine(OfflineRepositoryRoutine):
             3 +
             ["list"] +
             ["str"])
-
-        def _getFilesTouched(commit):
-            # TODO: Go back and check this method. Are we correctly interpreting the semantics of
-            # the deltas we receive from pygit2?
-            changes = []
-            if len(commit.parents) == 0:
-                diff = commit.tree.diff_to_tree()
-                # consider using "for fname in list(diff): (fname.delta.new_file.path,
-                # fname.line_stats)"
-                for delta in diff.deltas:
-                    if delta.old_file.path not in changes and delta.old_file.path is not None:
-                        changes.append(delta.old_file.path)
-                    if delta.new_file.path not in changes and delta.new_file.path is not None:
-                        changes.append(delta.new_file.path)
-            else:
-                for parent in commit.parents:
-                    diff = parent.tree.diff_to_tree(commit.tree)
-                    for delta in diff.deltas:
-                        if delta.old_file.path not in changes and delta.old_file.path is not None:
-                            changes.append(delta.old_file.path)
-                        if delta.new_file.path not in changes and delta.new_file.path is not None:
-                            changes.append(delta.new_file.path)
-            return changes
-
-        def _cleanCommitMessage(s):
-            # This replaces all sequences of whitespace characters
-            # with a single space, eliminating tabs, newlines, etc.
-            # Also get rid of commas, as commas are our default delimiter.
-            return re.sub('\\s+', ' ', s).replace(',', ' ')
-
-        def _getStats(commit):
-            changes = {'ins': 0, 'del': 0, 'files': 0}
-            if len(commit.parents) == 0:
-                diff = commit.tree.diff_to_tree()
-                diff.find_similar()  # handle renamed files
-                changes['ins'] += diff.stats.insertions
-                changes['del'] += diff.stats.deletions
-                changes['files'] += diff.stats.files_changed
-            else:
-                for parent in commit.parents:
-                    diff = parent.tree.diff_to_tree(commit.tree)
-                    diff.find_similar()
-                    changes['ins'] += diff.stats.insertions
-                    changes['del'] += diff.stats.deletions
-                    changes['files'] += diff.stats.files_changed
-            return changes
-
-        def _replaceNoneWithEmptyString(value):
-            if value is None:
-                return ""
-            else:
-                return value
-
-        for commit in session.walk(session.head.target,
-                                   pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL):
-            extractedCommitData = {}
-
-            # The person who originally made the change and when they made it, a
-            # pygit2.Signature.
-            author = commit.author
-            authorEmail = author.email
-            authorName = author.name
-            # Unix timestamp, as in the number of seconds since midnight, 1 January
-            # 1970.
-            authorTime = author.time
-
-            # The person who submitted the commit and when they did so, a
-            # pygit2.Signature (can be different than author!).
-            committer = commit.committer
-            committerEmail = committer.email
-            committerName = committer.name
-            # Unix timestamp, as in the number of seconds since midnight, 1 January
-            # 1970.
-            committerTime = committer.time
-
-            # The SHA hash of the commit, a string. This is guaranteed to be unique for any commit in a given repo.
-            # It is not guaranteed to be unique across commits from different repos, but in practice
-            # hash collisions are *extremely* rare.
-            commitHash = commit.hex
-
-            # The time when the commit was applied to the repo, which should be the
-            # same as the committer's timestamp (?).
-            commitTime = commit.commit_time
-
-            # A message describing what changes were made to the repo by the commit, a string.
-            # parse lines like:
-            # Co-authored-by: Mystery Committer <mystery@predictivestatmech.org>
-            commitMessage = commit.message
-
-            coAuthors = []
-            for line in commit.message.split('\n'):
-                m = re.match("\\s*Co-authored-by: (.*)", line)
-                if m is not None:
-                    coAuthors.append(m[1].strip())
-
-            # All the files interacted with according to the tree associated with the commit.
-            #filesTouched = _getFilesTouched(commit)
-            changes = _getStats(commit)
-
-            filesTouched = _getFilesTouched(commit)
-
-            output.addRecord([_replaceNoneWithEmptyString(commitHash),
-                              _replaceNoneWithEmptyString(commitTime),
-                              _replaceNoneWithEmptyString(authorEmail),
-                              _replaceNoneWithEmptyString(authorName),
-                              _replaceNoneWithEmptyString(authorTime),
-                              _replaceNoneWithEmptyString(committerEmail),
-                              _replaceNoneWithEmptyString(committerName),
-                              _replaceNoneWithEmptyString(committerTime),
-                              ";".join(coAuthors),
-                              changes['ins'], changes['del'], changes['files'],
-                              ';'.join(filesTouched),
-                              _cleanCommitMessage(_replaceNoneWithEmptyString(commitMessage))
-                              ])
-
-        output.writeToFile()
-        return responseFactory.createSuccessResponse(
-            message="CommitInfoMiningRoutine completed!", attachments=output)
+        
+        if "parallel" in configuration and "numberOfProcesses" in configuration and configuration["parallel"] == True:
+            #Parallel execution
+            with Pool(processes=configuration["numberOfProcesses"]) as pool:
+                cloneDirectory = request.getCloneDirectory()
+                commits = tqdm([(cloneDirectory,commit.hex) for commit in session.walk(session.head.target,pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL)])
+                #print(CommitInfoMiningRoutine._parallelExtractCommit(commits[0][0],commits[0][1]))
+                
+                records = pool.starmap(CommitInfoMiningRoutine._parallelExtractCommit, commits)
+                for commitRecord in records:
+                    output.addRecord(commitRecord)
+            output.writeToFile()
+            return responseFactory.createSuccessResponse(message="CommitInfoMiningRoutine completed!", attachments=output)  
+        else:
+            #Serial execution
+            for commit in session.walk(session.head.target,pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL):
+                    commitRecord = CommitInfoMiningRoutine._extractCommitData(commit)
+                    output.addRecord(commitRecord)
+            output.writeToFile()
+            return responseFactory.createSuccessResponse(message="CommitInfoMiningRoutine completed!", attachments=output)
 
 
 class OnlineCommitAuthorshipRoutineRequest(OnlineRoutineRequest):
